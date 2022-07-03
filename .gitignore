@@ -49,3 +49,5 @@ cmake-build-release/
 .cache/
 .dir-locals.el
 .lock-ns3_darwin_build
+.DS_Store
+__pycache__

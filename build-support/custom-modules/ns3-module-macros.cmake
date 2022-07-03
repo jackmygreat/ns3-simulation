@@ -36,7 +36,7 @@ function(build_lib)
   set(options IGNORE_PCH)
   set(oneValueArgs LIBNAME)
   set(multiValueArgs SOURCE_FILES HEADER_FILES LIBRARIES_TO_LINK TEST_SOURCES
-                     DEPRECATED_HEADER_FILES MODULE_ENABLED_FEATURES
+                     DEPRECATED_HEADER_FILES MODULE_ENABLED_FEATURES DEPENDENCIES
   )
   cmake_parse_arguments(
     "BLIB" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
@@ -249,6 +249,12 @@ function(build_lib)
         target_precompile_headers(${test${BLIB_LIBNAME}} REUSE_FROM stdlib_pch)
       endif()
     endif()
+  endif()
+
+  list(LENGTH BLIB_DEPENDENCIES dependencies_len)
+  if(${dependencies_len} GREATER 0)
+	message("Add dependencies ${BLIB_DEPENDENCIES} to ${lib${BLIB_LIBNAME}}")
+	add_dependencies(${lib${BLIB_LIBNAME}} ${BLIB_DEPENDENCIES})
   endif()
 
   # Build lib examples if requested

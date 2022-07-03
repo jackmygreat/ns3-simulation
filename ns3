@@ -145,6 +145,7 @@ def parse_args(argv):
         ("werror", "Treat compiler warnings as errors",
          "Treat compiler warnings as warnings"
          ),
+        ("protobuf", "Using Protobuf with ns-3")
     ]
     for on_off_option in on_off_options:
         parser_configure = on_off_argument(parser_configure, *on_off_option)
@@ -543,6 +544,7 @@ def configure_cmake(cmake, args, current_cmake_cache_folder, current_cmake_gener
                ("VERBOSE", "verbose"),
                ("WARNINGS", "warnings"),
                ("WARNINGS_AS_ERRORS", "werror"),
+               ("PROTOBUF", "protobuf")
                )
     for (cmake_flag, option_name) in options:
         arg = on_off_condition(args, cmake_flag, option_name)

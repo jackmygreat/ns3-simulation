@@ -1,0 +1,67 @@
+// The message of a Topology that contains nodes and links.
+// Nodes are expressed by groups. The IDs of the nodes are expressed
+// in a range of (BaseIndex, BaseIndex + NodesNum)
+// The field name is capitalized following the convention of ns-3.
+
+syntax = "proto3";
+package ns3_proto;
+
+message HostPortConfig {
+	bool pfcEnabled = 1;	
+}
+
+// HostGroup is a group of hosts that has the same configuration.
+// They are assigned with a range of continuous IDs.
+// It is used to aggregate a group of hosts.
+message HostGroup {
+	uint32 nodesNum = 1;
+	uint32 baseIndex = 2;
+	repeated HostPortConfig ports = 3;
+}
+
+message SwitchPortConfig {
+	uint32 queueNum = 1;
+
+	bool pfcEnabled = 2;
+	optional string pfcReserved = 3;
+	optional string pfcHeadroom = 4;
+	optional bool pfcPassThrough = 5;
+	
+	bool ecnEnabled = 6;
+	optional string ecnKMin = 7;
+	optional string ecnKMax = 8;
+	optional double ecnPMax = 9;
+}
+
+// SwitchGroup is a group of switches that has the same configuration.
+// They are assigned with a range of continuous IDs.
+// It is used to aggregate a group of switches.
+message SwitchGroup {
+	uint32 nodesNum = 1;
+	uint32 baseIndex = 2;
+	uint32 bufferSize = 3; // buffer size in unit of bytes
+	bool pfcDynamic = 4;   // whether PFC dynamic threshold is enaled
+	repeated SwitchPortConfig ports = 5;
+}
+
+// Used to aggregate all HostGroups and SwitchGroups.
+message AllNodes {
+	uint32 num = 1;
+	repeated HostGroup hostGroups = 2;
+	repeated SwitchGroup switchGroups = 3;
+}
+
+message Link {
+	uint32 node1 = 1;    // one end
+	uint32 node2 = 2;    // the other end
+	uint32 port1 = 3;     // port index of Node1
+	uint32 port2 = 4;     // port index of Node2
+	string rate = 5;     // link rate
+	string delay = 6;    // link delay
+}
+
+message Topology {  // used to aggregate all nodes and links as a topology
+	AllNodes nodes = 1;
+	repeated Link links = 2;
+}
+
