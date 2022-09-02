@@ -1,5 +1,5 @@
-from topology_pb2 import HostPortConfig, HostGroup, SwitchPortConfig, SwitchGroup, \
-    AllNodes, Link, Topology
+from topology_pb2 import GlobalConfig, HostPortConfig, HostGroup, PortQueueConfig, \
+    SwitchPortConfig, SwitchGroup, AllNodes, Link, Topology
 from collections.abc import Iterable
 from typing import List, Tuple
 import re
@@ -59,43 +59,66 @@ class Units:
         
         unitMapper = { 
             "B": 1,
-            "KB": 1024,
-            "MB": 1024**2,
-            "GB": 1024**3,
-            "TB": 1024**4
+            "KB": 1000,
+            "MB": 1000**2,
+            "GB": 1000**3,
+            "TB": 1000**4,
+            "KiB": 1024,
+            "MiB": 1024**2,
+            "GiB": 1024**3,
+            "TiB": 1024**4
         }
         
         return int(number * unitMapper[unit])
 
+def _setValuesToMessage(messgaeType, valuesDict):
+    '''This is an auxilary function that automatically assign values in dict `valuesDict` to a
+    Protobuf message `messasgeType` and return a message instance.
+    This is used for simplicity to create simple messages.
+    '''
+    instance = messgaeType()
+    for name, value in kwargs.items():
+        if isinstance(value, list):
+            getattr(ins, name).extend(value)
+        else:
+            setattr(ins, name, value)
+    return instance
+
     
-def hostPortGenerate(pfcEnabled=False):
-    portConfig = HostPortConfig()
+def globalConfigGenerate(**kwargs):
+    return _setValuesToMessage(GlobalConfig, kwargs)
+
+
+def switchPortGenerate(queueNum: int,
+                       pfcEnabled=True, pfcPassThrough=False,
+                       ecnEnabled=True,
+                       queues: List[dict]=[]):
+    if not isinstance(queues, list):
+        raise TypeError(f"Port configuration should be a list of queue configurations")
+    if len(queues) != queueNum:
+        raise ValueError(f"The number of queues of one port should be the same. "
+                         f"Expecting {queueNum} queues, given {len(queues)} queues configurations")
+    portConfig = SwitchPortConfig()
     portConfig.pfcEnabled = pfcEnabled
+    portConfig.pfcPassThrough = pfcPassThrough
+    portConfig.ecnEnabled = ecnEnabled
+    portConfig.queues.extend(
+        [_setValuesToMessage(PortQueueConfig, conf) for conf in queues]
+    )
     return portConfig
 
 
-def switchPortGenerate(
-        queueNum=2,
-        pfcEnabled=False, pfcReserved=None, pfcHeadroom=None, pfcPassThrough=False,
-        ecnEnabled=False, ecnKMin=None, ecnKMax=None, ecnPMax=None,
-):
-    portConfig = SwitchPortConfig()
-    portConfig.queueNum = queueNum
-        
-    portConfig.pfcEnabled = pfcEnabled
-    if pfcEnabled:
-        portConfig.pfcReserved = pfcReserved
-        portConfig.pfcHeadroom = pfcHeadroom
-        portConfig.pfcPassThrough = pfcPassThrough
-            
-    portConfig.ecnEnabled = ecnEnabled
-    if ecnEnabled:
-        portConfig.ecnKMin = ecnKMin
-        portConfig.ecnKMax = ecnKMax
-        portConfig.ecnPMax = ecnPMax
-            
-    return portConfig  
-    
+class GlobalConfigGenerator:
+
+    def __int__(self):
+        self.globalConfig = GlobalConfig()
+
+    def setConfig(self, randomSeed=0):
+        self.globalConfig.randomSeed = randomSeed
+
+    def getGlobalConfig(self):
+        return self.globalConfig
+
 
 class NodesGenerator:
 
@@ -120,18 +143,20 @@ class NodesGenerator:
         
     def addHostGroup(self, num, ports: List[dict]):
         group = HostGroup()
-        group.ports.extend([hostPortGenerate(**port) for port in ports])
+        group.ports.extend([_setValuesToMessage(HostPortConfig, port) for port in ports])
         return self.addToGroup(self.hostGroups, group, num)
 
     def addSwitchGroup(self, num: int,
-                       pfcDynamic: bool, bufferSize: str, ports: List[dict]):
+                       pfcDynamic: bool, bufferSize: str,
+                       queueNum: int, ports: List[dict]):
         if not isinstance(ports, list):
             raise TypeError("parameter `ports` should be a list")
         
         group = SwitchGroup()
-        group.pfcDynamic = pfcDynamic
-        group.bufferSize = Units.parseBytes(bufferSize)
-        group.ports.extend([switchPortGenerate(**port) for port in ports])
+        group.mmu.pfcDynamic = pfcDynamic
+        group.mmu.bufferSize = bufferSize # Units.parseBytes(bufferSize)
+        group.queueNum = queueNum
+        group.ports.extend([switchPortGenerate(queueNum, **port) for port in ports])
         return self.addToGroup(self.switchGroups, group, num)
 
     def getHostIDsFromGroup(self, groupID=0):
@@ -261,6 +286,7 @@ class TopologyGenerator:
         consistent with the `ProtobufTopologyLoader::m_protoBinaryName` in
         src/protobuf-topology/helper/protobuf-topology-loader.h
         '''
+        self.globalConfig = GlobalConfigGenerator()
         self.nodes = NodesGenerator()
         self.links = LinksGenerator()
         self.outputFile = output
@@ -273,6 +299,7 @@ class TopologyGenerator:
         
     def getTopology(self):
         topo = Topology()
+        topo.globalConfig.CopyFrom(self.globalConfig.getGlobalConfig())
         topo.nodes.CopyFrom(self.nodes.getAllNodes())
         topo.links.extend(self.links.getAllLinks())
         return topo

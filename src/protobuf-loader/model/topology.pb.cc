@@ -21,6 +21,20 @@ namespace _pb = ::PROTOBUF_NAMESPACE_ID;
 namespace _pbi = _pb::internal;
 
 namespace ns3_proto {
+PROTOBUF_CONSTEXPR GlobalConfig::GlobalConfig(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_._has_bits_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_.randomseed_)*/0u} {}
+struct GlobalConfigDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR GlobalConfigDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~GlobalConfigDefaultTypeInternal() {}
+  union {
+    GlobalConfig _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GlobalConfigDefaultTypeInternal _GlobalConfig_default_instance_;
 PROTOBUF_CONSTEXPR HostPortConfig::HostPortConfig(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.pfcenabled_)*/false
@@ -49,7 +63,7 @@ struct HostGroupDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 HostGroupDefaultTypeInternal _HostGroup_default_instance_;
-PROTOBUF_CONSTEXPR SwitchPortConfig::SwitchPortConfig(
+PROTOBUF_CONSTEXPR PortQueueConfig::PortQueueConfig(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
@@ -57,11 +71,24 @@ PROTOBUF_CONSTEXPR SwitchPortConfig::SwitchPortConfig(
   , /*decltype(_impl_.pfcheadroom_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ecnkmin_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ecnkmax_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.queuenum_)*/0u
+  , /*decltype(_impl_.ecnpmax_)*/0} {}
+struct PortQueueConfigDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR PortQueueConfigDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~PortQueueConfigDefaultTypeInternal() {}
+  union {
+    PortQueueConfig _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PortQueueConfigDefaultTypeInternal _PortQueueConfig_default_instance_;
+PROTOBUF_CONSTEXPR SwitchPortConfig::SwitchPortConfig(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_._has_bits_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_.queues_)*/{}
   , /*decltype(_impl_.pfcenabled_)*/false
   , /*decltype(_impl_.pfcpassthrough_)*/false
-  , /*decltype(_impl_.ecnenabled_)*/false
-  , /*decltype(_impl_.ecnpmax_)*/0} {}
+  , /*decltype(_impl_.ecnenabled_)*/false} {}
 struct SwitchPortConfigDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SwitchPortConfigDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -71,13 +98,28 @@ struct SwitchPortConfigDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SwitchPortConfigDefaultTypeInternal _SwitchPortConfig_default_instance_;
+PROTOBUF_CONSTEXPR SwitchMmuConfig::SwitchMmuConfig(
+    ::_pbi::ConstantInitialized): _impl_{
+    /*decltype(_impl_._has_bits_)*/{}
+  , /*decltype(_impl_._cached_size_)*/{}
+  , /*decltype(_impl_.buffersize_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.pfcdynamicshift_)*/0u} {}
+struct SwitchMmuConfigDefaultTypeInternal {
+  PROTOBUF_CONSTEXPR SwitchMmuConfigDefaultTypeInternal()
+      : _instance(::_pbi::ConstantInitialized{}) {}
+  ~SwitchMmuConfigDefaultTypeInternal() {}
+  union {
+    SwitchMmuConfig _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 SwitchMmuConfigDefaultTypeInternal _SwitchMmuConfig_default_instance_;
 PROTOBUF_CONSTEXPR SwitchGroup::SwitchGroup(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.ports_)*/{}
+  , /*decltype(_impl_.mmu_)*/nullptr
   , /*decltype(_impl_.nodesnum_)*/0u
   , /*decltype(_impl_.baseindex_)*/0u
-  , /*decltype(_impl_.buffersize_)*/0u
-  , /*decltype(_impl_.pfcdynamic_)*/false
+  , /*decltype(_impl_.queuenum_)*/0u
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct SwitchGroupDefaultTypeInternal {
   PROTOBUF_CONSTEXPR SwitchGroupDefaultTypeInternal()
@@ -124,6 +166,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORIT
 PROTOBUF_CONSTEXPR Topology::Topology(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_.links_)*/{}
+  , /*decltype(_impl_.globalconfig_)*/nullptr
   , /*decltype(_impl_.nodes_)*/nullptr
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct TopologyDefaultTypeInternal {
@@ -136,11 +179,19 @@ struct TopologyDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 TopologyDefaultTypeInternal _Topology_default_instance_;
 }  // namespace ns3_proto
-static ::_pb::Metadata file_level_metadata_topology_2eproto[7];
+static ::_pb::Metadata file_level_metadata_topology_2eproto[10];
 static constexpr ::_pb::EnumDescriptor const** file_level_enum_descriptors_topology_2eproto = nullptr;
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_topology_2eproto = nullptr;
 
 const uint32_t TableStruct_topology_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::GlobalConfig, _impl_._has_bits_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::GlobalConfig, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::GlobalConfig, _impl_.randomseed_),
+  0,
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ns3_proto::HostPortConfig, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -157,30 +208,46 @@ const uint32_t TableStruct_topology_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   PROTOBUF_FIELD_OFFSET(::ns3_proto::HostGroup, _impl_.nodesnum_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::HostGroup, _impl_.baseindex_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::HostGroup, _impl_.ports_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_._has_bits_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.pfcreserved_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.pfcheadroom_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.ecnkmin_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.ecnkmax_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.ecnpmax_),
+  0,
+  1,
+  2,
+  3,
+  4,
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.queuenum_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.pfcenabled_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.pfcreserved_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.pfcheadroom_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.pfcpassthrough_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.ecnenabled_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.ecnkmin_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.ecnkmax_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.ecnpmax_),
-  ~0u,
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchPortConfig, _impl_.queues_),
   ~0u,
   0,
-  1,
-  4,
   ~0u,
-  2,
-  3,
-  5,
+  ~0u,
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchMmuConfig, _impl_._has_bits_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchMmuConfig, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchMmuConfig, _impl_.buffersize_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchMmuConfig, _impl_.pfcdynamicshift_),
+  ~0u,
+  0,
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -189,8 +256,8 @@ const uint32_t TableStruct_topology_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.nodesnum_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.baseindex_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.buffersize_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.pfcdynamic_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.mmu_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.queuenum_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::SwitchGroup, _impl_.ports_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ns3_proto::AllNodes, _internal_metadata_),
@@ -219,23 +286,30 @@ const uint32_t TableStruct_topology_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::Topology, _impl_.globalconfig_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Topology, _impl_.nodes_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Topology, _impl_.links_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, -1, -1, sizeof(::ns3_proto::HostPortConfig)},
-  { 7, -1, -1, sizeof(::ns3_proto::HostGroup)},
-  { 16, 31, -1, sizeof(::ns3_proto::SwitchPortConfig)},
-  { 40, -1, -1, sizeof(::ns3_proto::SwitchGroup)},
-  { 51, -1, -1, sizeof(::ns3_proto::AllNodes)},
-  { 60, -1, -1, sizeof(::ns3_proto::Link)},
-  { 72, -1, -1, sizeof(::ns3_proto::Topology)},
+  { 0, 7, -1, sizeof(::ns3_proto::GlobalConfig)},
+  { 8, -1, -1, sizeof(::ns3_proto::HostPortConfig)},
+  { 15, -1, -1, sizeof(::ns3_proto::HostGroup)},
+  { 24, 35, -1, sizeof(::ns3_proto::PortQueueConfig)},
+  { 40, 50, -1, sizeof(::ns3_proto::SwitchPortConfig)},
+  { 54, 62, -1, sizeof(::ns3_proto::SwitchMmuConfig)},
+  { 64, -1, -1, sizeof(::ns3_proto::SwitchGroup)},
+  { 75, -1, -1, sizeof(::ns3_proto::AllNodes)},
+  { 84, -1, -1, sizeof(::ns3_proto::Link)},
+  { 96, -1, -1, sizeof(::ns3_proto::Topology)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
+  &::ns3_proto::_GlobalConfig_default_instance_._instance,
   &::ns3_proto::_HostPortConfig_default_instance_._instance,
   &::ns3_proto::_HostGroup_default_instance_._instance,
+  &::ns3_proto::_PortQueueConfig_default_instance_._instance,
   &::ns3_proto::_SwitchPortConfig_default_instance_._instance,
+  &::ns3_proto::_SwitchMmuConfig_default_instance_._instance,
   &::ns3_proto::_SwitchGroup_default_instance_._instance,
   &::ns3_proto::_AllNodes_default_instance_._instance,
   &::ns3_proto::_Link_default_instance_._instance,
@@ -243,35 +317,42 @@ static const ::_pb::Message* const file_default_instances[] = {
 };
 
 const char descriptor_table_protodef_topology_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\016topology.proto\022\tns3_proto\"$\n\016HostPortC"
-  "onfig\022\022\n\npfcEnabled\030\001 \001(\010\"Z\n\tHostGroup\022\020"
-  "\n\010nodesNum\030\001 \001(\r\022\021\n\tbaseIndex\030\002 \001(\r\022(\n\005p"
-  "orts\030\003 \003(\0132\031.ns3_proto.HostPortConfig\"\266\002"
-  "\n\020SwitchPortConfig\022\020\n\010queueNum\030\001 \001(\r\022\022\n\n"
-  "pfcEnabled\030\002 \001(\010\022\030\n\013pfcReserved\030\003 \001(\tH\000\210"
-  "\001\001\022\030\n\013pfcHeadroom\030\004 \001(\tH\001\210\001\001\022\033\n\016pfcPassT"
-  "hrough\030\005 \001(\010H\002\210\001\001\022\022\n\necnEnabled\030\006 \001(\010\022\024\n"
-  "\007ecnKMin\030\007 \001(\tH\003\210\001\001\022\024\n\007ecnKMax\030\010 \001(\tH\004\210\001"
-  "\001\022\024\n\007ecnPMax\030\t \001(\001H\005\210\001\001B\016\n\014_pfcReservedB"
-  "\016\n\014_pfcHeadroomB\021\n\017_pfcPassThroughB\n\n\010_e"
-  "cnKMinB\n\n\010_ecnKMaxB\n\n\010_ecnPMax\"\206\001\n\013Switc"
-  "hGroup\022\020\n\010nodesNum\030\001 \001(\r\022\021\n\tbaseIndex\030\002 "
-  "\001(\r\022\022\n\nbufferSize\030\003 \001(\r\022\022\n\npfcDynamic\030\004 "
-  "\001(\010\022*\n\005ports\030\005 \003(\0132\033.ns3_proto.SwitchPor"
-  "tConfig\"o\n\010AllNodes\022\013\n\003num\030\001 \001(\r\022(\n\nhost"
-  "Groups\030\002 \003(\0132\024.ns3_proto.HostGroup\022,\n\014sw"
-  "itchGroups\030\003 \003(\0132\026.ns3_proto.SwitchGroup"
-  "\"_\n\004Link\022\r\n\005node1\030\001 \001(\r\022\r\n\005node2\030\002 \001(\r\022\r"
-  "\n\005port1\030\003 \001(\r\022\r\n\005port2\030\004 \001(\r\022\014\n\004rate\030\005 \001"
-  "(\t\022\r\n\005delay\030\006 \001(\t\"N\n\010Topology\022\"\n\005nodes\030\001"
-  " \001(\0132\023.ns3_proto.AllNodes\022\036\n\005links\030\002 \003(\013"
-  "2\017.ns3_proto.Linkb\006proto3"
+  "\n\016topology.proto\022\tns3_proto\"6\n\014GlobalCon"
+  "fig\022\027\n\nrandomSeed\030\001 \001(\rH\000\210\001\001B\r\n\013_randomS"
+  "eed\"$\n\016HostPortConfig\022\022\n\npfcEnabled\030\001 \001("
+  "\010\"Z\n\tHostGroup\022\020\n\010nodesNum\030\001 \001(\r\022\021\n\tbase"
+  "Index\030\002 \001(\r\022(\n\005ports\030\003 \003(\0132\031.ns3_proto.H"
+  "ostPortConfig\"\313\001\n\017PortQueueConfig\022\030\n\013pfc"
+  "Reserved\030\001 \001(\tH\000\210\001\001\022\030\n\013pfcHeadroom\030\002 \001(\t"
+  "H\001\210\001\001\022\024\n\007ecnKMin\030\004 \001(\tH\002\210\001\001\022\024\n\007ecnKMax\030\005"
+  " \001(\tH\003\210\001\001\022\024\n\007ecnPMax\030\006 \001(\001H\004\210\001\001B\016\n\014_pfcR"
+  "eservedB\016\n\014_pfcHeadroomB\n\n\010_ecnKMinB\n\n\010_"
+  "ecnKMaxB\n\n\010_ecnPMax\"\226\001\n\020SwitchPortConfig"
+  "\022\022\n\npfcEnabled\030\001 \001(\010\022\033\n\016pfcPassThrough\030\002"
+  " \001(\010H\000\210\001\001\022\022\n\necnEnabled\030\003 \001(\010\022*\n\006queues\030"
+  "\004 \003(\0132\032.ns3_proto.PortQueueConfigB\021\n\017_pf"
+  "cPassThrough\"W\n\017SwitchMmuConfig\022\022\n\nbuffe"
+  "rSize\030\001 \001(\t\022\034\n\017pfcDynamicShift\030\002 \001(\rH\000\210\001"
+  "\001B\022\n\020_pfcDynamicShift\"\231\001\n\013SwitchGroup\022\020\n"
+  "\010nodesNum\030\001 \001(\r\022\021\n\tbaseIndex\030\002 \001(\r\022\'\n\003mm"
+  "u\030\003 \001(\0132\032.ns3_proto.SwitchMmuConfig\022\020\n\010q"
+  "ueueNum\030\004 \001(\r\022*\n\005ports\030\005 \003(\0132\033.ns3_proto"
+  ".SwitchPortConfig\"o\n\010AllNodes\022\013\n\003num\030\001 \001"
+  "(\r\022(\n\nhostGroups\030\002 \003(\0132\024.ns3_proto.HostG"
+  "roup\022,\n\014switchGroups\030\003 \003(\0132\026.ns3_proto.S"
+  "witchGroup\"_\n\004Link\022\r\n\005node1\030\001 \001(\r\022\r\n\005nod"
+  "e2\030\002 \001(\r\022\r\n\005port1\030\003 \001(\r\022\r\n\005port2\030\004 \001(\r\022\014"
+  "\n\004rate\030\005 \001(\t\022\r\n\005delay\030\006 \001(\t\"}\n\010Topology\022"
+  "-\n\014globalConfig\030\001 \001(\0132\027.ns3_proto.Global"
+  "Config\022\"\n\005nodes\030\002 \001(\0132\023.ns3_proto.AllNod"
+  "es\022\036\n\005links\030\003 \003(\0132\017.ns3_proto.Linkb\006prot"
+  "o3"
   ;
 static ::_pbi::once_flag descriptor_table_topology_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_topology_2eproto = {
-    false, false, 905, descriptor_table_protodef_topology_2eproto,
+    false, false, 1162, descriptor_table_protodef_topology_2eproto,
     "topology.proto",
-    &descriptor_table_topology_2eproto_once, nullptr, 0, 7,
+    &descriptor_table_topology_2eproto_once, nullptr, 0, 10,
     schemas, file_default_instances, TableStruct_topology_2eproto::offsets,
     file_level_metadata_topology_2eproto, file_level_enum_descriptors_topology_2eproto,
     file_level_service_descriptors_topology_2eproto,
@@ -283,6 +364,196 @@ PROTOBUF_ATTRIBUTE_WEAK const ::_pbi::DescriptorTable* descriptor_table_topology
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::_pbi::AddDescriptorsRunner dynamic_init_dummy_topology_2eproto(&descriptor_table_topology_2eproto);
 namespace ns3_proto {
+
+// ===================================================================
+
+class GlobalConfig::_Internal {
+ public:
+  using HasBits = decltype(std::declval<GlobalConfig>()._impl_._has_bits_);
+  static void set_has_randomseed(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
+};
+
+GlobalConfig::GlobalConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:ns3_proto.GlobalConfig)
+}
+GlobalConfig::GlobalConfig(const GlobalConfig& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  GlobalConfig* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.randomseed_){}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _this->_impl_.randomseed_ = from._impl_.randomseed_;
+  // @@protoc_insertion_point(copy_constructor:ns3_proto.GlobalConfig)
+}
+
+inline void GlobalConfig::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.randomseed_){0u}
+  };
+}
+
+GlobalConfig::~GlobalConfig() {
+  // @@protoc_insertion_point(destructor:ns3_proto.GlobalConfig)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void GlobalConfig::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+}
+
+void GlobalConfig::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void GlobalConfig::Clear() {
+// @@protoc_insertion_point(message_clear_start:ns3_proto.GlobalConfig)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.randomseed_ = 0u;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* GlobalConfig::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // optional uint32 randomSeed = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
+          _Internal::set_has_randomseed(&has_bits);
+          _impl_.randomseed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  _impl_._has_bits_.Or(has_bits);
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* GlobalConfig::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:ns3_proto.GlobalConfig)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // optional uint32 randomSeed = 1;
+  if (_internal_has_randomseed()) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(1, this->_internal_randomseed(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:ns3_proto.GlobalConfig)
+  return target;
+}
+
+size_t GlobalConfig::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:ns3_proto.GlobalConfig)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // optional uint32 randomSeed = 1;
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_randomseed());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData GlobalConfig::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    GlobalConfig::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GlobalConfig::GetClassData() const { return &_class_data_; }
+
+
+void GlobalConfig::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<GlobalConfig*>(&to_msg);
+  auto& from = static_cast<const GlobalConfig&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:ns3_proto.GlobalConfig)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from._internal_has_randomseed()) {
+    _this->_internal_set_randomseed(from._internal_randomseed());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void GlobalConfig::CopyFrom(const GlobalConfig& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:ns3_proto.GlobalConfig)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool GlobalConfig::IsInitialized() const {
+  return true;
+}
+
+void GlobalConfig::InternalSwap(GlobalConfig* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.randomseed_, other->_impl_.randomseed_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata GlobalConfig::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
+      file_level_metadata_topology_2eproto[0]);
+}
 
 // ===================================================================
 
@@ -459,7 +730,7 @@ void HostPortConfig::InternalSwap(HostPortConfig* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata HostPortConfig::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[0]);
+      file_level_metadata_topology_2eproto[1]);
 }
 
 // ===================================================================
@@ -704,22 +975,19 @@ void HostGroup::InternalSwap(HostGroup* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata HostGroup::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[1]);
+      file_level_metadata_topology_2eproto[2]);
 }
 
 // ===================================================================
 
-class SwitchPortConfig::_Internal {
+class PortQueueConfig::_Internal {
  public:
-  using HasBits = decltype(std::declval<SwitchPortConfig>()._impl_._has_bits_);
+  using HasBits = decltype(std::declval<PortQueueConfig>()._impl_._has_bits_);
   static void set_has_pfcreserved(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
   static void set_has_pfcheadroom(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
-  }
-  static void set_has_pfcpassthrough(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
   }
   static void set_has_ecnkmin(HasBits* has_bits) {
     (*has_bits)[0] |= 4u;
@@ -728,19 +996,19 @@ class SwitchPortConfig::_Internal {
     (*has_bits)[0] |= 8u;
   }
   static void set_has_ecnpmax(HasBits* has_bits) {
-    (*has_bits)[0] |= 32u;
+    (*has_bits)[0] |= 16u;
   }
 };
 
-SwitchPortConfig::SwitchPortConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+PortQueueConfig::PortQueueConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor(arena, is_message_owned);
-  // @@protoc_insertion_point(arena_constructor:ns3_proto.SwitchPortConfig)
+  // @@protoc_insertion_point(arena_constructor:ns3_proto.PortQueueConfig)
 }
-SwitchPortConfig::SwitchPortConfig(const SwitchPortConfig& from)
+PortQueueConfig::PortQueueConfig(const PortQueueConfig& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
-  SwitchPortConfig* const _this = this; (void)_this;
+  PortQueueConfig* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -748,10 +1016,6 @@ SwitchPortConfig::SwitchPortConfig(const SwitchPortConfig& from)
     , decltype(_impl_.pfcheadroom_){}
     , decltype(_impl_.ecnkmin_){}
     , decltype(_impl_.ecnkmax_){}
-    , decltype(_impl_.queuenum_){}
-    , decltype(_impl_.pfcenabled_){}
-    , decltype(_impl_.pfcpassthrough_){}
-    , decltype(_impl_.ecnenabled_){}
     , decltype(_impl_.ecnpmax_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -787,13 +1051,11 @@ SwitchPortConfig::SwitchPortConfig(const SwitchPortConfig& from)
     _this->_impl_.ecnkmax_.Set(from._internal_ecnkmax(), 
       _this->GetArenaForAllocation());
   }
-  ::memcpy(&_impl_.queuenum_, &from._impl_.queuenum_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.ecnpmax_) -
-    reinterpret_cast<char*>(&_impl_.queuenum_)) + sizeof(_impl_.ecnpmax_));
-  // @@protoc_insertion_point(copy_constructor:ns3_proto.SwitchPortConfig)
+  _this->_impl_.ecnpmax_ = from._impl_.ecnpmax_;
+  // @@protoc_insertion_point(copy_constructor:ns3_proto.PortQueueConfig)
 }
 
-inline void SwitchPortConfig::SharedCtor(
+inline void PortQueueConfig::SharedCtor(
     ::_pb::Arena* arena, bool is_message_owned) {
   (void)arena;
   (void)is_message_owned;
@@ -804,10 +1066,6 @@ inline void SwitchPortConfig::SharedCtor(
     , decltype(_impl_.pfcheadroom_){}
     , decltype(_impl_.ecnkmin_){}
     , decltype(_impl_.ecnkmax_){}
-    , decltype(_impl_.queuenum_){0u}
-    , decltype(_impl_.pfcenabled_){false}
-    , decltype(_impl_.pfcpassthrough_){false}
-    , decltype(_impl_.ecnenabled_){false}
     , decltype(_impl_.ecnpmax_){0}
   };
   _impl_.pfcreserved_.InitDefault();
@@ -828,8 +1086,8 @@ inline void SwitchPortConfig::SharedCtor(
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
-SwitchPortConfig::~SwitchPortConfig() {
-  // @@protoc_insertion_point(destructor:ns3_proto.SwitchPortConfig)
+PortQueueConfig::~PortQueueConfig() {
+  // @@protoc_insertion_point(destructor:ns3_proto.PortQueueConfig)
   if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
   (void)arena;
     return;
@@ -837,7 +1095,7 @@ SwitchPortConfig::~SwitchPortConfig() {
   SharedDtor();
 }
 
-inline void SwitchPortConfig::SharedDtor() {
+inline void PortQueueConfig::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.pfcreserved_.Destroy();
   _impl_.pfcheadroom_.Destroy();
@@ -845,12 +1103,12 @@ inline void SwitchPortConfig::SharedDtor() {
   _impl_.ecnkmax_.Destroy();
 }
 
-void SwitchPortConfig::SetCachedSize(int size) const {
+void PortQueueConfig::SetCachedSize(int size) const {
   _impl_._cached_size_.Set(size);
 }
 
-void SwitchPortConfig::Clear() {
-// @@protoc_insertion_point(message_clear_start:ns3_proto.SwitchPortConfig)
+void PortQueueConfig::Clear() {
+// @@protoc_insertion_point(message_clear_start:ns3_proto.PortQueueConfig)
   uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
@@ -870,12 +1128,353 @@ void SwitchPortConfig::Clear() {
       _impl_.ecnkmax_.ClearNonDefaultToEmpty();
     }
   }
-  ::memset(&_impl_.queuenum_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.pfcenabled_) -
-      reinterpret_cast<char*>(&_impl_.queuenum_)) + sizeof(_impl_.pfcenabled_));
+  _impl_.ecnpmax_ = 0;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* PortQueueConfig::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // optional string pfcReserved = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
+          auto str = _internal_mutable_pfcreserved();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.pfcReserved"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional string pfcHeadroom = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_pfcheadroom();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.pfcHeadroom"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional string ecnKMin = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          auto str = _internal_mutable_ecnkmin();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.ecnKMin"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional string ecnKMax = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 42)) {
+          auto str = _internal_mutable_ecnkmax();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.ecnKMax"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional double ecnPMax = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 49)) {
+          _Internal::set_has_ecnpmax(&has_bits);
+          _impl_.ecnpmax_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
+          ptr += sizeof(double);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  _impl_._has_bits_.Or(has_bits);
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* PortQueueConfig::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:ns3_proto.PortQueueConfig)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // optional string pfcReserved = 1;
+  if (_internal_has_pfcreserved()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_pfcreserved().data(), static_cast<int>(this->_internal_pfcreserved().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.PortQueueConfig.pfcReserved");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_pfcreserved(), target);
+  }
+
+  // optional string pfcHeadroom = 2;
+  if (_internal_has_pfcheadroom()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_pfcheadroom().data(), static_cast<int>(this->_internal_pfcheadroom().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.PortQueueConfig.pfcHeadroom");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_pfcheadroom(), target);
+  }
+
+  // optional string ecnKMin = 4;
+  if (_internal_has_ecnkmin()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_ecnkmin().data(), static_cast<int>(this->_internal_ecnkmin().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.PortQueueConfig.ecnKMin");
+    target = stream->WriteStringMaybeAliased(
+        4, this->_internal_ecnkmin(), target);
+  }
+
+  // optional string ecnKMax = 5;
+  if (_internal_has_ecnkmax()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_ecnkmax().data(), static_cast<int>(this->_internal_ecnkmax().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.PortQueueConfig.ecnKMax");
+    target = stream->WriteStringMaybeAliased(
+        5, this->_internal_ecnkmax(), target);
+  }
+
+  // optional double ecnPMax = 6;
+  if (_internal_has_ecnpmax()) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(6, this->_internal_ecnpmax(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:ns3_proto.PortQueueConfig)
+  return target;
+}
+
+size_t PortQueueConfig::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:ns3_proto.PortQueueConfig)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    // optional string pfcReserved = 1;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_pfcreserved());
+    }
+
+    // optional string pfcHeadroom = 2;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_pfcheadroom());
+    }
+
+    // optional string ecnKMin = 4;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_ecnkmin());
+    }
+
+    // optional string ecnKMax = 5;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_ecnkmax());
+    }
+
+    // optional double ecnPMax = 6;
+    if (cached_has_bits & 0x00000010u) {
+      total_size += 1 + 8;
+    }
+
+  }
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData PortQueueConfig::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    PortQueueConfig::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*PortQueueConfig::GetClassData() const { return &_class_data_; }
+
+
+void PortQueueConfig::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<PortQueueConfig*>(&to_msg);
+  auto& from = static_cast<const PortQueueConfig&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:ns3_proto.PortQueueConfig)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x0000001fu) {
+    if (cached_has_bits & 0x00000001u) {
+      _this->_internal_set_pfcreserved(from._internal_pfcreserved());
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _this->_internal_set_pfcheadroom(from._internal_pfcheadroom());
+    }
+    if (cached_has_bits & 0x00000004u) {
+      _this->_internal_set_ecnkmin(from._internal_ecnkmin());
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _this->_internal_set_ecnkmax(from._internal_ecnkmax());
+    }
+    if (cached_has_bits & 0x00000010u) {
+      _this->_impl_.ecnpmax_ = from._impl_.ecnpmax_;
+    }
+    _this->_impl_._has_bits_[0] |= cached_has_bits;
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void PortQueueConfig::CopyFrom(const PortQueueConfig& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:ns3_proto.PortQueueConfig)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool PortQueueConfig::IsInitialized() const {
+  return true;
+}
+
+void PortQueueConfig::InternalSwap(PortQueueConfig* other) {
+  using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.pfcreserved_, lhs_arena,
+      &other->_impl_.pfcreserved_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.pfcheadroom_, lhs_arena,
+      &other->_impl_.pfcheadroom_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.ecnkmin_, lhs_arena,
+      &other->_impl_.ecnkmin_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.ecnkmax_, lhs_arena,
+      &other->_impl_.ecnkmax_, rhs_arena
+  );
+  swap(_impl_.ecnpmax_, other->_impl_.ecnpmax_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata PortQueueConfig::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
+      file_level_metadata_topology_2eproto[3]);
+}
+
+// ===================================================================
+
+class SwitchPortConfig::_Internal {
+ public:
+  using HasBits = decltype(std::declval<SwitchPortConfig>()._impl_._has_bits_);
+  static void set_has_pfcpassthrough(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
+};
+
+SwitchPortConfig::SwitchPortConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:ns3_proto.SwitchPortConfig)
+}
+SwitchPortConfig::SwitchPortConfig(const SwitchPortConfig& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  SwitchPortConfig* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.queues_){from._impl_.queues_}
+    , decltype(_impl_.pfcenabled_){}
+    , decltype(_impl_.pfcpassthrough_){}
+    , decltype(_impl_.ecnenabled_){}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&_impl_.pfcenabled_, &from._impl_.pfcenabled_,
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.ecnenabled_) -
+    reinterpret_cast<char*>(&_impl_.pfcenabled_)) + sizeof(_impl_.ecnenabled_));
+  // @@protoc_insertion_point(copy_constructor:ns3_proto.SwitchPortConfig)
+}
+
+inline void SwitchPortConfig::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.queues_){arena}
+    , decltype(_impl_.pfcenabled_){false}
+    , decltype(_impl_.pfcpassthrough_){false}
+    , decltype(_impl_.ecnenabled_){false}
+  };
+}
+
+SwitchPortConfig::~SwitchPortConfig() {
+  // @@protoc_insertion_point(destructor:ns3_proto.SwitchPortConfig)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void SwitchPortConfig::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.queues_.~RepeatedPtrField();
+}
+
+void SwitchPortConfig::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void SwitchPortConfig::Clear() {
+// @@protoc_insertion_point(message_clear_start:ns3_proto.SwitchPortConfig)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.queues_.Clear();
+  _impl_.pfcenabled_ = false;
   _impl_.pfcpassthrough_ = false;
   _impl_.ecnenabled_ = false;
-  _impl_.ecnpmax_ = 0;
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -887,85 +1486,41 @@ const char* SwitchPortConfig::_InternalParse(const char* ptr, ::_pbi::ParseConte
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // uint32 queueNum = 1;
+      // bool pfcEnabled = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          _impl_.queuenum_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      // bool pfcEnabled = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
           _impl_.pfcenabled_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // optional string pfcReserved = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
-          auto str = _internal_mutable_pfcreserved();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.SwitchPortConfig.pfcReserved"));
-        } else
-          goto handle_unusual;
-        continue;
-      // optional string pfcHeadroom = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
-          auto str = _internal_mutable_pfcheadroom();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.SwitchPortConfig.pfcHeadroom"));
-        } else
-          goto handle_unusual;
-        continue;
-      // optional bool pfcPassThrough = 5;
-      case 5:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+      // optional bool pfcPassThrough = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
           _Internal::set_has_pfcpassthrough(&has_bits);
           _impl_.pfcpassthrough_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // bool ecnEnabled = 6;
-      case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
+      // bool ecnEnabled = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
           _impl_.ecnenabled_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // optional string ecnKMin = 7;
-      case 7:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 58)) {
-          auto str = _internal_mutable_ecnkmin();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.SwitchPortConfig.ecnKMin"));
-        } else
-          goto handle_unusual;
-        continue;
-      // optional string ecnKMax = 8;
-      case 8:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 66)) {
-          auto str = _internal_mutable_ecnkmax();
-          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.SwitchPortConfig.ecnKMax"));
-        } else
-          goto handle_unusual;
-        continue;
-      // optional double ecnPMax = 9;
-      case 9:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 73)) {
-          _Internal::set_has_ecnpmax(&has_bits);
-          _impl_.ecnpmax_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
-          ptr += sizeof(double);
+      // repeated .ns3_proto.PortQueueConfig queues = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(_internal_add_queues(), ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<34>(ptr));
         } else
           goto handle_unusual;
         continue;
@@ -999,74 +1554,30 @@ uint8_t* SwitchPortConfig::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // uint32 queueNum = 1;
-  if (this->_internal_queuenum() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(1, this->_internal_queuenum(), target);
-  }
-
-  // bool pfcEnabled = 2;
+  // bool pfcEnabled = 1;
   if (this->_internal_pfcenabled() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(2, this->_internal_pfcenabled(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(1, this->_internal_pfcenabled(), target);
   }
 
-  // optional string pfcReserved = 3;
-  if (_internal_has_pfcreserved()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_pfcreserved().data(), static_cast<int>(this->_internal_pfcreserved().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.SwitchPortConfig.pfcReserved");
-    target = stream->WriteStringMaybeAliased(
-        3, this->_internal_pfcreserved(), target);
-  }
-
-  // optional string pfcHeadroom = 4;
-  if (_internal_has_pfcheadroom()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_pfcheadroom().data(), static_cast<int>(this->_internal_pfcheadroom().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.SwitchPortConfig.pfcHeadroom");
-    target = stream->WriteStringMaybeAliased(
-        4, this->_internal_pfcheadroom(), target);
-  }
-
-  // optional bool pfcPassThrough = 5;
+  // optional bool pfcPassThrough = 2;
   if (_internal_has_pfcpassthrough()) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(5, this->_internal_pfcpassthrough(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(2, this->_internal_pfcpassthrough(), target);
   }
 
-  // bool ecnEnabled = 6;
+  // bool ecnEnabled = 3;
   if (this->_internal_ecnenabled() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(6, this->_internal_ecnenabled(), target);
+    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_ecnenabled(), target);
   }
 
-  // optional string ecnKMin = 7;
-  if (_internal_has_ecnkmin()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_ecnkmin().data(), static_cast<int>(this->_internal_ecnkmin().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.SwitchPortConfig.ecnKMin");
-    target = stream->WriteStringMaybeAliased(
-        7, this->_internal_ecnkmin(), target);
-  }
-
-  // optional string ecnKMax = 8;
-  if (_internal_has_ecnkmax()) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_ecnkmax().data(), static_cast<int>(this->_internal_ecnkmax().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.SwitchPortConfig.ecnKMax");
-    target = stream->WriteStringMaybeAliased(
-        8, this->_internal_ecnkmax(), target);
-  }
-
-  // optional double ecnPMax = 9;
-  if (_internal_has_ecnpmax()) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteDoubleToArray(9, this->_internal_ecnpmax(), target);
+  // repeated .ns3_proto.PortQueueConfig queues = 4;
+  for (unsigned i = 0,
+      n = static_cast<unsigned>(this->_internal_queues_size()); i < n; i++) {
+    const auto& repfield = this->_internal_queues(i);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+        InternalWriteMessage(4, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1085,60 +1596,27 @@ size_t SwitchPortConfig::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    // optional string pfcReserved = 3;
-    if (cached_has_bits & 0x00000001u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-          this->_internal_pfcreserved());
-    }
-
-    // optional string pfcHeadroom = 4;
-    if (cached_has_bits & 0x00000002u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-          this->_internal_pfcheadroom());
-    }
-
-    // optional string ecnKMin = 7;
-    if (cached_has_bits & 0x00000004u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-          this->_internal_ecnkmin());
-    }
-
-    // optional string ecnKMax = 8;
-    if (cached_has_bits & 0x00000008u) {
-      total_size += 1 +
-        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-          this->_internal_ecnkmax());
-    }
-
-  }
-  // uint32 queueNum = 1;
-  if (this->_internal_queuenum() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_queuenum());
+  // repeated .ns3_proto.PortQueueConfig queues = 4;
+  total_size += 1UL * this->_internal_queues_size();
+  for (const auto& msg : this->_impl_.queues_) {
+    total_size +=
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  // bool pfcEnabled = 2;
+  // bool pfcEnabled = 1;
   if (this->_internal_pfcenabled() != 0) {
     total_size += 1 + 1;
   }
 
-  // optional bool pfcPassThrough = 5;
-  if (cached_has_bits & 0x00000010u) {
+  // optional bool pfcPassThrough = 2;
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
     total_size += 1 + 1;
   }
 
-  // bool ecnEnabled = 6;
+  // bool ecnEnabled = 3;
   if (this->_internal_ecnenabled() != 0) {
     total_size += 1 + 1;
-  }
-
-  // optional double ecnPMax = 9;
-  if (cached_has_bits & 0x00000020u) {
-    total_size += 1 + 8;
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1159,35 +1637,15 @@ void SwitchPortConfig::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000000fu) {
-    if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_pfcreserved(from._internal_pfcreserved());
-    }
-    if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_pfcheadroom(from._internal_pfcheadroom());
-    }
-    if (cached_has_bits & 0x00000004u) {
-      _this->_internal_set_ecnkmin(from._internal_ecnkmin());
-    }
-    if (cached_has_bits & 0x00000008u) {
-      _this->_internal_set_ecnkmax(from._internal_ecnkmax());
-    }
-  }
-  if (from._internal_queuenum() != 0) {
-    _this->_internal_set_queuenum(from._internal_queuenum());
-  }
+  _this->_impl_.queues_.MergeFrom(from._impl_.queues_);
   if (from._internal_pfcenabled() != 0) {
     _this->_internal_set_pfcenabled(from._internal_pfcenabled());
   }
-  if (cached_has_bits & 0x00000010u) {
+  if (from._internal_has_pfcpassthrough()) {
     _this->_internal_set_pfcpassthrough(from._internal_pfcpassthrough());
   }
   if (from._internal_ecnenabled() != 0) {
     _this->_internal_set_ecnenabled(from._internal_ecnenabled());
-  }
-  if (cached_has_bits & 0x00000020u) {
-    _this->_internal_set_ecnpmax(from._internal_ecnpmax());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1205,46 +1663,276 @@ bool SwitchPortConfig::IsInitialized() const {
 
 void SwitchPortConfig::InternalSwap(SwitchPortConfig* other) {
   using std::swap;
-  auto* lhs_arena = GetArenaForAllocation();
-  auto* rhs_arena = other->GetArenaForAllocation();
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.pfcreserved_, lhs_arena,
-      &other->_impl_.pfcreserved_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.pfcheadroom_, lhs_arena,
-      &other->_impl_.pfcheadroom_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.ecnkmin_, lhs_arena,
-      &other->_impl_.ecnkmin_, rhs_arena
-  );
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.ecnkmax_, lhs_arena,
-      &other->_impl_.ecnkmax_, rhs_arena
-  );
+  _impl_.queues_.InternalSwap(&other->_impl_.queues_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(SwitchPortConfig, _impl_.ecnpmax_)
-      + sizeof(SwitchPortConfig::_impl_.ecnpmax_)
-      - PROTOBUF_FIELD_OFFSET(SwitchPortConfig, _impl_.queuenum_)>(
-          reinterpret_cast<char*>(&_impl_.queuenum_),
-          reinterpret_cast<char*>(&other->_impl_.queuenum_));
+      PROTOBUF_FIELD_OFFSET(SwitchPortConfig, _impl_.ecnenabled_)
+      + sizeof(SwitchPortConfig::_impl_.ecnenabled_)
+      - PROTOBUF_FIELD_OFFSET(SwitchPortConfig, _impl_.pfcenabled_)>(
+          reinterpret_cast<char*>(&_impl_.pfcenabled_),
+          reinterpret_cast<char*>(&other->_impl_.pfcenabled_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SwitchPortConfig::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[2]);
+      file_level_metadata_topology_2eproto[4]);
+}
+
+// ===================================================================
+
+class SwitchMmuConfig::_Internal {
+ public:
+  using HasBits = decltype(std::declval<SwitchMmuConfig>()._impl_._has_bits_);
+  static void set_has_pfcdynamicshift(HasBits* has_bits) {
+    (*has_bits)[0] |= 1u;
+  }
+};
+
+SwitchMmuConfig::SwitchMmuConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
+  SharedCtor(arena, is_message_owned);
+  // @@protoc_insertion_point(arena_constructor:ns3_proto.SwitchMmuConfig)
+}
+SwitchMmuConfig::SwitchMmuConfig(const SwitchMmuConfig& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  SwitchMmuConfig* const _this = this; (void)_this;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){from._impl_._has_bits_}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.buffersize_){}
+    , decltype(_impl_.pfcdynamicshift_){}};
+
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.buffersize_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.buffersize_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_buffersize().empty()) {
+    _this->_impl_.buffersize_.Set(from._internal_buffersize(), 
+      _this->GetArenaForAllocation());
+  }
+  _this->_impl_.pfcdynamicshift_ = from._impl_.pfcdynamicshift_;
+  // @@protoc_insertion_point(copy_constructor:ns3_proto.SwitchMmuConfig)
+}
+
+inline void SwitchMmuConfig::SharedCtor(
+    ::_pb::Arena* arena, bool is_message_owned) {
+  (void)arena;
+  (void)is_message_owned;
+  new (&_impl_) Impl_{
+      decltype(_impl_._has_bits_){}
+    , /*decltype(_impl_._cached_size_)*/{}
+    , decltype(_impl_.buffersize_){}
+    , decltype(_impl_.pfcdynamicshift_){0u}
+  };
+  _impl_.buffersize_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.buffersize_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+}
+
+SwitchMmuConfig::~SwitchMmuConfig() {
+  // @@protoc_insertion_point(destructor:ns3_proto.SwitchMmuConfig)
+  if (auto *arena = _internal_metadata_.DeleteReturnArena<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>()) {
+  (void)arena;
+    return;
+  }
+  SharedDtor();
+}
+
+inline void SwitchMmuConfig::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  _impl_.buffersize_.Destroy();
+}
+
+void SwitchMmuConfig::SetCachedSize(int size) const {
+  _impl_._cached_size_.Set(size);
+}
+
+void SwitchMmuConfig::Clear() {
+// @@protoc_insertion_point(message_clear_start:ns3_proto.SwitchMmuConfig)
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  _impl_.buffersize_.ClearToEmpty();
+  _impl_.pfcdynamicshift_ = 0u;
+  _impl_._has_bits_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* SwitchMmuConfig::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  _Internal::HasBits has_bits{};
+  while (!ctx->Done(&ptr)) {
+    uint32_t tag;
+    ptr = ::_pbi::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // string bufferSize = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
+          auto str = _internal_mutable_buffersize();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.SwitchMmuConfig.bufferSize"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional uint32 pfcDynamicShift = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
+          _Internal::set_has_pfcdynamicshift(&has_bits);
+          _impl_.pfcdynamicshift_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      default:
+        goto handle_unusual;
+    }  // switch
+  handle_unusual:
+    if ((tag == 0) || ((tag & 7) == 4)) {
+      CHK_(ptr);
+      ctx->SetLastTag(tag);
+      goto message_done;
+    }
+    ptr = UnknownFieldParse(
+        tag,
+        _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+        ptr, ctx);
+    CHK_(ptr != nullptr);
+  }  // while
+message_done:
+  _impl_._has_bits_.Or(has_bits);
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto message_done;
+#undef CHK_
+}
+
+uint8_t* SwitchMmuConfig::_InternalSerialize(
+    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:ns3_proto.SwitchMmuConfig)
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // string bufferSize = 1;
+  if (!this->_internal_buffersize().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_buffersize().data(), static_cast<int>(this->_internal_buffersize().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.SwitchMmuConfig.bufferSize");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_buffersize(), target);
+  }
+
+  // optional uint32 pfcDynamicShift = 2;
+  if (_internal_has_pfcdynamicshift()) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(2, this->_internal_pfcdynamicshift(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:ns3_proto.SwitchMmuConfig)
+  return target;
+}
+
+size_t SwitchMmuConfig::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:ns3_proto.SwitchMmuConfig)
+  size_t total_size = 0;
+
+  uint32_t cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // string bufferSize = 1;
+  if (!this->_internal_buffersize().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_buffersize());
+  }
+
+  // optional uint32 pfcDynamicShift = 2;
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000001u) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_pfcdynamicshift());
+  }
+
+  return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
+}
+
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData SwitchMmuConfig::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSourceCheck,
+    SwitchMmuConfig::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SwitchMmuConfig::GetClassData() const { return &_class_data_; }
+
+
+void SwitchMmuConfig::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
+  auto* const _this = static_cast<SwitchMmuConfig*>(&to_msg);
+  auto& from = static_cast<const SwitchMmuConfig&>(from_msg);
+  // @@protoc_insertion_point(class_specific_merge_from_start:ns3_proto.SwitchMmuConfig)
+  GOOGLE_DCHECK_NE(&from, _this);
+  uint32_t cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (!from._internal_buffersize().empty()) {
+    _this->_internal_set_buffersize(from._internal_buffersize());
+  }
+  if (from._internal_has_pfcdynamicshift()) {
+    _this->_internal_set_pfcdynamicshift(from._internal_pfcdynamicshift());
+  }
+  _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+}
+
+void SwitchMmuConfig::CopyFrom(const SwitchMmuConfig& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:ns3_proto.SwitchMmuConfig)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SwitchMmuConfig::IsInitialized() const {
+  return true;
+}
+
+void SwitchMmuConfig::InternalSwap(SwitchMmuConfig* other) {
+  using std::swap;
+  auto* lhs_arena = GetArenaForAllocation();
+  auto* rhs_arena = other->GetArenaForAllocation();
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.buffersize_, lhs_arena,
+      &other->_impl_.buffersize_, rhs_arena
+  );
+  swap(_impl_.pfcdynamicshift_, other->_impl_.pfcdynamicshift_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata SwitchMmuConfig::GetMetadata() const {
+  return ::_pbi::AssignDescriptors(
+      &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
+      file_level_metadata_topology_2eproto[5]);
 }
 
 // ===================================================================
 
 class SwitchGroup::_Internal {
  public:
+  static const ::ns3_proto::SwitchMmuConfig& mmu(const SwitchGroup* msg);
 };
 
+const ::ns3_proto::SwitchMmuConfig&
+SwitchGroup::_Internal::mmu(const SwitchGroup* msg) {
+  return *msg->_impl_.mmu_;
+}
 SwitchGroup::SwitchGroup(::PROTOBUF_NAMESPACE_ID::Arena* arena,
                          bool is_message_owned)
   : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
@@ -1256,16 +1944,19 @@ SwitchGroup::SwitchGroup(const SwitchGroup& from)
   SwitchGroup* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.ports_){from._impl_.ports_}
+    , decltype(_impl_.mmu_){nullptr}
     , decltype(_impl_.nodesnum_){}
     , decltype(_impl_.baseindex_){}
-    , decltype(_impl_.buffersize_){}
-    , decltype(_impl_.pfcdynamic_){}
+    , decltype(_impl_.queuenum_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  if (from._internal_has_mmu()) {
+    _this->_impl_.mmu_ = new ::ns3_proto::SwitchMmuConfig(*from._impl_.mmu_);
+  }
   ::memcpy(&_impl_.nodesnum_, &from._impl_.nodesnum_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.pfcdynamic_) -
-    reinterpret_cast<char*>(&_impl_.nodesnum_)) + sizeof(_impl_.pfcdynamic_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.queuenum_) -
+    reinterpret_cast<char*>(&_impl_.nodesnum_)) + sizeof(_impl_.queuenum_));
   // @@protoc_insertion_point(copy_constructor:ns3_proto.SwitchGroup)
 }
 
@@ -1275,10 +1966,10 @@ inline void SwitchGroup::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.ports_){arena}
+    , decltype(_impl_.mmu_){nullptr}
     , decltype(_impl_.nodesnum_){0u}
     , decltype(_impl_.baseindex_){0u}
-    , decltype(_impl_.buffersize_){0u}
-    , decltype(_impl_.pfcdynamic_){false}
+    , decltype(_impl_.queuenum_){0u}
     , /*decltype(_impl_._cached_size_)*/{}
   };
 }
@@ -1295,6 +1986,7 @@ SwitchGroup::~SwitchGroup() {
 inline void SwitchGroup::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.ports_.~RepeatedPtrField();
+  if (this != internal_default_instance()) delete _impl_.mmu_;
 }
 
 void SwitchGroup::SetCachedSize(int size) const {
@@ -1308,9 +2000,13 @@ void SwitchGroup::Clear() {
   (void) cached_has_bits;
 
   _impl_.ports_.Clear();
+  if (GetArenaForAllocation() == nullptr && _impl_.mmu_ != nullptr) {
+    delete _impl_.mmu_;
+  }
+  _impl_.mmu_ = nullptr;
   ::memset(&_impl_.nodesnum_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.pfcdynamic_) -
-      reinterpret_cast<char*>(&_impl_.nodesnum_)) + sizeof(_impl_.pfcdynamic_));
+      reinterpret_cast<char*>(&_impl_.queuenum_) -
+      reinterpret_cast<char*>(&_impl_.nodesnum_)) + sizeof(_impl_.queuenum_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1336,18 +2032,18 @@ const char* SwitchGroup::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
         } else
           goto handle_unusual;
         continue;
-      // uint32 bufferSize = 3;
+      // .ns3_proto.SwitchMmuConfig mmu = 3;
       case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
-          _impl_.buffersize_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
+          ptr = ctx->ParseMessage(_internal_mutable_mmu(), ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // bool pfcDynamic = 4;
+      // uint32 queueNum = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
-          _impl_.pfcdynamic_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          _impl_.queuenum_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
@@ -1406,16 +2102,17 @@ uint8_t* SwitchGroup::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteUInt32ToArray(2, this->_internal_baseindex(), target);
   }
 
-  // uint32 bufferSize = 3;
-  if (this->_internal_buffersize() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(3, this->_internal_buffersize(), target);
+  // .ns3_proto.SwitchMmuConfig mmu = 3;
+  if (this->_internal_has_mmu()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(3, _Internal::mmu(this),
+        _Internal::mmu(this).GetCachedSize(), target, stream);
   }
 
-  // bool pfcDynamic = 4;
-  if (this->_internal_pfcdynamic() != 0) {
+  // uint32 queueNum = 4;
+  if (this->_internal_queuenum() != 0) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(4, this->_internal_pfcdynamic(), target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(4, this->_internal_queuenum(), target);
   }
 
   // repeated .ns3_proto.SwitchPortConfig ports = 5;
@@ -1449,6 +2146,13 @@ size_t SwitchGroup::ByteSizeLong() const {
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
+  // .ns3_proto.SwitchMmuConfig mmu = 3;
+  if (this->_internal_has_mmu()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *_impl_.mmu_);
+  }
+
   // uint32 nodesNum = 1;
   if (this->_internal_nodesnum() != 0) {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_nodesnum());
@@ -1459,14 +2163,9 @@ size_t SwitchGroup::ByteSizeLong() const {
     total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_baseindex());
   }
 
-  // uint32 bufferSize = 3;
-  if (this->_internal_buffersize() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_buffersize());
-  }
-
-  // bool pfcDynamic = 4;
-  if (this->_internal_pfcdynamic() != 0) {
-    total_size += 1 + 1;
+  // uint32 queueNum = 4;
+  if (this->_internal_queuenum() != 0) {
+    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_queuenum());
   }
 
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
@@ -1488,17 +2187,18 @@ void SwitchGroup::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   (void) cached_has_bits;
 
   _this->_impl_.ports_.MergeFrom(from._impl_.ports_);
+  if (from._internal_has_mmu()) {
+    _this->_internal_mutable_mmu()->::ns3_proto::SwitchMmuConfig::MergeFrom(
+        from._internal_mmu());
+  }
   if (from._internal_nodesnum() != 0) {
     _this->_internal_set_nodesnum(from._internal_nodesnum());
   }
   if (from._internal_baseindex() != 0) {
     _this->_internal_set_baseindex(from._internal_baseindex());
   }
-  if (from._internal_buffersize() != 0) {
-    _this->_internal_set_buffersize(from._internal_buffersize());
-  }
-  if (from._internal_pfcdynamic() != 0) {
-    _this->_internal_set_pfcdynamic(from._internal_pfcdynamic());
+  if (from._internal_queuenum() != 0) {
+    _this->_internal_set_queuenum(from._internal_queuenum());
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -1519,17 +2219,17 @@ void SwitchGroup::InternalSwap(SwitchGroup* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.ports_.InternalSwap(&other->_impl_.ports_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(SwitchGroup, _impl_.pfcdynamic_)
-      + sizeof(SwitchGroup::_impl_.pfcdynamic_)
-      - PROTOBUF_FIELD_OFFSET(SwitchGroup, _impl_.nodesnum_)>(
-          reinterpret_cast<char*>(&_impl_.nodesnum_),
-          reinterpret_cast<char*>(&other->_impl_.nodesnum_));
+      PROTOBUF_FIELD_OFFSET(SwitchGroup, _impl_.queuenum_)
+      + sizeof(SwitchGroup::_impl_.queuenum_)
+      - PROTOBUF_FIELD_OFFSET(SwitchGroup, _impl_.mmu_)>(
+          reinterpret_cast<char*>(&_impl_.mmu_),
+          reinterpret_cast<char*>(&other->_impl_.mmu_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SwitchGroup::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[3]);
+      file_level_metadata_topology_2eproto[6]);
 }
 
 // ===================================================================
@@ -1775,7 +2475,7 @@ void AllNodes::InternalSwap(AllNodes* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata AllNodes::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[4]);
+      file_level_metadata_topology_2eproto[7]);
 }
 
 // ===================================================================
@@ -2136,16 +2836,21 @@ void Link::InternalSwap(Link* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata Link::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[5]);
+      file_level_metadata_topology_2eproto[8]);
 }
 
 // ===================================================================
 
 class Topology::_Internal {
  public:
+  static const ::ns3_proto::GlobalConfig& globalconfig(const Topology* msg);
   static const ::ns3_proto::AllNodes& nodes(const Topology* msg);
 };
 
+const ::ns3_proto::GlobalConfig&
+Topology::_Internal::globalconfig(const Topology* msg) {
+  return *msg->_impl_.globalconfig_;
+}
 const ::ns3_proto::AllNodes&
 Topology::_Internal::nodes(const Topology* msg) {
   return *msg->_impl_.nodes_;
@@ -2161,10 +2866,14 @@ Topology::Topology(const Topology& from)
   Topology* const _this = this; (void)_this;
   new (&_impl_) Impl_{
       decltype(_impl_.links_){from._impl_.links_}
+    , decltype(_impl_.globalconfig_){nullptr}
     , decltype(_impl_.nodes_){nullptr}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  if (from._internal_has_globalconfig()) {
+    _this->_impl_.globalconfig_ = new ::ns3_proto::GlobalConfig(*from._impl_.globalconfig_);
+  }
   if (from._internal_has_nodes()) {
     _this->_impl_.nodes_ = new ::ns3_proto::AllNodes(*from._impl_.nodes_);
   }
@@ -2177,6 +2886,7 @@ inline void Topology::SharedCtor(
   (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.links_){arena}
+    , decltype(_impl_.globalconfig_){nullptr}
     , decltype(_impl_.nodes_){nullptr}
     , /*decltype(_impl_._cached_size_)*/{}
   };
@@ -2194,6 +2904,7 @@ Topology::~Topology() {
 inline void Topology::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.links_.~RepeatedPtrField();
+  if (this != internal_default_instance()) delete _impl_.globalconfig_;
   if (this != internal_default_instance()) delete _impl_.nodes_;
 }
 
@@ -2208,6 +2919,10 @@ void Topology::Clear() {
   (void) cached_has_bits;
 
   _impl_.links_.Clear();
+  if (GetArenaForAllocation() == nullptr && _impl_.globalconfig_ != nullptr) {
+    delete _impl_.globalconfig_;
+  }
+  _impl_.globalconfig_ = nullptr;
   if (GetArenaForAllocation() == nullptr && _impl_.nodes_ != nullptr) {
     delete _impl_.nodes_;
   }
@@ -2221,24 +2936,32 @@ const char* Topology::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx)
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // .ns3_proto.AllNodes nodes = 1;
+      // .ns3_proto.GlobalConfig globalConfig = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
+          ptr = ctx->ParseMessage(_internal_mutable_globalconfig(), ptr);
+          CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // .ns3_proto.AllNodes nodes = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
           ptr = ctx->ParseMessage(_internal_mutable_nodes(), ptr);
           CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
-      // repeated .ns3_proto.Link links = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+      // repeated .ns3_proto.Link links = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
           ptr -= 1;
           do {
             ptr += 1;
             ptr = ctx->ParseMessage(_internal_add_links(), ptr);
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
-          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<18>(ptr));
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<26>(ptr));
         } else
           goto handle_unusual;
         continue;
@@ -2271,19 +2994,26 @@ uint8_t* Topology::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // .ns3_proto.AllNodes nodes = 1;
+  // .ns3_proto.GlobalConfig globalConfig = 1;
+  if (this->_internal_has_globalconfig()) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(1, _Internal::globalconfig(this),
+        _Internal::globalconfig(this).GetCachedSize(), target, stream);
+  }
+
+  // .ns3_proto.AllNodes nodes = 2;
   if (this->_internal_has_nodes()) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(1, _Internal::nodes(this),
+      InternalWriteMessage(2, _Internal::nodes(this),
         _Internal::nodes(this).GetCachedSize(), target, stream);
   }
 
-  // repeated .ns3_proto.Link links = 2;
+  // repeated .ns3_proto.Link links = 3;
   for (unsigned i = 0,
       n = static_cast<unsigned>(this->_internal_links_size()); i < n; i++) {
     const auto& repfield = this->_internal_links(i);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-        InternalWriteMessage(2, repfield, repfield.GetCachedSize(), target, stream);
+        InternalWriteMessage(3, repfield, repfield.GetCachedSize(), target, stream);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2302,14 +3032,21 @@ size_t Topology::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // repeated .ns3_proto.Link links = 2;
+  // repeated .ns3_proto.Link links = 3;
   total_size += 1UL * this->_internal_links_size();
   for (const auto& msg : this->_impl_.links_) {
     total_size +=
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(msg);
   }
 
-  // .ns3_proto.AllNodes nodes = 1;
+  // .ns3_proto.GlobalConfig globalConfig = 1;
+  if (this->_internal_has_globalconfig()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *_impl_.globalconfig_);
+  }
+
+  // .ns3_proto.AllNodes nodes = 2;
   if (this->_internal_has_nodes()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
@@ -2335,6 +3072,10 @@ void Topology::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTO
   (void) cached_has_bits;
 
   _this->_impl_.links_.MergeFrom(from._impl_.links_);
+  if (from._internal_has_globalconfig()) {
+    _this->_internal_mutable_globalconfig()->::ns3_proto::GlobalConfig::MergeFrom(
+        from._internal_globalconfig());
+  }
   if (from._internal_has_nodes()) {
     _this->_internal_mutable_nodes()->::ns3_proto::AllNodes::MergeFrom(
         from._internal_nodes());
@@ -2357,18 +3098,27 @@ void Topology::InternalSwap(Topology* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   _impl_.links_.InternalSwap(&other->_impl_.links_);
-  swap(_impl_.nodes_, other->_impl_.nodes_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Topology, _impl_.nodes_)
+      + sizeof(Topology::_impl_.nodes_)
+      - PROTOBUF_FIELD_OFFSET(Topology, _impl_.globalconfig_)>(
+          reinterpret_cast<char*>(&_impl_.globalconfig_),
+          reinterpret_cast<char*>(&other->_impl_.globalconfig_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Topology::GetMetadata() const {
   return ::_pbi::AssignDescriptors(
       &descriptor_table_topology_2eproto_getter, &descriptor_table_topology_2eproto_once,
-      file_level_metadata_topology_2eproto[6]);
+      file_level_metadata_topology_2eproto[9]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace ns3_proto
 PROTOBUF_NAMESPACE_OPEN
+template<> PROTOBUF_NOINLINE ::ns3_proto::GlobalConfig*
+Arena::CreateMaybeMessage< ::ns3_proto::GlobalConfig >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::ns3_proto::GlobalConfig >(arena);
+}
 template<> PROTOBUF_NOINLINE ::ns3_proto::HostPortConfig*
 Arena::CreateMaybeMessage< ::ns3_proto::HostPortConfig >(Arena* arena) {
   return Arena::CreateMessageInternal< ::ns3_proto::HostPortConfig >(arena);
@@ -2377,9 +3127,17 @@ template<> PROTOBUF_NOINLINE ::ns3_proto::HostGroup*
 Arena::CreateMaybeMessage< ::ns3_proto::HostGroup >(Arena* arena) {
   return Arena::CreateMessageInternal< ::ns3_proto::HostGroup >(arena);
 }
+template<> PROTOBUF_NOINLINE ::ns3_proto::PortQueueConfig*
+Arena::CreateMaybeMessage< ::ns3_proto::PortQueueConfig >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::ns3_proto::PortQueueConfig >(arena);
+}
 template<> PROTOBUF_NOINLINE ::ns3_proto::SwitchPortConfig*
 Arena::CreateMaybeMessage< ::ns3_proto::SwitchPortConfig >(Arena* arena) {
   return Arena::CreateMessageInternal< ::ns3_proto::SwitchPortConfig >(arena);
+}
+template<> PROTOBUF_NOINLINE ::ns3_proto::SwitchMmuConfig*
+Arena::CreateMaybeMessage< ::ns3_proto::SwitchMmuConfig >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::ns3_proto::SwitchMmuConfig >(arena);
 }
 template<> PROTOBUF_NOINLINE ::ns3_proto::SwitchGroup*
 Arena::CreateMaybeMessage< ::ns3_proto::SwitchGroup >(Arena* arena) {

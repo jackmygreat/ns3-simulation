@@ -6,6 +6,10 @@
 syntax = "proto3";
 package ns3_proto;
 
+message GlobalConfig {
+	optional uint32 randomSeed = 1; // If not set, use randomly chosen seed
+}
+
 message HostPortConfig {
 	bool pfcEnabled = 1;	
 }
@@ -19,18 +23,25 @@ message HostGroup {
 	repeated HostPortConfig ports = 3;
 }
 
-message SwitchPortConfig {
-	uint32 queueNum = 1;
+message PortQueueConfig {	
+	optional string pfcReserved = 1;
+	optional string pfcHeadroom = 2;
 
-	bool pfcEnabled = 2;
-	optional string pfcReserved = 3;
-	optional string pfcHeadroom = 4;
-	optional bool pfcPassThrough = 5;
-	
-	bool ecnEnabled = 6;
-	optional string ecnKMin = 7;
-	optional string ecnKMax = 8;
-	optional double ecnPMax = 9;
+	optional string ecnKMin = 4;
+	optional string ecnKMax = 5;
+	optional double ecnPMax = 6;
+}
+
+message SwitchPortConfig {
+	bool pfcEnabled = 1;
+	optional bool pfcPassThrough = 2;
+	bool ecnEnabled = 3;
+	repeated PortQueueConfig queues = 4;
+}
+
+message SwitchMmuConfig {
+	string bufferSize = 1; // buffer size
+	optional uint32 pfcDynamicShift = 2;   // if set, PFC dynamic is enabled and this is the shift value
 }
 
 // SwitchGroup is a group of switches that has the same configuration.
@@ -39,8 +50,8 @@ message SwitchPortConfig {
 message SwitchGroup {
 	uint32 nodesNum = 1;
 	uint32 baseIndex = 2;
-	uint32 bufferSize = 3; // buffer size in unit of bytes
-	bool pfcDynamic = 4;   // whether PFC dynamic threshold is enaled
+	SwitchMmuConfig mmu = 3;
+	uint32 queueNum = 4; // Every port should have the same number of queues. This is used to check the consistency.
 	repeated SwitchPortConfig ports = 5;
 }
 
@@ -61,7 +72,8 @@ message Link {
 }
 
 message Topology {  // used to aggregate all nodes and links as a topology
-	AllNodes nodes = 1;
-	repeated Link links = 2;
+	GlobalConfig globalConfig = 1;
+	AllNodes nodes = 2;
+	repeated Link links = 3;
 }
 

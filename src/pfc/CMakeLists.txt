@@ -1,0 +1,30 @@
+build_lib(
+  LIBNAME pfc
+  SOURCE_FILES
+      model/pfc-header.cc
+	  model/pfc-host.cc
+      model/pfc-host-port.cc
+	  model/pfc-switch.cc
+	  model/pfc-switch-port.cc
+	  model/pfc-switch-tag.cc
+	  model/pfc-switch-mmu-queue.cc
+	  model/switch-mmu.cc
+	  model/switch-mmu-queue.cc
+	  model/qbb-header.cc
+  HEADER_FILES
+      model/pfc-header.h
+	  model/pfc-host.h
+      model/pfc-host-port.h
+	  model/pfc-switch.h
+	  model/pfc-switch-port.h
+	  model/pfc-switch-tag.h
+	  model/pfc-switch-mmu-queue.h
+	  model/switch-mmu.h
+	  model/switch-mmu-queue.h
+	  model/qbb-header.h
+  LIBRARIES_TO_LINK
+      ${libcore}
+	  ${libinternet}
+	  ${libdpsk}
+	  ${librdma}
+)

@@ -10,6 +10,10 @@ host1                host3
 
 from topology_helper import TopologyGenerator
 
+globalConfig = {
+    "randomSeed": 0
+}
+
 hostPortConfig = {
     "pfcEnabled": True
 }
@@ -20,34 +24,43 @@ hostGroupConfig = {
     "ports": [hostPortConfig]       # one port per host
 }
 
-# Configuration of the switch port that connects to host
-switchPortConfig1 = {
+switchPortQueueConfig1 = {
     # PFC configurations
-    "queueNum": 3,
-    "pfcEnabled": True,
-    "pfcReserved": "288 KB",
-    "pfcHeadroom": "30 KB",
-    "pfcPassThrough": False,
+    "pfcReserved": "288 KiB",
+    "pfcHeadroom": "30 KiB",
 
     # ECN configurations
-    "ecnEnabled": True,
-    "ecnKMin": "200 KB",
-    "ecnKMax": "800 KB",
+    "ecnKMin": "200 KiB",
+    "ecnKMax": "800 KiB",
     "ecnPMax": 0.2,
+}
+
+
+switchPortQueueConfig2 = {
+    # PFC configurations
+    "pfcReserved": "300 KiB",
+    "pfcHeadroom": "50 KiB",
+
+    # ECN configurations
+    "ecnKMin": "220 KiB",
+    "ecnKMax": "840 KiB",
+    "ecnPMax": 0.2,
+}
+
+# Configuration of the switch port that connects to host
+switchPortConfig1 = {
+    "pfcEnabled": True,
+    "pfcPassThrough": False,
+    "ecnEnabled": True,
+    "queues": [switchPortQueueConfig1] * 2
 }
 
 # Configuration of the switch port that connects to switch
 switchPortConfig2 = {
-    # PFC configurations
     "pfcEnabled": True,
-    "pfcReserved": "300 KB",
-    "pfcHeadroom": "50 KB",
-
-    # ECN configurations
+    "pfcPassThrough": False,
     "ecnEnabled": True,
-    "ecnKMin": "220 KB",
-    "ecnKMax": "840 KB",
-    "ecnPMax": 0.2,
+    "queues": [switchPortQueueConfig2] * 2
 }
 
 # Configuration of a group of switches. In this example, only one group is needed 
@@ -55,6 +68,7 @@ switchGroupConfig = {
     "num": 2,                         # number of switches in this group
     "pfcDynamic": False,              # whether enabling PFC dynamic threshold
     "bufferSize": "13180 KB",         # buffer size of the switch
+    "queueNum": 2,
     "ports": [switchPortConfig1] * 2 + [switchPortConfig2],  # a list of ports
 }
 
@@ -71,6 +85,8 @@ linkConfig2 = {
 }
 
 with TopologyGenerator() as topo:
+    topo.globalConfig.setConfig(**globalConfig)
+
     ########################################
     # Create nodes in groups
     ########################################

@@ -20,8 +20,13 @@
 
 #include <fstream>
 #include "ns3/dc-topology.h"
-#include "ns3/pfc-module.h"
-#include "ns3/dpsk-module.h"
+#include "ns3/pfc-host-port.h"
+#include "ns3/pfc-host.h"
+#include "ns3/dpsk.h"
+#include "ns3/dpsk-net-device.h"
+#include "ns3/dpsk-helper.h"
+#include "ns3/topology.pb.h"
+#include "ns3/traced-value.h"
 #include "protobuf-topology-loader.h"
 
 /**
@@ -54,8 +59,9 @@ ProtobufTopologyLoader::LoadTopology ()
 {
   ns3_proto::Topology topoConfig = ReadProtoTopology ();
   DcTopology topology (topoConfig.nodes ().num ());
+  m_ecmpSeed = topoConfig.globalconfig ().randomseed ();
   LoadHosts (topoConfig.nodes ().hostgroups (), topology);
-  LoadSwitches (topoConfig.nodes ().switchgroups(), topology);
+  LoadSwitches (topoConfig.nodes ().switchgroups (), topology);
   return nullptr;
 }
 
@@ -83,7 +89,7 @@ ProtobufTopologyLoader::ReadProtoTopology ()
 
 void
 ProtobufTopologyLoader::LoadHosts (
-    google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> hostGroups, DcTopology &topology)
+    const google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> hostGroups, DcTopology &topology)
 {
   for (ns3_proto::HostGroup hostGroup : hostGroups)
     {
@@ -91,7 +97,7 @@ ProtobufTopologyLoader::LoadHosts (
       uint32_t baseIndex = hostGroup.baseindex ();
       for (size_t i = baseIndex; i < baseIndex + num; i++)
         {
-          DcTopology::TopoNode host = CreateOneHost (hostGroup.ports ());
+          DcTopology::TopoNode host = CreateOneHost (hostGroup);
           topology.InstallNode (i, host);
         }
     }
@@ -103,28 +109,27 @@ ProtobufTopologyLoader::LoadSwitches (
 {
   for (ns3_proto::SwitchGroup switchGroup : switchGroups)
     {
-      uint32_t num = switchGroup.nodesnum ();
-      uint32_t baseIndex = switchGroup.baseindex ();
+      const uint32_t num = switchGroup.nodesnum ();
+      const uint32_t baseIndex = switchGroup.baseindex ();
+      const uint32_t queueNum = switchGroup.queuenum ();
       for (size_t i = baseIndex; i < baseIndex + num; i++)
         {
-          DcTopology::TopoNode host = CreateOneSwitch (switchGroup.ports ());
+          DcTopology::TopoNode host = CreateOneSwitch (queueNum, switchGroup);
           topology.InstallNode (i, host);
         }
     }
 }
 
 DcTopology::TopoNode
-ProtobufTopologyLoader::CreateOneHost (
-    google::protobuf::RepeatedPtrField<ns3_proto::HostPortConfig> portsConfig)
+ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup hostGroup)
 {
+  const Ptr<DcHost> host = CreateObject<DcHost> ();
   // TODO: optimize code here
-  DcTopology::TopoNode node = {.type = DcTopology::TopoNode::NodeType::HOST,
-                               .nodePtr = CreateObject<Node> ()};
-  for (auto port : portsConfig)
+  for (auto port : hostGroup.ports ())
     {
       // create a net device for the port
       const Ptr<DpskNetDevice> dev = CreateObject<DpskNetDevice> ();
-      node.nodePtr->AddDevice (dev);
+      host->AddDevice (dev);
       dev->SetAddress (Mac48Address::Allocate ());
       dev->SetTxMode (DpskNetDevice::TxMode::ACTIVE);
 
@@ -136,55 +141,97 @@ ProtobufTopologyLoader::CreateOneHost (
       // TODO: other configurations
       // ...
     }
-  DpskHelper dpskHelper;
-  const auto dpsk = dpskHelper.Install (node.nodePtr);
+  // DpskHelper dpskHelper;
+  // const auto dpsk = dpskHelper.Install (host);
   // TODO: Why so complicated?
-  auto pfcHost = CreateObject<PfcHost> ();
-  pfcHost->InstallDpsk (dpsk);
-  
-  return node;
+  // auto pfcHost = CreateObject<PfcHost> ();
+  // pfcHost->InstallDpsk (dpsk);
+
+  return {.type = DcTopology::TopoNode::NodeType::HOST, .nodePtr = host};
 }
 
 DcTopology::TopoNode
-ProtobufTopologyLoader::CreateOneSwitch (
-    google::protobuf::RepeatedPtrField<ns3_proto::SwitchPortConfig> portsConfig)
+ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
+                                         const ns3_proto::SwitchGroup switchGroup)
 {
-  DcTopology::TopoNode node = {.type = DcTopology::TopoNode::NodeType::HOST,
-                               .nodePtr = CreateObject<Node> ()};
-  for (auto portConfig : portsConfig)
+  const Ptr<DcSwitch> sw = CreateObject<DcSwitch> ();
+  // Basic configurations
+  sw->SetEcmpSeed (m_ecmpSeed);
+  sw->SetNQueues (queueNum);
+
+  // Configure SwitchMmu
+  const Ptr<SwitchMmu> mmu = CreateObject<SwitchMmu> ();
+  sw->InstallMmu (mmu);
+  ConfigMmu (switchGroup.mmu (), mmu);
+
+  // Configure ports
+  for (auto portConfig : switchGroup.ports ())
     {
-      AddOnePortToSwitch(portConfig, node);
+      AddOnePortToSwitch (portConfig, sw, mmu);
     }
-  DpskHelper dpskHelper;
-  const auto dpsk = dpskHelper.Install (node.nodePtr);
-  const auto pfcSwitch = CreateObject<PfcSwitch> ();
-  
-  return node;
+
+  // DpskHelper dpskHelper;
+  // const Ptr<Dpsk> dpsk = dpskHelper.Install (sw);
+
+  // const Ptr<PfcSwitch> pfcSwitch = CreateObject<PfcSwitch> ();
+  // pfcSwitch->InstallDpsk (dpsk);
+
+  return {.type = DcTopology::TopoNode::NodeType::SWITCH, .nodePtr = sw};
 }
 
 void
-ProtobufTopologyLoader::AddOnePortToSwitch (ns3_proto::SwitchPortConfig portConfig, DcTopology::TopoNode &sw)
+ProtobufTopologyLoader::AddOnePortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
+                                            const Ptr<DcSwitch> sw, const Ptr<SwitchMmu> mmu)
 {
   // Create a net device for this port
-  const Ptr<DpskNetDevice> dev = CreateObject<DpskNetDevice> ();
-  sw.nodePtr->AddDevice (dev);
+  Ptr<DpskNetDevice> dev = CreateObject<DpskNetDevice> ();
+  sw->AddDevice (dev);
   dev->SetAddress (Mac48Address::Allocate ());
   dev->SetTxMode (DpskNetDevice::TxMode::ACTIVE); // TODO: configurable mode
-  
+
   // Add an implementation for the net device
   // TODO: improve the logic, maybe with more dynamic features
-  if (portConfig.pfcenabled())
+  if (portConfig.pfcenabled ())
     {
       const Ptr<PfcSwitchPort> impl = CreateObject<PfcSwitchPort> ();
       dev->SetImplementation (impl);
-      impl->SetupQueues (portConfig.queuenum ());
-      
-      if (portConfig.has_pfcpassthrough())
+      impl->SetupQueues (portConfig.queues_size ());
+
+      if (portConfig.has_pfcpassthrough ())
         {
-          impl->SetPassThrough(portConfig.pfcpassthrough ());
+          impl->SetPassThrough (portConfig.pfcpassthrough ());
+        }
+
+      for (auto queueConf = portConfig.queues ().cbegin ();
+           queueConf != portConfig.queues ().cend ();
+           queueConf++)
+        {
+          int index = queueConf - portConfig.queues ().begin ();
+
+          const uint32_t headroom = QueueSize (queueConf->pfcheadroom ()).GetValue ();
+          mmu->ConfigHeadroom (dev, index, headroom); // TODO: use index
+
+          const uint32_t reserved = QueueSize (queueConf->pfcreserved ()).GetValue ();
+          mmu->ConfigReserve (dev, index, reserved);
+
+          const uint32_t ecnKMin = QueueSize (queueConf->ecnkmin ()).GetValue ();
+          const uint32_t ecnKMax = QueueSize (queueConf->ecnkmax ()).GetValue ();
+          const double ecnPMax = queueConf->ecnpmax ();
+          mmu->ConfigEcn (dev, index, ecnKMin, ecnKMax, ecnPMax);
         }
     }
-  
+}
+
+void
+ProtobufTopologyLoader::ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig,
+                                   const Ptr<SwitchMmu> mmu)
+{
+  uint32_t bufferSize = QueueSize (mmuConfig.buffersize ()).GetValue ();
+  mmu->ConfigBufferSize (bufferSize);
+  if (mmuConfig.has_pfcdynamicshift ())
+    {
+      mmu->ConfigDynamicThreshold (true, mmuConfig.pfcdynamicshift ());
+    }
 }
 
 } // namespace ns3

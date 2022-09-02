@@ -48,6 +48,9 @@ namespace ns3_proto {
 class AllNodes;
 struct AllNodesDefaultTypeInternal;
 extern AllNodesDefaultTypeInternal _AllNodes_default_instance_;
+class GlobalConfig;
+struct GlobalConfigDefaultTypeInternal;
+extern GlobalConfigDefaultTypeInternal _GlobalConfig_default_instance_;
 class HostGroup;
 struct HostGroupDefaultTypeInternal;
 extern HostGroupDefaultTypeInternal _HostGroup_default_instance_;
@@ -57,9 +60,15 @@ extern HostPortConfigDefaultTypeInternal _HostPortConfig_default_instance_;
 class Link;
 struct LinkDefaultTypeInternal;
 extern LinkDefaultTypeInternal _Link_default_instance_;
+class PortQueueConfig;
+struct PortQueueConfigDefaultTypeInternal;
+extern PortQueueConfigDefaultTypeInternal _PortQueueConfig_default_instance_;
 class SwitchGroup;
 struct SwitchGroupDefaultTypeInternal;
 extern SwitchGroupDefaultTypeInternal _SwitchGroup_default_instance_;
+class SwitchMmuConfig;
+struct SwitchMmuConfigDefaultTypeInternal;
+extern SwitchMmuConfigDefaultTypeInternal _SwitchMmuConfig_default_instance_;
 class SwitchPortConfig;
 struct SwitchPortConfigDefaultTypeInternal;
 extern SwitchPortConfigDefaultTypeInternal _SwitchPortConfig_default_instance_;
@@ -69,16 +78,172 @@ extern TopologyDefaultTypeInternal _Topology_default_instance_;
 }  // namespace ns3_proto
 PROTOBUF_NAMESPACE_OPEN
 template<> ::ns3_proto::AllNodes* Arena::CreateMaybeMessage<::ns3_proto::AllNodes>(Arena*);
+template<> ::ns3_proto::GlobalConfig* Arena::CreateMaybeMessage<::ns3_proto::GlobalConfig>(Arena*);
 template<> ::ns3_proto::HostGroup* Arena::CreateMaybeMessage<::ns3_proto::HostGroup>(Arena*);
 template<> ::ns3_proto::HostPortConfig* Arena::CreateMaybeMessage<::ns3_proto::HostPortConfig>(Arena*);
 template<> ::ns3_proto::Link* Arena::CreateMaybeMessage<::ns3_proto::Link>(Arena*);
+template<> ::ns3_proto::PortQueueConfig* Arena::CreateMaybeMessage<::ns3_proto::PortQueueConfig>(Arena*);
 template<> ::ns3_proto::SwitchGroup* Arena::CreateMaybeMessage<::ns3_proto::SwitchGroup>(Arena*);
+template<> ::ns3_proto::SwitchMmuConfig* Arena::CreateMaybeMessage<::ns3_proto::SwitchMmuConfig>(Arena*);
 template<> ::ns3_proto::SwitchPortConfig* Arena::CreateMaybeMessage<::ns3_proto::SwitchPortConfig>(Arena*);
 template<> ::ns3_proto::Topology* Arena::CreateMaybeMessage<::ns3_proto::Topology>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 namespace ns3_proto {
 
 // ===================================================================
+
+class GlobalConfig final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.GlobalConfig) */ {
+ public:
+  inline GlobalConfig() : GlobalConfig(nullptr) {}
+  ~GlobalConfig() override;
+  explicit PROTOBUF_CONSTEXPR GlobalConfig(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  GlobalConfig(const GlobalConfig& from);
+  GlobalConfig(GlobalConfig&& from) noexcept
+    : GlobalConfig() {
+    *this = ::std::move(from);
+  }
+
+  inline GlobalConfig& operator=(const GlobalConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline GlobalConfig& operator=(GlobalConfig&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const GlobalConfig& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const GlobalConfig* internal_default_instance() {
+    return reinterpret_cast<const GlobalConfig*>(
+               &_GlobalConfig_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    0;
+
+  friend void swap(GlobalConfig& a, GlobalConfig& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(GlobalConfig* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(GlobalConfig* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  GlobalConfig* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<GlobalConfig>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const GlobalConfig& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const GlobalConfig& from) {
+    GlobalConfig::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(GlobalConfig* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ns3_proto.GlobalConfig";
+  }
+  protected:
+  explicit GlobalConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kRandomSeedFieldNumber = 1,
+  };
+  // optional uint32 randomSeed = 1;
+  bool has_randomseed() const;
+  private:
+  bool _internal_has_randomseed() const;
+  public:
+  void clear_randomseed();
+  uint32_t randomseed() const;
+  void set_randomseed(uint32_t value);
+  private:
+  uint32_t _internal_randomseed() const;
+  void _internal_set_randomseed(uint32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ns3_proto.GlobalConfig)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    uint32_t randomseed_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_topology_2eproto;
+};
+// -------------------------------------------------------------------
 
 class HostPortConfig final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.HostPortConfig) */ {
@@ -128,7 +293,7 @@ class HostPortConfig final :
                &_HostPortConfig_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    0;
+    1;
 
   friend void swap(HostPortConfig& a, HostPortConfig& b) {
     a.Swap(&b);
@@ -276,7 +441,7 @@ class HostGroup final :
                &_HostGroup_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    2;
 
   friend void swap(HostGroup& a, HostGroup& b) {
     a.Swap(&b);
@@ -407,6 +572,239 @@ class HostGroup final :
 };
 // -------------------------------------------------------------------
 
+class PortQueueConfig final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.PortQueueConfig) */ {
+ public:
+  inline PortQueueConfig() : PortQueueConfig(nullptr) {}
+  ~PortQueueConfig() override;
+  explicit PROTOBUF_CONSTEXPR PortQueueConfig(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  PortQueueConfig(const PortQueueConfig& from);
+  PortQueueConfig(PortQueueConfig&& from) noexcept
+    : PortQueueConfig() {
+    *this = ::std::move(from);
+  }
+
+  inline PortQueueConfig& operator=(const PortQueueConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline PortQueueConfig& operator=(PortQueueConfig&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const PortQueueConfig& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const PortQueueConfig* internal_default_instance() {
+    return reinterpret_cast<const PortQueueConfig*>(
+               &_PortQueueConfig_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    3;
+
+  friend void swap(PortQueueConfig& a, PortQueueConfig& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(PortQueueConfig* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(PortQueueConfig* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  PortQueueConfig* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<PortQueueConfig>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const PortQueueConfig& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const PortQueueConfig& from) {
+    PortQueueConfig::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(PortQueueConfig* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ns3_proto.PortQueueConfig";
+  }
+  protected:
+  explicit PortQueueConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kPfcReservedFieldNumber = 1,
+    kPfcHeadroomFieldNumber = 2,
+    kEcnKMinFieldNumber = 4,
+    kEcnKMaxFieldNumber = 5,
+    kEcnPMaxFieldNumber = 6,
+  };
+  // optional string pfcReserved = 1;
+  bool has_pfcreserved() const;
+  private:
+  bool _internal_has_pfcreserved() const;
+  public:
+  void clear_pfcreserved();
+  const std::string& pfcreserved() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_pfcreserved(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_pfcreserved();
+  PROTOBUF_NODISCARD std::string* release_pfcreserved();
+  void set_allocated_pfcreserved(std::string* pfcreserved);
+  private:
+  const std::string& _internal_pfcreserved() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcreserved(const std::string& value);
+  std::string* _internal_mutable_pfcreserved();
+  public:
+
+  // optional string pfcHeadroom = 2;
+  bool has_pfcheadroom() const;
+  private:
+  bool _internal_has_pfcheadroom() const;
+  public:
+  void clear_pfcheadroom();
+  const std::string& pfcheadroom() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_pfcheadroom(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_pfcheadroom();
+  PROTOBUF_NODISCARD std::string* release_pfcheadroom();
+  void set_allocated_pfcheadroom(std::string* pfcheadroom);
+  private:
+  const std::string& _internal_pfcheadroom() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcheadroom(const std::string& value);
+  std::string* _internal_mutable_pfcheadroom();
+  public:
+
+  // optional string ecnKMin = 4;
+  bool has_ecnkmin() const;
+  private:
+  bool _internal_has_ecnkmin() const;
+  public:
+  void clear_ecnkmin();
+  const std::string& ecnkmin() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_ecnkmin(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_ecnkmin();
+  PROTOBUF_NODISCARD std::string* release_ecnkmin();
+  void set_allocated_ecnkmin(std::string* ecnkmin);
+  private:
+  const std::string& _internal_ecnkmin() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ecnkmin(const std::string& value);
+  std::string* _internal_mutable_ecnkmin();
+  public:
+
+  // optional string ecnKMax = 5;
+  bool has_ecnkmax() const;
+  private:
+  bool _internal_has_ecnkmax() const;
+  public:
+  void clear_ecnkmax();
+  const std::string& ecnkmax() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_ecnkmax(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_ecnkmax();
+  PROTOBUF_NODISCARD std::string* release_ecnkmax();
+  void set_allocated_ecnkmax(std::string* ecnkmax);
+  private:
+  const std::string& _internal_ecnkmax() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ecnkmax(const std::string& value);
+  std::string* _internal_mutable_ecnkmax();
+  public:
+
+  // optional double ecnPMax = 6;
+  bool has_ecnpmax() const;
+  private:
+  bool _internal_has_ecnpmax() const;
+  public:
+  void clear_ecnpmax();
+  double ecnpmax() const;
+  void set_ecnpmax(double value);
+  private:
+  double _internal_ecnpmax() const;
+  void _internal_set_ecnpmax(double value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ns3_proto.PortQueueConfig)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcreserved_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcheadroom_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ecnkmin_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ecnkmax_;
+    double ecnpmax_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_topology_2eproto;
+};
+// -------------------------------------------------------------------
+
 class SwitchPortConfig final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.SwitchPortConfig) */ {
  public:
@@ -455,7 +853,7 @@ class SwitchPortConfig final :
                &_SwitchPortConfig_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    4;
 
   friend void swap(SwitchPortConfig& a, SwitchPortConfig& b) {
     a.Swap(&b);
@@ -528,98 +926,30 @@ class SwitchPortConfig final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kPfcReservedFieldNumber = 3,
-    kPfcHeadroomFieldNumber = 4,
-    kEcnKMinFieldNumber = 7,
-    kEcnKMaxFieldNumber = 8,
-    kQueueNumFieldNumber = 1,
-    kPfcEnabledFieldNumber = 2,
-    kPfcPassThroughFieldNumber = 5,
-    kEcnEnabledFieldNumber = 6,
-    kEcnPMaxFieldNumber = 9,
+    kQueuesFieldNumber = 4,
+    kPfcEnabledFieldNumber = 1,
+    kPfcPassThroughFieldNumber = 2,
+    kEcnEnabledFieldNumber = 3,
   };
-  // optional string pfcReserved = 3;
-  bool has_pfcreserved() const;
+  // repeated .ns3_proto.PortQueueConfig queues = 4;
+  int queues_size() const;
   private:
-  bool _internal_has_pfcreserved() const;
+  int _internal_queues_size() const;
   public:
-  void clear_pfcreserved();
-  const std::string& pfcreserved() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_pfcreserved(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_pfcreserved();
-  PROTOBUF_NODISCARD std::string* release_pfcreserved();
-  void set_allocated_pfcreserved(std::string* pfcreserved);
+  void clear_queues();
+  ::ns3_proto::PortQueueConfig* mutable_queues(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueConfig >*
+      mutable_queues();
   private:
-  const std::string& _internal_pfcreserved() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcreserved(const std::string& value);
-  std::string* _internal_mutable_pfcreserved();
+  const ::ns3_proto::PortQueueConfig& _internal_queues(int index) const;
+  ::ns3_proto::PortQueueConfig* _internal_add_queues();
   public:
+  const ::ns3_proto::PortQueueConfig& queues(int index) const;
+  ::ns3_proto::PortQueueConfig* add_queues();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueConfig >&
+      queues() const;
 
-  // optional string pfcHeadroom = 4;
-  bool has_pfcheadroom() const;
-  private:
-  bool _internal_has_pfcheadroom() const;
-  public:
-  void clear_pfcheadroom();
-  const std::string& pfcheadroom() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_pfcheadroom(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_pfcheadroom();
-  PROTOBUF_NODISCARD std::string* release_pfcheadroom();
-  void set_allocated_pfcheadroom(std::string* pfcheadroom);
-  private:
-  const std::string& _internal_pfcheadroom() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcheadroom(const std::string& value);
-  std::string* _internal_mutable_pfcheadroom();
-  public:
-
-  // optional string ecnKMin = 7;
-  bool has_ecnkmin() const;
-  private:
-  bool _internal_has_ecnkmin() const;
-  public:
-  void clear_ecnkmin();
-  const std::string& ecnkmin() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_ecnkmin(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_ecnkmin();
-  PROTOBUF_NODISCARD std::string* release_ecnkmin();
-  void set_allocated_ecnkmin(std::string* ecnkmin);
-  private:
-  const std::string& _internal_ecnkmin() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ecnkmin(const std::string& value);
-  std::string* _internal_mutable_ecnkmin();
-  public:
-
-  // optional string ecnKMax = 8;
-  bool has_ecnkmax() const;
-  private:
-  bool _internal_has_ecnkmax() const;
-  public:
-  void clear_ecnkmax();
-  const std::string& ecnkmax() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_ecnkmax(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_ecnkmax();
-  PROTOBUF_NODISCARD std::string* release_ecnkmax();
-  void set_allocated_ecnkmax(std::string* ecnkmax);
-  private:
-  const std::string& _internal_ecnkmax() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_ecnkmax(const std::string& value);
-  std::string* _internal_mutable_ecnkmax();
-  public:
-
-  // uint32 queueNum = 1;
-  void clear_queuenum();
-  uint32_t queuenum() const;
-  void set_queuenum(uint32_t value);
-  private:
-  uint32_t _internal_queuenum() const;
-  void _internal_set_queuenum(uint32_t value);
-  public:
-
-  // bool pfcEnabled = 2;
+  // bool pfcEnabled = 1;
   void clear_pfcenabled();
   bool pfcenabled() const;
   void set_pfcenabled(bool value);
@@ -628,7 +958,7 @@ class SwitchPortConfig final :
   void _internal_set_pfcenabled(bool value);
   public:
 
-  // optional bool pfcPassThrough = 5;
+  // optional bool pfcPassThrough = 2;
   bool has_pfcpassthrough() const;
   private:
   bool _internal_has_pfcpassthrough() const;
@@ -641,26 +971,13 @@ class SwitchPortConfig final :
   void _internal_set_pfcpassthrough(bool value);
   public:
 
-  // bool ecnEnabled = 6;
+  // bool ecnEnabled = 3;
   void clear_ecnenabled();
   bool ecnenabled() const;
   void set_ecnenabled(bool value);
   private:
   bool _internal_ecnenabled() const;
   void _internal_set_ecnenabled(bool value);
-  public:
-
-  // optional double ecnPMax = 9;
-  bool has_ecnpmax() const;
-  private:
-  bool _internal_has_ecnpmax() const;
-  public:
-  void clear_ecnpmax();
-  double ecnpmax() const;
-  void set_ecnpmax(double value);
-  private:
-  double _internal_ecnpmax() const;
-  void _internal_set_ecnpmax(double value);
   public:
 
   // @@protoc_insertion_point(class_scope:ns3_proto.SwitchPortConfig)
@@ -673,15 +990,179 @@ class SwitchPortConfig final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcreserved_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcheadroom_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ecnkmin_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ecnkmax_;
-    uint32_t queuenum_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueConfig > queues_;
     bool pfcenabled_;
     bool pfcpassthrough_;
     bool ecnenabled_;
-    double ecnpmax_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_topology_2eproto;
+};
+// -------------------------------------------------------------------
+
+class SwitchMmuConfig final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.SwitchMmuConfig) */ {
+ public:
+  inline SwitchMmuConfig() : SwitchMmuConfig(nullptr) {}
+  ~SwitchMmuConfig() override;
+  explicit PROTOBUF_CONSTEXPR SwitchMmuConfig(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  SwitchMmuConfig(const SwitchMmuConfig& from);
+  SwitchMmuConfig(SwitchMmuConfig&& from) noexcept
+    : SwitchMmuConfig() {
+    *this = ::std::move(from);
+  }
+
+  inline SwitchMmuConfig& operator=(const SwitchMmuConfig& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline SwitchMmuConfig& operator=(SwitchMmuConfig&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const SwitchMmuConfig& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const SwitchMmuConfig* internal_default_instance() {
+    return reinterpret_cast<const SwitchMmuConfig*>(
+               &_SwitchMmuConfig_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    5;
+
+  friend void swap(SwitchMmuConfig& a, SwitchMmuConfig& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(SwitchMmuConfig* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SwitchMmuConfig* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  SwitchMmuConfig* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<SwitchMmuConfig>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const SwitchMmuConfig& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const SwitchMmuConfig& from) {
+    SwitchMmuConfig::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(SwitchMmuConfig* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ns3_proto.SwitchMmuConfig";
+  }
+  protected:
+  explicit SwitchMmuConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kBufferSizeFieldNumber = 1,
+    kPfcDynamicShiftFieldNumber = 2,
+  };
+  // string bufferSize = 1;
+  void clear_buffersize();
+  const std::string& buffersize() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_buffersize(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_buffersize();
+  PROTOBUF_NODISCARD std::string* release_buffersize();
+  void set_allocated_buffersize(std::string* buffersize);
+  private:
+  const std::string& _internal_buffersize() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_buffersize(const std::string& value);
+  std::string* _internal_mutable_buffersize();
+  public:
+
+  // optional uint32 pfcDynamicShift = 2;
+  bool has_pfcdynamicshift() const;
+  private:
+  bool _internal_has_pfcdynamicshift() const;
+  public:
+  void clear_pfcdynamicshift();
+  uint32_t pfcdynamicshift() const;
+  void set_pfcdynamicshift(uint32_t value);
+  private:
+  uint32_t _internal_pfcdynamicshift() const;
+  void _internal_set_pfcdynamicshift(uint32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ns3_proto.SwitchMmuConfig)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr buffersize_;
+    uint32_t pfcdynamicshift_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_topology_2eproto;
@@ -736,7 +1217,7 @@ class SwitchGroup final :
                &_SwitchGroup_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    3;
+    6;
 
   friend void swap(SwitchGroup& a, SwitchGroup& b) {
     a.Swap(&b);
@@ -810,10 +1291,10 @@ class SwitchGroup final :
 
   enum : int {
     kPortsFieldNumber = 5,
+    kMmuFieldNumber = 3,
     kNodesNumFieldNumber = 1,
     kBaseIndexFieldNumber = 2,
-    kBufferSizeFieldNumber = 3,
-    kPfcDynamicFieldNumber = 4,
+    kQueueNumFieldNumber = 4,
   };
   // repeated .ns3_proto.SwitchPortConfig ports = 5;
   int ports_size() const;
@@ -833,6 +1314,24 @@ class SwitchGroup final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::SwitchPortConfig >&
       ports() const;
 
+  // .ns3_proto.SwitchMmuConfig mmu = 3;
+  bool has_mmu() const;
+  private:
+  bool _internal_has_mmu() const;
+  public:
+  void clear_mmu();
+  const ::ns3_proto::SwitchMmuConfig& mmu() const;
+  PROTOBUF_NODISCARD ::ns3_proto::SwitchMmuConfig* release_mmu();
+  ::ns3_proto::SwitchMmuConfig* mutable_mmu();
+  void set_allocated_mmu(::ns3_proto::SwitchMmuConfig* mmu);
+  private:
+  const ::ns3_proto::SwitchMmuConfig& _internal_mmu() const;
+  ::ns3_proto::SwitchMmuConfig* _internal_mutable_mmu();
+  public:
+  void unsafe_arena_set_allocated_mmu(
+      ::ns3_proto::SwitchMmuConfig* mmu);
+  ::ns3_proto::SwitchMmuConfig* unsafe_arena_release_mmu();
+
   // uint32 nodesNum = 1;
   void clear_nodesnum();
   uint32_t nodesnum() const;
@@ -851,22 +1350,13 @@ class SwitchGroup final :
   void _internal_set_baseindex(uint32_t value);
   public:
 
-  // uint32 bufferSize = 3;
-  void clear_buffersize();
-  uint32_t buffersize() const;
-  void set_buffersize(uint32_t value);
+  // uint32 queueNum = 4;
+  void clear_queuenum();
+  uint32_t queuenum() const;
+  void set_queuenum(uint32_t value);
   private:
-  uint32_t _internal_buffersize() const;
-  void _internal_set_buffersize(uint32_t value);
-  public:
-
-  // bool pfcDynamic = 4;
-  void clear_pfcdynamic();
-  bool pfcdynamic() const;
-  void set_pfcdynamic(bool value);
-  private:
-  bool _internal_pfcdynamic() const;
-  void _internal_set_pfcdynamic(bool value);
+  uint32_t _internal_queuenum() const;
+  void _internal_set_queuenum(uint32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:ns3_proto.SwitchGroup)
@@ -878,10 +1368,10 @@ class SwitchGroup final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::SwitchPortConfig > ports_;
+    ::ns3_proto::SwitchMmuConfig* mmu_;
     uint32_t nodesnum_;
     uint32_t baseindex_;
-    uint32_t buffersize_;
-    bool pfcdynamic_;
+    uint32_t queuenum_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -937,7 +1427,7 @@ class AllNodes final :
                &_AllNodes_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    7;
 
   friend void swap(AllNodes& a, AllNodes& b) {
     a.Swap(&b);
@@ -1125,7 +1615,7 @@ class Link final :
                &_Link_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    5;
+    8;
 
   friend void swap(Link& a, Link& b) {
     a.Swap(&b);
@@ -1338,7 +1828,7 @@ class Topology final :
                &_Topology_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    9;
 
   friend void swap(Topology& a, Topology& b) {
     a.Swap(&b);
@@ -1411,10 +1901,11 @@ class Topology final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kLinksFieldNumber = 2,
-    kNodesFieldNumber = 1,
+    kLinksFieldNumber = 3,
+    kGlobalConfigFieldNumber = 1,
+    kNodesFieldNumber = 2,
   };
-  // repeated .ns3_proto.Link links = 2;
+  // repeated .ns3_proto.Link links = 3;
   int links_size() const;
   private:
   int _internal_links_size() const;
@@ -1432,7 +1923,25 @@ class Topology final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Link >&
       links() const;
 
-  // .ns3_proto.AllNodes nodes = 1;
+  // .ns3_proto.GlobalConfig globalConfig = 1;
+  bool has_globalconfig() const;
+  private:
+  bool _internal_has_globalconfig() const;
+  public:
+  void clear_globalconfig();
+  const ::ns3_proto::GlobalConfig& globalconfig() const;
+  PROTOBUF_NODISCARD ::ns3_proto::GlobalConfig* release_globalconfig();
+  ::ns3_proto::GlobalConfig* mutable_globalconfig();
+  void set_allocated_globalconfig(::ns3_proto::GlobalConfig* globalconfig);
+  private:
+  const ::ns3_proto::GlobalConfig& _internal_globalconfig() const;
+  ::ns3_proto::GlobalConfig* _internal_mutable_globalconfig();
+  public:
+  void unsafe_arena_set_allocated_globalconfig(
+      ::ns3_proto::GlobalConfig* globalconfig);
+  ::ns3_proto::GlobalConfig* unsafe_arena_release_globalconfig();
+
+  // .ns3_proto.AllNodes nodes = 2;
   bool has_nodes() const;
   private:
   bool _internal_has_nodes() const;
@@ -1459,6 +1968,7 @@ class Topology final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Link > links_;
+    ::ns3_proto::GlobalConfig* globalconfig_;
     ::ns3_proto::AllNodes* nodes_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -1474,6 +1984,38 @@ class Topology final :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
+// GlobalConfig
+
+// optional uint32 randomSeed = 1;
+inline bool GlobalConfig::_internal_has_randomseed() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool GlobalConfig::has_randomseed() const {
+  return _internal_has_randomseed();
+}
+inline void GlobalConfig::clear_randomseed() {
+  _impl_.randomseed_ = 0u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline uint32_t GlobalConfig::_internal_randomseed() const {
+  return _impl_.randomseed_;
+}
+inline uint32_t GlobalConfig::randomseed() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.GlobalConfig.randomSeed)
+  return _internal_randomseed();
+}
+inline void GlobalConfig::_internal_set_randomseed(uint32_t value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.randomseed_ = value;
+}
+inline void GlobalConfig::set_randomseed(uint32_t value) {
+  _internal_set_randomseed(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.GlobalConfig.randomSeed)
+}
+
+// -------------------------------------------------------------------
+
 // HostPortConfig
 
 // bool pfcEnabled = 1;
@@ -1582,29 +2124,313 @@ HostGroup::ports() const {
 
 // -------------------------------------------------------------------
 
+// PortQueueConfig
+
+// optional string pfcReserved = 1;
+inline bool PortQueueConfig::_internal_has_pfcreserved() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool PortQueueConfig::has_pfcreserved() const {
+  return _internal_has_pfcreserved();
+}
+inline void PortQueueConfig::clear_pfcreserved() {
+  _impl_.pfcreserved_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& PortQueueConfig::pfcreserved() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.pfcReserved)
+  return _internal_pfcreserved();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void PortQueueConfig::set_pfcreserved(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000001u;
+ _impl_.pfcreserved_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.pfcReserved)
+}
+inline std::string* PortQueueConfig::mutable_pfcreserved() {
+  std::string* _s = _internal_mutable_pfcreserved();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.pfcReserved)
+  return _s;
+}
+inline const std::string& PortQueueConfig::_internal_pfcreserved() const {
+  return _impl_.pfcreserved_.Get();
+}
+inline void PortQueueConfig::_internal_set_pfcreserved(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.pfcreserved_.Set(value, GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::_internal_mutable_pfcreserved() {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _impl_.pfcreserved_.Mutable(GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::release_pfcreserved() {
+  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.pfcReserved)
+  if (!_internal_has_pfcreserved()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* p = _impl_.pfcreserved_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.pfcreserved_.IsDefault()) {
+    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
+}
+inline void PortQueueConfig::set_allocated_pfcreserved(std::string* pfcreserved) {
+  if (pfcreserved != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  _impl_.pfcreserved_.SetAllocated(pfcreserved, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.pfcreserved_.IsDefault()) {
+    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.pfcReserved)
+}
+
+// optional string pfcHeadroom = 2;
+inline bool PortQueueConfig::_internal_has_pfcheadroom() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool PortQueueConfig::has_pfcheadroom() const {
+  return _internal_has_pfcheadroom();
+}
+inline void PortQueueConfig::clear_pfcheadroom() {
+  _impl_.pfcheadroom_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& PortQueueConfig::pfcheadroom() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.pfcHeadroom)
+  return _internal_pfcheadroom();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void PortQueueConfig::set_pfcheadroom(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000002u;
+ _impl_.pfcheadroom_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.pfcHeadroom)
+}
+inline std::string* PortQueueConfig::mutable_pfcheadroom() {
+  std::string* _s = _internal_mutable_pfcheadroom();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.pfcHeadroom)
+  return _s;
+}
+inline const std::string& PortQueueConfig::_internal_pfcheadroom() const {
+  return _impl_.pfcheadroom_.Get();
+}
+inline void PortQueueConfig::_internal_set_pfcheadroom(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.pfcheadroom_.Set(value, GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::_internal_mutable_pfcheadroom() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _impl_.pfcheadroom_.Mutable(GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::release_pfcheadroom() {
+  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.pfcHeadroom)
+  if (!_internal_has_pfcheadroom()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* p = _impl_.pfcheadroom_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.pfcheadroom_.IsDefault()) {
+    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
+}
+inline void PortQueueConfig::set_allocated_pfcheadroom(std::string* pfcheadroom) {
+  if (pfcheadroom != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  _impl_.pfcheadroom_.SetAllocated(pfcheadroom, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.pfcheadroom_.IsDefault()) {
+    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.pfcHeadroom)
+}
+
+// optional string ecnKMin = 4;
+inline bool PortQueueConfig::_internal_has_ecnkmin() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool PortQueueConfig::has_ecnkmin() const {
+  return _internal_has_ecnkmin();
+}
+inline void PortQueueConfig::clear_ecnkmin() {
+  _impl_.ecnkmin_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline const std::string& PortQueueConfig::ecnkmin() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.ecnKMin)
+  return _internal_ecnkmin();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void PortQueueConfig::set_ecnkmin(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000004u;
+ _impl_.ecnkmin_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.ecnKMin)
+}
+inline std::string* PortQueueConfig::mutable_ecnkmin() {
+  std::string* _s = _internal_mutable_ecnkmin();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.ecnKMin)
+  return _s;
+}
+inline const std::string& PortQueueConfig::_internal_ecnkmin() const {
+  return _impl_.ecnkmin_.Get();
+}
+inline void PortQueueConfig::_internal_set_ecnkmin(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_.ecnkmin_.Set(value, GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::_internal_mutable_ecnkmin() {
+  _impl_._has_bits_[0] |= 0x00000004u;
+  return _impl_.ecnkmin_.Mutable(GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::release_ecnkmin() {
+  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.ecnKMin)
+  if (!_internal_has_ecnkmin()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000004u;
+  auto* p = _impl_.ecnkmin_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.ecnkmin_.IsDefault()) {
+    _impl_.ecnkmin_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
+}
+inline void PortQueueConfig::set_allocated_ecnkmin(std::string* ecnkmin) {
+  if (ecnkmin != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000004u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000004u;
+  }
+  _impl_.ecnkmin_.SetAllocated(ecnkmin, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.ecnkmin_.IsDefault()) {
+    _impl_.ecnkmin_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.ecnKMin)
+}
+
+// optional string ecnKMax = 5;
+inline bool PortQueueConfig::_internal_has_ecnkmax() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool PortQueueConfig::has_ecnkmax() const {
+  return _internal_has_ecnkmax();
+}
+inline void PortQueueConfig::clear_ecnkmax() {
+  _impl_.ecnkmax_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000008u;
+}
+inline const std::string& PortQueueConfig::ecnkmax() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.ecnKMax)
+  return _internal_ecnkmax();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void PortQueueConfig::set_ecnkmax(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000008u;
+ _impl_.ecnkmax_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.ecnKMax)
+}
+inline std::string* PortQueueConfig::mutable_ecnkmax() {
+  std::string* _s = _internal_mutable_ecnkmax();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.ecnKMax)
+  return _s;
+}
+inline const std::string& PortQueueConfig::_internal_ecnkmax() const {
+  return _impl_.ecnkmax_.Get();
+}
+inline void PortQueueConfig::_internal_set_ecnkmax(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_.ecnkmax_.Set(value, GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::_internal_mutable_ecnkmax() {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  return _impl_.ecnkmax_.Mutable(GetArenaForAllocation());
+}
+inline std::string* PortQueueConfig::release_ecnkmax() {
+  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.ecnKMax)
+  if (!_internal_has_ecnkmax()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000008u;
+  auto* p = _impl_.ecnkmax_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.ecnkmax_.IsDefault()) {
+    _impl_.ecnkmax_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
+}
+inline void PortQueueConfig::set_allocated_ecnkmax(std::string* ecnkmax) {
+  if (ecnkmax != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000008u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000008u;
+  }
+  _impl_.ecnkmax_.SetAllocated(ecnkmax, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.ecnkmax_.IsDefault()) {
+    _impl_.ecnkmax_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.ecnKMax)
+}
+
+// optional double ecnPMax = 6;
+inline bool PortQueueConfig::_internal_has_ecnpmax() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline bool PortQueueConfig::has_ecnpmax() const {
+  return _internal_has_ecnpmax();
+}
+inline void PortQueueConfig::clear_ecnpmax() {
+  _impl_.ecnpmax_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000010u;
+}
+inline double PortQueueConfig::_internal_ecnpmax() const {
+  return _impl_.ecnpmax_;
+}
+inline double PortQueueConfig::ecnpmax() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.ecnPMax)
+  return _internal_ecnpmax();
+}
+inline void PortQueueConfig::_internal_set_ecnpmax(double value) {
+  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_.ecnpmax_ = value;
+}
+inline void PortQueueConfig::set_ecnpmax(double value) {
+  _internal_set_ecnpmax(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.ecnPMax)
+}
+
+// -------------------------------------------------------------------
+
 // SwitchPortConfig
 
-// uint32 queueNum = 1;
-inline void SwitchPortConfig::clear_queuenum() {
-  _impl_.queuenum_ = 0u;
-}
-inline uint32_t SwitchPortConfig::_internal_queuenum() const {
-  return _impl_.queuenum_;
-}
-inline uint32_t SwitchPortConfig::queuenum() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.queueNum)
-  return _internal_queuenum();
-}
-inline void SwitchPortConfig::_internal_set_queuenum(uint32_t value) {
-  
-  _impl_.queuenum_ = value;
-}
-inline void SwitchPortConfig::set_queuenum(uint32_t value) {
-  _internal_set_queuenum(value);
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.queueNum)
-}
-
-// bool pfcEnabled = 2;
+// bool pfcEnabled = 1;
 inline void SwitchPortConfig::clear_pfcenabled() {
   _impl_.pfcenabled_ = false;
 }
@@ -1624,145 +2450,9 @@ inline void SwitchPortConfig::set_pfcenabled(bool value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.pfcEnabled)
 }
 
-// optional string pfcReserved = 3;
-inline bool SwitchPortConfig::_internal_has_pfcreserved() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  return value;
-}
-inline bool SwitchPortConfig::has_pfcreserved() const {
-  return _internal_has_pfcreserved();
-}
-inline void SwitchPortConfig::clear_pfcreserved() {
-  _impl_.pfcreserved_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000001u;
-}
-inline const std::string& SwitchPortConfig::pfcreserved() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.pfcReserved)
-  return _internal_pfcreserved();
-}
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SwitchPortConfig::set_pfcreserved(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000001u;
- _impl_.pfcreserved_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.pfcReserved)
-}
-inline std::string* SwitchPortConfig::mutable_pfcreserved() {
-  std::string* _s = _internal_mutable_pfcreserved();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchPortConfig.pfcReserved)
-  return _s;
-}
-inline const std::string& SwitchPortConfig::_internal_pfcreserved() const {
-  return _impl_.pfcreserved_.Get();
-}
-inline void SwitchPortConfig::_internal_set_pfcreserved(const std::string& value) {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.pfcreserved_.Set(value, GetArenaForAllocation());
-}
-inline std::string* SwitchPortConfig::_internal_mutable_pfcreserved() {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.pfcreserved_.Mutable(GetArenaForAllocation());
-}
-inline std::string* SwitchPortConfig::release_pfcreserved() {
-  // @@protoc_insertion_point(field_release:ns3_proto.SwitchPortConfig.pfcReserved)
-  if (!_internal_has_pfcreserved()) {
-    return nullptr;
-  }
-  _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* p = _impl_.pfcreserved_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcreserved_.IsDefault()) {
-    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
-}
-inline void SwitchPortConfig::set_allocated_pfcreserved(std::string* pfcreserved) {
-  if (pfcreserved != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
-  }
-  _impl_.pfcreserved_.SetAllocated(pfcreserved, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcreserved_.IsDefault()) {
-    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchPortConfig.pfcReserved)
-}
-
-// optional string pfcHeadroom = 4;
-inline bool SwitchPortConfig::_internal_has_pfcheadroom() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
-  return value;
-}
-inline bool SwitchPortConfig::has_pfcheadroom() const {
-  return _internal_has_pfcheadroom();
-}
-inline void SwitchPortConfig::clear_pfcheadroom() {
-  _impl_.pfcheadroom_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000002u;
-}
-inline const std::string& SwitchPortConfig::pfcheadroom() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.pfcHeadroom)
-  return _internal_pfcheadroom();
-}
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SwitchPortConfig::set_pfcheadroom(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000002u;
- _impl_.pfcheadroom_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.pfcHeadroom)
-}
-inline std::string* SwitchPortConfig::mutable_pfcheadroom() {
-  std::string* _s = _internal_mutable_pfcheadroom();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchPortConfig.pfcHeadroom)
-  return _s;
-}
-inline const std::string& SwitchPortConfig::_internal_pfcheadroom() const {
-  return _impl_.pfcheadroom_.Get();
-}
-inline void SwitchPortConfig::_internal_set_pfcheadroom(const std::string& value) {
-  _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.pfcheadroom_.Set(value, GetArenaForAllocation());
-}
-inline std::string* SwitchPortConfig::_internal_mutable_pfcheadroom() {
-  _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.pfcheadroom_.Mutable(GetArenaForAllocation());
-}
-inline std::string* SwitchPortConfig::release_pfcheadroom() {
-  // @@protoc_insertion_point(field_release:ns3_proto.SwitchPortConfig.pfcHeadroom)
-  if (!_internal_has_pfcheadroom()) {
-    return nullptr;
-  }
-  _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* p = _impl_.pfcheadroom_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcheadroom_.IsDefault()) {
-    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
-}
-inline void SwitchPortConfig::set_allocated_pfcheadroom(std::string* pfcheadroom) {
-  if (pfcheadroom != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000002u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000002u;
-  }
-  _impl_.pfcheadroom_.SetAllocated(pfcheadroom, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcheadroom_.IsDefault()) {
-    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchPortConfig.pfcHeadroom)
-}
-
-// optional bool pfcPassThrough = 5;
+// optional bool pfcPassThrough = 2;
 inline bool SwitchPortConfig::_internal_has_pfcpassthrough() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
 inline bool SwitchPortConfig::has_pfcpassthrough() const {
@@ -1770,7 +2460,7 @@ inline bool SwitchPortConfig::has_pfcpassthrough() const {
 }
 inline void SwitchPortConfig::clear_pfcpassthrough() {
   _impl_.pfcpassthrough_ = false;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline bool SwitchPortConfig::_internal_pfcpassthrough() const {
   return _impl_.pfcpassthrough_;
@@ -1780,7 +2470,7 @@ inline bool SwitchPortConfig::pfcpassthrough() const {
   return _internal_pfcpassthrough();
 }
 inline void SwitchPortConfig::_internal_set_pfcpassthrough(bool value) {
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.pfcpassthrough_ = value;
 }
 inline void SwitchPortConfig::set_pfcpassthrough(bool value) {
@@ -1788,7 +2478,7 @@ inline void SwitchPortConfig::set_pfcpassthrough(bool value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.pfcPassThrough)
 }
 
-// bool ecnEnabled = 6;
+// bool ecnEnabled = 3;
 inline void SwitchPortConfig::clear_ecnenabled() {
   _impl_.ecnenabled_ = false;
 }
@@ -1808,168 +2498,126 @@ inline void SwitchPortConfig::set_ecnenabled(bool value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.ecnEnabled)
 }
 
-// optional string ecnKMin = 7;
-inline bool SwitchPortConfig::_internal_has_ecnkmin() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
-  return value;
+// repeated .ns3_proto.PortQueueConfig queues = 4;
+inline int SwitchPortConfig::_internal_queues_size() const {
+  return _impl_.queues_.size();
 }
-inline bool SwitchPortConfig::has_ecnkmin() const {
-  return _internal_has_ecnkmin();
+inline int SwitchPortConfig::queues_size() const {
+  return _internal_queues_size();
 }
-inline void SwitchPortConfig::clear_ecnkmin() {
-  _impl_.ecnkmin_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000004u;
+inline void SwitchPortConfig::clear_queues() {
+  _impl_.queues_.Clear();
 }
-inline const std::string& SwitchPortConfig::ecnkmin() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.ecnKMin)
-  return _internal_ecnkmin();
+inline ::ns3_proto::PortQueueConfig* SwitchPortConfig::mutable_queues(int index) {
+  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchPortConfig.queues)
+  return _impl_.queues_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueConfig >*
+SwitchPortConfig::mutable_queues() {
+  // @@protoc_insertion_point(field_mutable_list:ns3_proto.SwitchPortConfig.queues)
+  return &_impl_.queues_;
+}
+inline const ::ns3_proto::PortQueueConfig& SwitchPortConfig::_internal_queues(int index) const {
+  return _impl_.queues_.Get(index);
+}
+inline const ::ns3_proto::PortQueueConfig& SwitchPortConfig::queues(int index) const {
+  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.queues)
+  return _internal_queues(index);
+}
+inline ::ns3_proto::PortQueueConfig* SwitchPortConfig::_internal_add_queues() {
+  return _impl_.queues_.Add();
+}
+inline ::ns3_proto::PortQueueConfig* SwitchPortConfig::add_queues() {
+  ::ns3_proto::PortQueueConfig* _add = _internal_add_queues();
+  // @@protoc_insertion_point(field_add:ns3_proto.SwitchPortConfig.queues)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueConfig >&
+SwitchPortConfig::queues() const {
+  // @@protoc_insertion_point(field_list:ns3_proto.SwitchPortConfig.queues)
+  return _impl_.queues_;
+}
+
+// -------------------------------------------------------------------
+
+// SwitchMmuConfig
+
+// string bufferSize = 1;
+inline void SwitchMmuConfig::clear_buffersize() {
+  _impl_.buffersize_.ClearToEmpty();
+}
+inline const std::string& SwitchMmuConfig::buffersize() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.SwitchMmuConfig.bufferSize)
+  return _internal_buffersize();
 }
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
-void SwitchPortConfig::set_ecnkmin(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000004u;
- _impl_.ecnkmin_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.ecnKMin)
+void SwitchMmuConfig::set_buffersize(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.buffersize_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.SwitchMmuConfig.bufferSize)
 }
-inline std::string* SwitchPortConfig::mutable_ecnkmin() {
-  std::string* _s = _internal_mutable_ecnkmin();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchPortConfig.ecnKMin)
+inline std::string* SwitchMmuConfig::mutable_buffersize() {
+  std::string* _s = _internal_mutable_buffersize();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchMmuConfig.bufferSize)
   return _s;
 }
-inline const std::string& SwitchPortConfig::_internal_ecnkmin() const {
-  return _impl_.ecnkmin_.Get();
+inline const std::string& SwitchMmuConfig::_internal_buffersize() const {
+  return _impl_.buffersize_.Get();
 }
-inline void SwitchPortConfig::_internal_set_ecnkmin(const std::string& value) {
-  _impl_._has_bits_[0] |= 0x00000004u;
-  _impl_.ecnkmin_.Set(value, GetArenaForAllocation());
+inline void SwitchMmuConfig::_internal_set_buffersize(const std::string& value) {
+  
+  _impl_.buffersize_.Set(value, GetArenaForAllocation());
 }
-inline std::string* SwitchPortConfig::_internal_mutable_ecnkmin() {
-  _impl_._has_bits_[0] |= 0x00000004u;
-  return _impl_.ecnkmin_.Mutable(GetArenaForAllocation());
+inline std::string* SwitchMmuConfig::_internal_mutable_buffersize() {
+  
+  return _impl_.buffersize_.Mutable(GetArenaForAllocation());
 }
-inline std::string* SwitchPortConfig::release_ecnkmin() {
-  // @@protoc_insertion_point(field_release:ns3_proto.SwitchPortConfig.ecnKMin)
-  if (!_internal_has_ecnkmin()) {
-    return nullptr;
-  }
-  _impl_._has_bits_[0] &= ~0x00000004u;
-  auto* p = _impl_.ecnkmin_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.ecnkmin_.IsDefault()) {
-    _impl_.ecnkmin_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
+inline std::string* SwitchMmuConfig::release_buffersize() {
+  // @@protoc_insertion_point(field_release:ns3_proto.SwitchMmuConfig.bufferSize)
+  return _impl_.buffersize_.Release();
 }
-inline void SwitchPortConfig::set_allocated_ecnkmin(std::string* ecnkmin) {
-  if (ecnkmin != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000004u;
+inline void SwitchMmuConfig::set_allocated_buffersize(std::string* buffersize) {
+  if (buffersize != nullptr) {
+    
   } else {
-    _impl_._has_bits_[0] &= ~0x00000004u;
+    
   }
-  _impl_.ecnkmin_.SetAllocated(ecnkmin, GetArenaForAllocation());
+  _impl_.buffersize_.SetAllocated(buffersize, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.ecnkmin_.IsDefault()) {
-    _impl_.ecnkmin_.Set("", GetArenaForAllocation());
+  if (_impl_.buffersize_.IsDefault()) {
+    _impl_.buffersize_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchPortConfig.ecnKMin)
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchMmuConfig.bufferSize)
 }
 
-// optional string ecnKMax = 8;
-inline bool SwitchPortConfig::_internal_has_ecnkmax() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+// optional uint32 pfcDynamicShift = 2;
+inline bool SwitchMmuConfig::_internal_has_pfcdynamicshift() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
-inline bool SwitchPortConfig::has_ecnkmax() const {
-  return _internal_has_ecnkmax();
+inline bool SwitchMmuConfig::has_pfcdynamicshift() const {
+  return _internal_has_pfcdynamicshift();
 }
-inline void SwitchPortConfig::clear_ecnkmax() {
-  _impl_.ecnkmax_.ClearToEmpty();
-  _impl_._has_bits_[0] &= ~0x00000008u;
+inline void SwitchMmuConfig::clear_pfcdynamicshift() {
+  _impl_.pfcdynamicshift_ = 0u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& SwitchPortConfig::ecnkmax() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.ecnKMax)
-  return _internal_ecnkmax();
+inline uint32_t SwitchMmuConfig::_internal_pfcdynamicshift() const {
+  return _impl_.pfcdynamicshift_;
 }
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SwitchPortConfig::set_ecnkmax(ArgT0&& arg0, ArgT... args) {
- _impl_._has_bits_[0] |= 0x00000008u;
- _impl_.ecnkmax_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.ecnKMax)
+inline uint32_t SwitchMmuConfig::pfcdynamicshift() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.SwitchMmuConfig.pfcDynamicShift)
+  return _internal_pfcdynamicshift();
 }
-inline std::string* SwitchPortConfig::mutable_ecnkmax() {
-  std::string* _s = _internal_mutable_ecnkmax();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchPortConfig.ecnKMax)
-  return _s;
+inline void SwitchMmuConfig::_internal_set_pfcdynamicshift(uint32_t value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.pfcdynamicshift_ = value;
 }
-inline const std::string& SwitchPortConfig::_internal_ecnkmax() const {
-  return _impl_.ecnkmax_.Get();
-}
-inline void SwitchPortConfig::_internal_set_ecnkmax(const std::string& value) {
-  _impl_._has_bits_[0] |= 0x00000008u;
-  _impl_.ecnkmax_.Set(value, GetArenaForAllocation());
-}
-inline std::string* SwitchPortConfig::_internal_mutable_ecnkmax() {
-  _impl_._has_bits_[0] |= 0x00000008u;
-  return _impl_.ecnkmax_.Mutable(GetArenaForAllocation());
-}
-inline std::string* SwitchPortConfig::release_ecnkmax() {
-  // @@protoc_insertion_point(field_release:ns3_proto.SwitchPortConfig.ecnKMax)
-  if (!_internal_has_ecnkmax()) {
-    return nullptr;
-  }
-  _impl_._has_bits_[0] &= ~0x00000008u;
-  auto* p = _impl_.ecnkmax_.Release();
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.ecnkmax_.IsDefault()) {
-    _impl_.ecnkmax_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  return p;
-}
-inline void SwitchPortConfig::set_allocated_ecnkmax(std::string* ecnkmax) {
-  if (ecnkmax != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000008u;
-  } else {
-    _impl_._has_bits_[0] &= ~0x00000008u;
-  }
-  _impl_.ecnkmax_.SetAllocated(ecnkmax, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.ecnkmax_.IsDefault()) {
-    _impl_.ecnkmax_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchPortConfig.ecnKMax)
-}
-
-// optional double ecnPMax = 9;
-inline bool SwitchPortConfig::_internal_has_ecnpmax() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
-  return value;
-}
-inline bool SwitchPortConfig::has_ecnpmax() const {
-  return _internal_has_ecnpmax();
-}
-inline void SwitchPortConfig::clear_ecnpmax() {
-  _impl_.ecnpmax_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000020u;
-}
-inline double SwitchPortConfig::_internal_ecnpmax() const {
-  return _impl_.ecnpmax_;
-}
-inline double SwitchPortConfig::ecnpmax() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.ecnPMax)
-  return _internal_ecnpmax();
-}
-inline void SwitchPortConfig::_internal_set_ecnpmax(double value) {
-  _impl_._has_bits_[0] |= 0x00000020u;
-  _impl_.ecnpmax_ = value;
-}
-inline void SwitchPortConfig::set_ecnpmax(double value) {
-  _internal_set_ecnpmax(value);
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.ecnPMax)
+inline void SwitchMmuConfig::set_pfcdynamicshift(uint32_t value) {
+  _internal_set_pfcdynamicshift(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.SwitchMmuConfig.pfcDynamicShift)
 }
 
 // -------------------------------------------------------------------
@@ -2016,44 +2664,114 @@ inline void SwitchGroup::set_baseindex(uint32_t value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchGroup.baseIndex)
 }
 
-// uint32 bufferSize = 3;
-inline void SwitchGroup::clear_buffersize() {
-  _impl_.buffersize_ = 0u;
+// .ns3_proto.SwitchMmuConfig mmu = 3;
+inline bool SwitchGroup::_internal_has_mmu() const {
+  return this != internal_default_instance() && _impl_.mmu_ != nullptr;
 }
-inline uint32_t SwitchGroup::_internal_buffersize() const {
-  return _impl_.buffersize_;
+inline bool SwitchGroup::has_mmu() const {
+  return _internal_has_mmu();
 }
-inline uint32_t SwitchGroup::buffersize() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchGroup.bufferSize)
-  return _internal_buffersize();
+inline void SwitchGroup::clear_mmu() {
+  if (GetArenaForAllocation() == nullptr && _impl_.mmu_ != nullptr) {
+    delete _impl_.mmu_;
+  }
+  _impl_.mmu_ = nullptr;
 }
-inline void SwitchGroup::_internal_set_buffersize(uint32_t value) {
+inline const ::ns3_proto::SwitchMmuConfig& SwitchGroup::_internal_mmu() const {
+  const ::ns3_proto::SwitchMmuConfig* p = _impl_.mmu_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ns3_proto::SwitchMmuConfig&>(
+      ::ns3_proto::_SwitchMmuConfig_default_instance_);
+}
+inline const ::ns3_proto::SwitchMmuConfig& SwitchGroup::mmu() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.SwitchGroup.mmu)
+  return _internal_mmu();
+}
+inline void SwitchGroup::unsafe_arena_set_allocated_mmu(
+    ::ns3_proto::SwitchMmuConfig* mmu) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.mmu_);
+  }
+  _impl_.mmu_ = mmu;
+  if (mmu) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ns3_proto.SwitchGroup.mmu)
+}
+inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::release_mmu() {
   
-  _impl_.buffersize_ = value;
+  ::ns3_proto::SwitchMmuConfig* temp = _impl_.mmu_;
+  _impl_.mmu_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
 }
-inline void SwitchGroup::set_buffersize(uint32_t value) {
-  _internal_set_buffersize(value);
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchGroup.bufferSize)
+inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::unsafe_arena_release_mmu() {
+  // @@protoc_insertion_point(field_release:ns3_proto.SwitchGroup.mmu)
+  
+  ::ns3_proto::SwitchMmuConfig* temp = _impl_.mmu_;
+  _impl_.mmu_ = nullptr;
+  return temp;
+}
+inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::_internal_mutable_mmu() {
+  
+  if (_impl_.mmu_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ns3_proto::SwitchMmuConfig>(GetArenaForAllocation());
+    _impl_.mmu_ = p;
+  }
+  return _impl_.mmu_;
+}
+inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::mutable_mmu() {
+  ::ns3_proto::SwitchMmuConfig* _msg = _internal_mutable_mmu();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchGroup.mmu)
+  return _msg;
+}
+inline void SwitchGroup::set_allocated_mmu(::ns3_proto::SwitchMmuConfig* mmu) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.mmu_;
+  }
+  if (mmu) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(mmu);
+    if (message_arena != submessage_arena) {
+      mmu = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, mmu, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.mmu_ = mmu;
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchGroup.mmu)
 }
 
-// bool pfcDynamic = 4;
-inline void SwitchGroup::clear_pfcdynamic() {
-  _impl_.pfcdynamic_ = false;
+// uint32 queueNum = 4;
+inline void SwitchGroup::clear_queuenum() {
+  _impl_.queuenum_ = 0u;
 }
-inline bool SwitchGroup::_internal_pfcdynamic() const {
-  return _impl_.pfcdynamic_;
+inline uint32_t SwitchGroup::_internal_queuenum() const {
+  return _impl_.queuenum_;
 }
-inline bool SwitchGroup::pfcdynamic() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchGroup.pfcDynamic)
-  return _internal_pfcdynamic();
+inline uint32_t SwitchGroup::queuenum() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.SwitchGroup.queueNum)
+  return _internal_queuenum();
 }
-inline void SwitchGroup::_internal_set_pfcdynamic(bool value) {
+inline void SwitchGroup::_internal_set_queuenum(uint32_t value) {
   
-  _impl_.pfcdynamic_ = value;
+  _impl_.queuenum_ = value;
 }
-inline void SwitchGroup::set_pfcdynamic(bool value) {
-  _internal_set_pfcdynamic(value);
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchGroup.pfcDynamic)
+inline void SwitchGroup::set_queuenum(uint32_t value) {
+  _internal_set_queuenum(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.SwitchGroup.queueNum)
 }
 
 // repeated .ns3_proto.SwitchPortConfig ports = 5;
@@ -2388,7 +3106,97 @@ inline void Link::set_allocated_delay(std::string* delay) {
 
 // Topology
 
-// .ns3_proto.AllNodes nodes = 1;
+// .ns3_proto.GlobalConfig globalConfig = 1;
+inline bool Topology::_internal_has_globalconfig() const {
+  return this != internal_default_instance() && _impl_.globalconfig_ != nullptr;
+}
+inline bool Topology::has_globalconfig() const {
+  return _internal_has_globalconfig();
+}
+inline void Topology::clear_globalconfig() {
+  if (GetArenaForAllocation() == nullptr && _impl_.globalconfig_ != nullptr) {
+    delete _impl_.globalconfig_;
+  }
+  _impl_.globalconfig_ = nullptr;
+}
+inline const ::ns3_proto::GlobalConfig& Topology::_internal_globalconfig() const {
+  const ::ns3_proto::GlobalConfig* p = _impl_.globalconfig_;
+  return p != nullptr ? *p : reinterpret_cast<const ::ns3_proto::GlobalConfig&>(
+      ::ns3_proto::_GlobalConfig_default_instance_);
+}
+inline const ::ns3_proto::GlobalConfig& Topology::globalconfig() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Topology.globalConfig)
+  return _internal_globalconfig();
+}
+inline void Topology::unsafe_arena_set_allocated_globalconfig(
+    ::ns3_proto::GlobalConfig* globalconfig) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.globalconfig_);
+  }
+  _impl_.globalconfig_ = globalconfig;
+  if (globalconfig) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ns3_proto.Topology.globalConfig)
+}
+inline ::ns3_proto::GlobalConfig* Topology::release_globalconfig() {
+  
+  ::ns3_proto::GlobalConfig* temp = _impl_.globalconfig_;
+  _impl_.globalconfig_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::ns3_proto::GlobalConfig* Topology::unsafe_arena_release_globalconfig() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Topology.globalConfig)
+  
+  ::ns3_proto::GlobalConfig* temp = _impl_.globalconfig_;
+  _impl_.globalconfig_ = nullptr;
+  return temp;
+}
+inline ::ns3_proto::GlobalConfig* Topology::_internal_mutable_globalconfig() {
+  
+  if (_impl_.globalconfig_ == nullptr) {
+    auto* p = CreateMaybeMessage<::ns3_proto::GlobalConfig>(GetArenaForAllocation());
+    _impl_.globalconfig_ = p;
+  }
+  return _impl_.globalconfig_;
+}
+inline ::ns3_proto::GlobalConfig* Topology::mutable_globalconfig() {
+  ::ns3_proto::GlobalConfig* _msg = _internal_mutable_globalconfig();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Topology.globalConfig)
+  return _msg;
+}
+inline void Topology::set_allocated_globalconfig(::ns3_proto::GlobalConfig* globalconfig) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete _impl_.globalconfig_;
+  }
+  if (globalconfig) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(globalconfig);
+    if (message_arena != submessage_arena) {
+      globalconfig = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, globalconfig, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  _impl_.globalconfig_ = globalconfig;
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Topology.globalConfig)
+}
+
+// .ns3_proto.AllNodes nodes = 2;
 inline bool Topology::_internal_has_nodes() const {
   return this != internal_default_instance() && _impl_.nodes_ != nullptr;
 }
@@ -2478,7 +3286,7 @@ inline void Topology::set_allocated_nodes(::ns3_proto::AllNodes* nodes) {
   // @@protoc_insertion_point(field_set_allocated:ns3_proto.Topology.nodes)
 }
 
-// repeated .ns3_proto.Link links = 2;
+// repeated .ns3_proto.Link links = 3;
 inline int Topology::_internal_links_size() const {
   return _impl_.links_.size();
 }
@@ -2521,6 +3329,12 @@ Topology::links() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

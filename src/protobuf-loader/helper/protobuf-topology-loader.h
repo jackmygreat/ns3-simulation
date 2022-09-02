@@ -21,11 +21,11 @@
 #ifndef PROTOBUF_TOPOLOGY_READER_H
 #define PROTOBUF_TOPOLOGY_READER_H
 
+#include "ns3/pfc-switch.h"
 #include "ns3/dc-topology.h"
-#include "ns3/core-module.h"
-#include "ns3/dc-topology.h"
+#include "ns3/dc-switch.h"
+#include "ns3/dc-host.h"
 #include "ns3/topology.pb.h"
-
 
 /**
  * \file
@@ -48,36 +48,46 @@ public:
   /**
    * \brief Run the configuration Python script to generate Protobuf binary.
    */
-  void RunConfigScript (std::string configFile);
+  void RunConfigScript (const std::string configFile);
 
-  DcTopology* LoadTopology ();
+  DcTopology *LoadTopology ();
 
-private:
-
+protected:
   /**
    * \brief Read topology configuration from m_protoBinaryName file.  
    */
   ns3_proto::Topology ReadProtoTopology ();
 
-  void LoadHosts (google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> hostGroups,
-                  DcTopology &topology);
-  
-  void LoadSwitches (google::protobuf::RepeatedPtrField<ns3_proto::SwitchGroup> switchGroups,
+  void LoadHosts (const google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> hostGroups,
                   DcTopology &topology);
 
-  DcTopology::TopoNode CreateOneHost (google::protobuf::RepeatedPtrField<ns3_proto::HostPortConfig> portsConfig);
+  void LoadSwitches (const google::protobuf::RepeatedPtrField<ns3_proto::SwitchGroup> switchGroups,
+                     DcTopology &topology);
 
-  DcTopology::TopoNode CreateOneSwitch (google::protobuf::RepeatedPtrField<ns3_proto::SwitchPortConfig> portsConfig);
+  DcTopology::TopoNode
+  CreateOneHost (const ns3_proto::HostGroup hostGroup);
+
+  DcTopology::TopoNode CreateOneSwitch (
+      const uint32_t queueNum,
+      const ns3_proto::SwitchGroup switchGroup);
 
   /**
    * Add one port to the switch `sw` according to portConfig
    */
-  void AddOnePortToSwitch (ns3_proto::SwitchPortConfig portConfig, DcTopology::TopoNode &sw);
+  void AddOnePortToSwitch (const ns3_proto::SwitchPortConfig portConfig, 
+                           const Ptr<DcSwitch> sw, const Ptr<SwitchMmu> mmu);
 
+  /**
+   * Config SwitchMmu
+   */
+  void ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig, const Ptr<SwitchMmu> mmu);
+
+private:
   // Notice: this variable should be consistent with `TopologyGenerator.outputFile`
   // in config/topology_helper.py
-  std::string m_protoBinaryName = "config/topology.bin"; 
-  
+  std::string m_protoBinaryName = "config/topology.bin";
+
+  uint32_t m_ecmpSeed = 0;
 };
 
 } // namespace ns3

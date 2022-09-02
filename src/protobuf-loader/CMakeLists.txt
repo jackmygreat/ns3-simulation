@@ -8,21 +8,24 @@ if(${NS3_PROTOBUF})
   add_custom_target(
 	compile_protobuf
 	COMMAND ${Protobuf_PROTOC_EXECUTABLE} -I=protobuf --cpp_out=model --python_out=${CMAKE_SOURCE_DIR}/config/ protobuf/topology.proto
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/protobuf-topology/
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/protobuf-loader/
 	)
 
   build_lib(
-	LIBNAME protobuf-topology
+	LIBNAME protobuf-loader
 	SOURCE_FILES
 	    helper/protobuf-topology-loader.cc
-		model/dc-topology.cc
 	    model/topology.pb.cc
 	HEADER_FILES
         helper/protobuf-topology-loader.h
-		model/dc-topology.h
 	    model/topology.pb.h
 	LIBRARIES_TO_LINK
+	    ${libcore}
 	    ${libnetwork}
+		${librdma}
+		${libdpsk}
+		${libpfc}
+		${libdc-env}
 	    ${PROTOBUF_LIBRARY}
 	DEPENDENCIES
 	    compile_protobuf # compile protobuf before building the module
