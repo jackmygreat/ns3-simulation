@@ -77,11 +77,13 @@ def _setValuesToMessage(messgaeType, valuesDict):
     This is used for simplicity to create simple messages.
     '''
     instance = messgaeType()
-    for name, value in kwargs.items():
+    for name, value in valuesDict.items():
         if isinstance(value, list):
-            getattr(ins, name).extend(value)
+            getattr(instance, name).extend(value)
+        elif isinstance(value, str):
+            setattr(instance, name, value.replace(" ", ""))
         else:
-            setattr(ins, name, value)
+            setattr(instance, name, value)
     return instance
 
     
@@ -110,7 +112,7 @@ def switchPortGenerate(queueNum: int,
 
 class GlobalConfigGenerator:
 
-    def __int__(self):
+    def __init__(self):
         self.globalConfig = GlobalConfig()
 
     def setConfig(self, randomSeed=0):
@@ -153,8 +155,9 @@ class NodesGenerator:
             raise TypeError("parameter `ports` should be a list")
         
         group = SwitchGroup()
-        group.mmu.pfcDynamic = pfcDynamic
-        group.mmu.bufferSize = bufferSize # Units.parseBytes(bufferSize)
+        if pfcDynamic:
+            group.mmu.pfcDynamicShift = 2
+        group.mmu.bufferSize = bufferSize.replace(" ", "") # Units.parseBytes(bufferSize)
         group.queueNum = queueNum
         group.ports.extend([switchPortGenerate(queueNum, **port) for port in ports])
         return self.addToGroup(self.switchGroups, group, num)
@@ -212,8 +215,8 @@ class LinksGenerator:
         link.node2 = node2
         link.port1 = port1
         link.port2 = port2
-        link.rate = rate
-        link.delay = delay
+        link.rate = rate.replace(" ", "")
+        link.delay = delay.replace(" ", "")
         return link
             
     def __init__(self):

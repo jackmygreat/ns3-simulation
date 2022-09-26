@@ -22,13 +22,18 @@
 #define DC_TOPOLOGY_H
 
 #include "ns3/core-module.h"
+#include "ns3/net-device.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/dpsk-module.h"
 #include "ns3/pfc-module.h"
+#include "ns3/point-to-point-net-device.h"
 #include "ns3/topology.pb.h"
 
+#include <_types/_uint32_t.h>
 #include <vector>
+#include <iterator>
+#include <cstddef>
 
 /**
  * \file
@@ -36,25 +41,6 @@
  * ns3::DcTopology declaration
  */
 namespace ns3 {
-
-class DcNode : public Object
-{
-private:
-  const Ptr<Node> m_node;
-}; // class DcNode
-
-  class HostNode : DcNode
-{
-public:
-  class HostPort
-  {
-    
-  }; // class HostPort
-  
-private:
-  const Ptr<DpskNetDevice> m_dev;
-
-}; // class Host
 
 class DcTopology : public Object
 {
@@ -73,17 +59,262 @@ public:
   {
     enum NodeType { HOST, SWITCH };
     NodeType type;
-    Ptr<DpskMachine> nodePtr;
+    Ptr<Node> nodePtr;
+
+    const Ptr<Node>&
+    operator-> () const
+    {
+      return nodePtr;
+    }
   };
 
   void InstallNodes (ns3_proto::AllNodes nodes);
 
-  void InstallNode (uint32_t index, TopoNode node);
+  void InstallNode (const uint32_t index, const TopoNode node);
+
+  const TopoNode &GetNode (const uint32_t index) const;
+
+  const Ptr<PointToPointNetDevice> GetNetDeviceOfNode (const uint32_t nodei, const uint32_t devi) const;
+
+  const Ipv4InterfaceAddress GetInterfaceOfNode(const uint32_t nodei, uint32_t intfi) const;
 
 private:
-
   std::vector<TopoNode> m_nodes;
-  Ipv4AddressHelper m_ipAddrHelper;
+
+public:
+  /**
+   * Iterators:
+   * 1. use begin(), end() to iterate over all nodes
+   * 2. use hosts_begin(), hosts_end() to iterate over hosts
+   * 3. use switches_begin(), switches_end() to iterate over switches
+   *
+   * The definitions are at the end.
+   */
+
+  /* 1. Iterator */
+  class Iterator
+  {
+  public:
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = TopoNode;
+    using pointer = TopoNode *; // or also value_type*
+    using reference = TopoNode &; // or also value_type&
+
+    Iterator (pointer ptr) : m_ptr (ptr)
+    {
+    }
+
+    reference
+    operator* () const
+    {
+      return *m_ptr;
+    }
+    
+    pointer
+    operator-> ()
+    {
+      return m_ptr;
+    }
+
+    // Prefix increment
+    Iterator &
+    operator++ ()
+    {
+      m_ptr++;
+      return *this;
+    }
+
+    // Postfix increment
+    Iterator
+    operator++ (int)
+    {
+      Iterator tmp = *this;
+      ++(*this);
+      return tmp;
+    }
+
+    friend bool
+    operator== (const Iterator &lhs, const Iterator &rhs)
+    {
+      return lhs.m_ptr == rhs.m_ptr;
+    }
+
+    friend bool
+    operator!= (const Iterator &lhs, const Iterator &rhs)
+    {
+      return lhs.m_ptr != rhs.m_ptr;
+    }
+
+  protected:
+    pointer m_ptr;
+  };
+  
+  Iterator
+  begin ()
+  {
+    return Iterator (&m_nodes[0]);
+  }
+  
+  Iterator
+  end ()
+  {
+    return Iterator (&(*m_nodes.end ()));
+  }
+  
+  class ConstIterator
+  {
+  public:
+    using iterator_category = std::random_access_iterator_tag;
+    using difference_type = std::ptrdiff_t;
+    using value_type = TopoNode;
+    using pointer = const TopoNode *; // or also value_type*
+    using reference = const TopoNode &; // or also value_type&
+
+    ConstIterator (pointer ptr) : m_ptr (ptr)
+    {
+    }
+
+    reference
+    operator* () const
+    {
+      return *m_ptr;
+    }
+    
+    pointer
+    operator-> () const
+    {
+      return m_ptr;
+    }
+
+    // Prefix increment
+    ConstIterator &
+    operator++ ()
+    {
+      m_ptr++;
+      return *this;
+    }
+
+    // Postfix increment
+    ConstIterator
+    operator++ (int)
+    {
+      ConstIterator tmp = *this;
+      ++(*this);
+      return tmp;
+    }
+
+    friend bool
+    operator== (const ConstIterator &lhs, const ConstIterator &rhs)
+    {
+      return lhs.m_ptr == rhs.m_ptr;
+    }
+
+    friend bool
+    operator!= (const ConstIterator &lhs, const ConstIterator &rhs)
+    {
+      return lhs.m_ptr != rhs.m_ptr;
+    }
+
+  protected:
+    pointer m_ptr;
+  };
+
+  ConstIterator
+  begin() const
+  {
+    return ConstIterator (&m_nodes[0]);
+  }
+
+  ConstIterator
+  end () const
+  {
+    return ConstIterator (&(*m_nodes.end ()));
+  }
+
+  /* 2. HostIterator */
+  class HostIterator final : public Iterator
+  {
+  public:
+    using iterator_category = std::bidirectional_iterator_tag;
+
+    HostIterator(pointer ptr, std::vector<TopoNode>::iterator end): Iterator(ptr), m_end(&(*end)) {}
+    
+    // Prefix increment
+    HostIterator
+    operator++ ()
+    {
+      while ((++m_ptr)->type != TopoNode::NodeType::HOST && m_ptr != m_end) {}
+      return *this;
+    }
+
+    // Postfix increment
+    HostIterator
+    operator++ (int)
+    {
+      HostIterator tmp = *this;
+      while ((++m_ptr)->type != TopoNode::NodeType::HOST && m_ptr != m_end) {}
+      return tmp;
+    }
+
+  private:
+    const pointer m_end;
+  }; // struct HostIterator
+  
+  HostIterator
+  hosts_begin ()
+  {
+    return HostIterator (&m_nodes[0], m_nodes.end ());
+  }
+  
+  HostIterator
+  hosts_end ()
+  {
+    return HostIterator (&(*m_nodes.end ()), m_nodes.end ());
+  }
+
+  /* 3. SwitchIterator */
+  class SwitchIterator final : public Iterator
+  {
+  public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    
+    SwitchIterator (pointer ptr, const std::vector<TopoNode>::iterator end) : Iterator(ptr), m_end (&(*end))
+    {
+    }
+    
+    // Prefix increment
+    SwitchIterator
+    operator++ ()
+    {
+      while ((++m_ptr)->type != TopoNode::NodeType::SWITCH && m_ptr != m_end) {}
+      return *this;
+    }
+
+    // Postfix increment
+    SwitchIterator
+    operator++ (int)
+    {
+      SwitchIterator tmp = *this;
+      while ((++m_ptr)->type != TopoNode::NodeType::SWITCH && m_ptr != m_end) {}
+      return tmp;
+    }
+
+  private:
+    const pointer m_end;
+  };
+  
+  SwitchIterator
+  switches_begin ()
+  {
+    return SwitchIterator (&m_nodes[0], m_nodes.end ());
+  }
+  
+  SwitchIterator
+  switches_end ()
+  {
+    return SwitchIterator (&(*m_nodes.end ()), m_nodes.end ());
+  }
 
 }; // class DcTopology
 

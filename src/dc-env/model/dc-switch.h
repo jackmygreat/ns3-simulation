@@ -20,16 +20,17 @@
 #define DC_SWITCH_H
 
 #include <stdint.h>
-#include "ns3/dpsk-net-device.h"
+#include "ns3/node.h" 
 #include "ns3/net-device.h"
 #include "ns3/switch-mmu.h"
-#include "ns3/dpsk-machine.h"
+// #include "ns3/dpsk-net-device.h"
+// #include "ns3/dpsk-machine.h"
 #include <map>
 
 
 namespace ns3 {
 
-class DcSwitch : public DpskMachine
+class DcSwitch : public Node
 {
 public:
   static TypeId GetTypeId (void);
@@ -45,7 +46,7 @@ public:
    * \param source the packet source
    * \param destination the packet destination
    */
-  virtual bool SendFromDevice (Ptr<DpskNetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
+  virtual bool SendFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
                                const Address &source, const Address &destination);
   /**
    * \brief Receives a packet from one device.
@@ -56,7 +57,7 @@ public:
    * \param destination the packet destination
    * \param packetType the packet type (e.g., host, broadcast, etc.)
    */
-  virtual bool ReceiveFromDevice (Ptr<DpskNetDevice> device, Ptr<const Packet> packet,
+  virtual bool ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet,
                                   uint16_t protocol, const Address &source,
                                   const Address &destination, NetDevice::PacketType packetType);
 

@@ -47,6 +47,8 @@ public:
 
   uint32_t AddDevice (Ptr<DpskNetDevice> device);
 
+  const Ptr<DpskNetDevice>& GetDevice(uint32_t index);
+
 protected:
   
   void DoInitialize (void);

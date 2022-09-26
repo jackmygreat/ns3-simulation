@@ -32,7 +32,7 @@ TypeId
 DcHost::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::DcHost")
-                          .SetParent<DpskMachine> ()
+                          .SetParent<Node> ()
                           .SetGroupName ("DcMachine")
                           .AddConstructor<DcHost> ();
   return tid;
@@ -57,18 +57,17 @@ DcHost::~DcHost ()
 //   return ReceiveFromDevice (dpskDev, packet, protocol, from, device->GetAddress (), NetDevice::PacketType (0));
 // }
 
-
 bool
 DcHost::SendFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
-                               const Address &source, const Address &destination)
+                        const Address &source, const Address &destination)
 {
   return false;
 }
 
 bool
-DcHost::ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet,
-                   uint16_t protocol, const Address &source,
-                   const Address &destination, NetDevice::PacketType packetType)
+DcHost::ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
+                           const Address &source, const Address &destination,
+                           NetDevice::PacketType packetType)
 {
   return false;
 }

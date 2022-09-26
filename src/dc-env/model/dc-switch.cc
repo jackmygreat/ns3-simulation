@@ -32,7 +32,7 @@ TypeId
 DcSwitch::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::DcSwitch")
-                          .SetParent<DpskMachine> ()
+                          .SetParent<Node> ()
                           .SetGroupName ("DpskMachine")
                           .AddConstructor<DcSwitch> ();
   return tid;
@@ -47,16 +47,16 @@ DcSwitch::~DcSwitch ()
 {
   NS_LOG_FUNCTION_NOARGS ();
 }
-  
+
 bool
-DcSwitch::SendFromDevice (Ptr<DpskNetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
+DcSwitch::SendFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
                           const Address &source, const Address &destination)
 {
   return false;
 }
 
 bool
-DcSwitch::ReceiveFromDevice (Ptr<DpskNetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
+DcSwitch::ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
                              const Address &source, const Address &destination,
                              NetDevice::PacketType packetType)
 {
@@ -82,12 +82,11 @@ DcSwitch::InstallMmu (Ptr<SwitchMmu> mmu)
 {
   NS_LOG_FUNCTION (mmu);
   m_mmu = mmu;
-  m_mmu->ConfigNQueue(m_nQueues);
-  for (const auto &dev : m_devices)
+  m_mmu->ConfigNQueue (m_nQueues);
+  for (int i = 0; i < this->GetNDevices (); i++)
     {
-      m_mmu->AggregateDevice (dev);
+      // m_mmu->AggregateDevice (this->GetDevice(i));
     }
-
 }
 
 } // namespace ns3

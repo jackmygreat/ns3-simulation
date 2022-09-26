@@ -18,14 +18,40 @@
  * Author: Pavinberg (pavin0702@gmail.com)
  */
 
-#include "ns3/protobuf-topology-loader.h"
+#ifndef PROTOBUF_FLOWS_LOADER_H
+#define PROTOBUF_FLOWS_LOADER_H
 
-using namespace ns3;
+#include "ns3/dc-topology.h"
+#include "ns3/flows.pb.h"
 
-int
-main ()
+/**
+ * \file
+ * \ingroup protobuf-loader
+ * ns3::ProtobufFlowsLoader declaration
+ */
+namespace ns3 {
+
+class ProtobufFlowsLoader
 {
-  std::string fname = "config/dumbell.bin";
-  ProtobufTopologyLoader topoReader;
-  topoReader.Read (fname);
-}
+public:
+  ProtobufFlowsLoader ();
+
+  void LoadFlowsTo (DcTopology &topology);
+
+protected:
+
+  /**
+   * \brief Read flows configuration from m_protoBinaryName file.
+   */
+  ns3_proto::Flows ReadProtoFlows ();
+
+private:
+  // Notice: this variable should be consistent with `FlowsGenerator.outputFile`
+  // in config/flows_helper.py
+  std::string m_protoBinaryName = "config/flows.bin";
+
+}; // class ProtobufFlowsLoader
+
+} // namespace ns3
+
+#endif

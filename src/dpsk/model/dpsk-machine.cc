@@ -17,6 +17,7 @@
  */
 
 #include "dpsk-machine.h"
+#include "ns3/dpsk-net-device.h"
 #include "ns3/object-base.h"
 #include "ns3/log.h"
 #include "dpsk-net-device.h"
@@ -72,6 +73,13 @@ DpskMachine::AddDevice (Ptr<DpskNetDevice> device)
   Simulator::ScheduleWithContext (this->GetId (), Seconds (0.0), &DpskNetDevice::Initialize,
                                   device);
   return index;
+}
+
+const Ptr<DpskNetDevice>&
+DpskMachine::GetDevice(uint32_t index)
+{
+  NS_LOG_FUNCTION (this << index);
+  return m_devices[index];
 }
 
 uint32_t

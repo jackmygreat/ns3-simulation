@@ -9,6 +9,7 @@ The Network Simulator, Version 3
 3) [Running ns-3](#running-ns-3)
 4) [Getting access to the ns-3 documentation](#getting-access-to-the-ns-3-documentation)
 5) [Working with the development version of ns-3](#working-with-the-development-version-of-ns-3)
+6) [Use Protobuf and DC topology](#use-protobuf-and-dc-topology)
 
 Note:  Much more substantial information about ns-3 can be found at
 https://www.nsnam.org
@@ -124,3 +125,50 @@ However, we recommend to follow the Gitlab guidelines for starters,
 that includes creating a Gitlab account, forking the ns-3-dev project
 under the new account's name, and then cloning the forked repository.
 You can find more information in the [manual](https://www.nsnam.org/docs/manual/html/working-with-git.html).
+
+## Use Protobuf and DC topology
+
+**NOTICE**: this feature is still working in progress and does not have full function for now.
+
+### Features
+
+1. Use Python script to serve as the configuration (see `config/dumbell_topo.py` as an example). It uses Protobuf to transform the configuration to serialized binary files to be read by C++ .
+2. Provide 3 modules for now to add support for datacenter. `src/dc-env/` carries the topology information in `DcTopology`. `src/protobuf-loader/` is used to load protobuf binary files to `DcTopology`. `src/dcb/` contains the datacenter protocol stacks.
+
+### Usage
+
+1. Install Protobuf
+
+	Follow the [instructions](https://github.com/protocolbuffers/protobuf/blob/main/src/README.md) in the official page.
+	
+	To build from source, download the one of the [releases](https://github.com/protocolbuffers/protobuf/releases/latest). Since we only need support for C++ and Python, user can download the release of "protobuf-python".
+	
+2. Configure ns-3 to use protobuf
+   
+   Add the flag `--enable-protobuf` when configuring. For example:
+   
+   ```bash
+   $ ./ns3 configure --build-profile=debug --enable-examples --enable-protobuf
+   ```
+
+3. Run the example:
+
+	One program has two parts, the Python configuration script and the C++ program.
+	First, run the Python configuration script:
+	
+	```bash
+	$ python3 config/dumbell_topo.py
+	```
+
+	This will generate two binary files `config/topology.bin` and `config/flows.bin`.
+	
+	Then, run the C++ program which will automatically find the two files and run the ns-3 logic.
+
+	```bash
+	$ cp src/protobuf-loader/example/dumbell.cc scratch/
+	$ ./ns3 run dumbell
+	```
+
+	If you do not want to run the Python script manually every time, you can use the `ProtobufTopologyLoader::RunConfigScript()` in the C++ file, as is shown in line 32 in `src/protobuf-loader/example/dumbell.cc`.
+
+

@@ -19,13 +19,14 @@
 #ifndef DC_HOST_H
 #define DC_HOST_H
 
-#include "ns3/dpsk-net-device.h"
-#include "ns3/dpsk-machine.h"
+#include "ns3/node.h"
+// #include "ns3/dpsk-net-device.h"
+// #include "ns3/dpsk-machine.h"
 
 
 namespace ns3 {
 
-class DcHost : public DpskMachine
+class DcHost : public Node
 {
 public:
   static TypeId GetTypeId (void);

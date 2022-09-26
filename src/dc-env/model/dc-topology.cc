@@ -19,13 +19,13 @@
  */
 
 #include "dc-topology.h"
-#include "ns3/dpsk-net-device.h"
+#include "ns3/fatal-error.h"
 #include "ns3/log-macros-enabled.h"
 #include "ns3/object-base.h"
 #include "ns3/object.h"
+#include "ns3/point-to-point-net-device.h"
 #include "ns3/topology.pb.h"
 #include "ns3/type-id.h"
-#include <_types/_uint32_t.h>
 
 /**
  * \file
@@ -50,7 +50,7 @@ DcTopology::DcTopology (uint32_t nodeNum)
 {
   NS_LOG_FUNCTION (this);
   m_nodes.resize (nodeNum);
-  m_ipAddrHelper.SetBase ("10.0.0.0", "255.0.0.0");
+  // m_ipAddrHelper.SetBase ("10.0.0.0", "255.0.0.0");
 }
 
 DcTopology::~DcTopology ()
@@ -59,40 +59,44 @@ DcTopology::~DcTopology ()
 }
 
 void
-DcTopology::InstallNodes (ns3_proto::AllNodes nodes)
+DcTopology::InstallNode (const uint32_t index, const TopoNode node)
 {
-  // InstallHosts (nodes.hostgroups ());
-  // InstallSwitches (nodes.switchgroups ());
-}
-
-void
-DcTopology::InstallNode (uint32_t index, TopoNode node)
-{
+  if (index >= m_nodes.size()) {
+    NS_FATAL_ERROR ("node index " << index << " is out of bound, since there are " << m_nodes.size() << " nodes initialized.");
+  }
   m_nodes[index] = node;
 }
-/**
- * How to configure a host with the configuration of the HostGroup
- */
-// DcTopology::TopoNode
-// DcTopology::ConfigHost (ns3_proto::HostGroup hostGroup)
-// {
-//   DcTopology::TopoNode topoNode = {
-//     .type = DcTopology::TopoNode::NodeType::HOST,
-//     .nodePtr = CreateObject<Node> ()
-//   };
-//   for (auto port: hostGroup.ports())
-//     {
-//       const Ptr<DpskNetDevice> dev = CreateObject<DpskNetDevice> ();
-//       dev->SetAddress (Mac48Address::Allocate ());
-//       dev->SetTxMode (DpskNetDevice::TxMode::ACTIVE);
-//       topoNode.nodePtr->AddDevice (dev);
-//       const Ptr<PfcHostPort> impl = CreateObject<PfcHostPort> ();
-//       dev->SetImplementation (impl);
-//       impl->SetupQueues(1); // TODO: support more queues
-//       impl->EnablePfc(port.pfcenabled());
 
-//     }
+const DcTopology::TopoNode&
+DcTopology::GetNode (const uint32_t index) const
+{
+  if (index >= m_nodes.size()) {
+    NS_FATAL_ERROR ("node index " << index << " is out of bound, since there are " << m_nodes.size() << " nodes initialized.");
+  }
+  return m_nodes[index];
+}
 
-// }
+const Ptr<PointToPointNetDevice>
+DcTopology::GetNetDeviceOfNode (const uint32_t nodei, const uint32_t devi) const
+{
+  const int ndev = GetNode (nodei)->GetNDevices();
+  if (devi >= ndev)
+    {
+      NS_FATAL_ERROR ("port index " << devi << " is out of bound, since there are " << ndev << " devices installed");
+    }
+  return StaticCast<PointToPointNetDevice>(GetNode (nodei)->GetDevice(devi));
+}
+
+const Ipv4InterfaceAddress
+DcTopology::GetInterfaceOfNode(const uint32_t nodei, uint32_t intfi) const
+{
+  Ptr<Ipv4> ipv4 = GetNode(nodei)->GetObject<Ipv4>();
+  const int nintf = ipv4->GetNInterfaces ();
+  if (intfi > nintf)
+    {
+      NS_FATAL_ERROR ("interface index " << intfi << " is out of bound, since there are " << nintf << " devices installed");
+    }
+  return std::move(ipv4->GetAddress(intfi, 0)); // TODO: just return the first address for now
+}
 
 } // namespace ns3
