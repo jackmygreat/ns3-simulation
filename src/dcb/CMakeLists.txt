@@ -2,8 +2,18 @@ build_lib(
   LIBNAME dcb
   SOURCE_FILES
       helper/dcb-stack-helper.cc
+	  helper/dcb-switch-stack-helper.cc
+	  model/dcb-traffic-control.cc
+	  model/dcb-net-device.cc
+	  model/dcb-channel.cc
+	  utils/pfc-header.cc
   HEADER_FILES
       helper/dcb-stack-helper.h
+	  helper/dcb-switch-stack-helper.h
+	  model/dcb-traffic-control.h
+	  model/dcb-net-device.h
+	  model/dcb-channel.h
+	  utils/pfc-header.h
   LIBRARIES_TO_LINK
       ${libcore}
 	  ${libnetwork}

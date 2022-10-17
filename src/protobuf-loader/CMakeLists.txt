@@ -35,6 +35,7 @@ if(${NS3_PROTOBUF})
 		${libpoint-to-point}
 		${libapplications}
 		${libdc-env}
+		${libdcb}
 	    ${PROTOBUF_LIBRARY}
 	)
 endif()

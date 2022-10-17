@@ -77,16 +77,16 @@ DcSwitch::SetNQueues (uint32_t nQueues)
   m_nQueues = nQueues;
 }
 
-void
-DcSwitch::InstallMmu (Ptr<SwitchMmu> mmu)
-{
-  NS_LOG_FUNCTION (mmu);
-  m_mmu = mmu;
-  m_mmu->ConfigNQueue (m_nQueues);
-  for (int i = 0; i < this->GetNDevices (); i++)
-    {
-      // m_mmu->AggregateDevice (this->GetDevice(i));
-    }
-}
+// void
+// DcSwitch::InstallMmu (Ptr<SwitchMmu> mmu)
+// {
+//   NS_LOG_FUNCTION (mmu);
+//   m_mmu = mmu;
+//   m_mmu->ConfigNQueue (m_nQueues);
+//   for (int i = 0; i < this->GetNDevices (); i++)
+//     {
+//       // m_mmu->AggregateDevice (this->GetDevice(i));
+//     }
+// }
 
 } // namespace ns3

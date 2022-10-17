@@ -20,6 +20,7 @@
 
 // #include <_types/_uint32_t.h>
 #include <fstream>
+#include "ns3/boolean.h"
 #include "ns3/data-rate.h"
 #include "ns3/dc-topology.h"
 #include "ns3/global-router-interface.h"
@@ -28,14 +29,13 @@
 #include "ns3/net-device-container.h"
 #include "ns3/nstime.h"
 #include "ns3/object-factory.h"
-#include "ns3/pfc-host-port.h"
-#include "ns3/pfc-host.h"
-#include "ns3/point-to-point-helper.h"
-#include "ns3/point-to-point-net-device.h"
-#include "ns3/point-to-point-channel.h"
 #include "ns3/topology.pb.h"
 #include "ns3/traced-value.h"
 #include "protobuf-topology-loader.h"
+#include "ns3/dcb-net-device.h"
+#include "ns3/dcb-channel.h"
+#include "ns3/dcb-stack-helper.h"
+#include "ns3/dcb-switch-stack-helper.h"
 
 /**
  * \file
@@ -79,8 +79,8 @@ ProtobufTopologyLoader::LoadTopology ()
   AssignAddresses (topology);
   InitGlobalRouting ();
 
-  LogIpAddress(topology);
-
+  // LogIpAddress(topology);
+  
   return topology;
 }
 
@@ -110,6 +110,7 @@ ProtobufTopologyLoader::LoadHosts (
     const google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> &hostGroups,
     DcTopology &topology)
 {
+  NS_LOG_FUNCTION (this);
   for (const ns3_proto::HostGroup &hostGroup : hostGroups)
     {
       uint32_t num = hostGroup.nodesnum ();
@@ -127,6 +128,7 @@ ProtobufTopologyLoader::LoadSwitches (
     const google::protobuf::RepeatedPtrField<ns3_proto::SwitchGroup> &switchGroups,
     DcTopology &topology)
 {
+  NS_LOG_FUNCTION (this);
   for (const ns3_proto::SwitchGroup &switchGroup : switchGroups)
     {
       const uint32_t num = switchGroup.nodesnum ();
@@ -144,6 +146,7 @@ void
 ProtobufTopologyLoader::LoadLinks (
     const google::protobuf::RepeatedPtrField<ns3_proto::Link> &linksConfig, DcTopology &topology)
 {
+  NS_LOG_FUNCTION (this);
   for (const ns3_proto::Link &linkConfig : linksConfig)
     {
       InstallLink (linkConfig, topology);
@@ -153,12 +156,13 @@ ProtobufTopologyLoader::LoadLinks (
 DcTopology::TopoNode
 ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
 {
+  NS_LOG_FUNCTION (this);
   const Ptr<DcHost> host = CreateObject<DcHost> ();
   // TODO: optimize code here
   for (auto port : hostGroup.ports ())
     {
       // create a net device for the port
-      const Ptr<PointToPointNetDevice> dev = CreateObject<PointToPointNetDevice> ();
+      const Ptr<DcbNetDevice> dev = CreateObject<DcbNetDevice> ();
       host->AddDevice (dev);
       dev->SetAddress (Mac48Address::Allocate ());
 
@@ -189,20 +193,21 @@ DcTopology::TopoNode
 ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
                                          const ns3_proto::SwitchGroup &switchGroup)
 {
+  NS_LOG_FUNCTION (this);
   const Ptr<DcSwitch> sw = CreateObject<DcSwitch> ();
   // Basic configurations
   sw->SetEcmpSeed (m_ecmpSeed);
   sw->SetNQueues (queueNum);
 
   // Configure SwitchMmu
-  const Ptr<SwitchMmu> mmu = CreateObject<SwitchMmu> ();
-  sw->InstallMmu (mmu);
-  ConfigMmu (switchGroup.mmu (), mmu);
+  // const Ptr<SwitchMmu> mmu = CreateObject<SwitchMmu> ();
+  // sw->InstallMmu (mmu);
+  // ConfigMmu (switchGroup.mmu (), mmu);
 
   // Configure ports
   for (auto portConfig : switchGroup.ports ())
     {
-      AddOnePortToSwitch (portConfig, sw, mmu);
+      AddPortToSwitch (portConfig, sw);
     }
 
   // DpskHelper dpskHelper;
@@ -215,11 +220,12 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
 }
 
 void
-ProtobufTopologyLoader::AddOnePortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
-                                            const Ptr<DcSwitch> sw, const Ptr<SwitchMmu> mmu)
+ProtobufTopologyLoader::AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
+                                            const Ptr<DcSwitch> sw)
 {
+  NS_LOG_FUNCTION (this);
   // Create a net device for this port
-  Ptr<PointToPointNetDevice> dev = CreateObject<PointToPointNetDevice> ();
+  Ptr<DcbNetDevice> dev = CreateObject<DcbNetDevice> ();
   sw->AddDevice (dev);
   dev->SetAddress (Mac48Address::Allocate ());
 
@@ -261,39 +267,39 @@ ProtobufTopologyLoader::AddOnePortToSwitch (const ns3_proto::SwitchPortConfig po
     }
 }
 
-void
-ProtobufTopologyLoader::ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig,
-                                   const Ptr<SwitchMmu> mmu)
-{
-  uint32_t bufferSize = QueueSize (mmuConfig.buffersize ()).GetValue ();
-  mmu->ConfigBufferSize (bufferSize);
-  if (mmuConfig.has_pfcdynamicshift ())
-    {
-      mmu->ConfigDynamicThreshold (true, mmuConfig.pfcdynamicshift ());
-    }
-}
+// void
+// ProtobufTopologyLoader::ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig,
+//                                    const Ptr<SwitchMmu> mmu)
+// {
+//   NS_LOG_FUNCTION (this);
+//   uint32_t bufferSize = QueueSize (mmuConfig.buffersize ()).GetValue ();
+//   mmu->ConfigBufferSize (bufferSize);
+//   if (mmuConfig.has_pfcdynamicshift ())
+//     {
+//       mmu->ConfigDynamicThreshold (true, mmuConfig.pfcdynamicshift ());
+//     }
+// }
 
 void
 ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, DcTopology &topology)
 {
+  NS_LOG_FUNCTION (this);
   uint32_t node1 = linkConfig.node1 ();
   uint32_t node2 = linkConfig.node2 ();
   uint32_t port1 = linkConfig.port1 ();
   uint32_t port2 = linkConfig.port2 ();
-  Ptr<PointToPointNetDevice> dev1 =
-      StaticCast<PointToPointNetDevice> (topology.GetNode (node1)->GetDevice (port1));
-  Ptr<PointToPointNetDevice> dev2 =
-      StaticCast<PointToPointNetDevice> (topology.GetNode (node2)->GetDevice (port2));
+  Ptr<DcbNetDevice> dev1 =
+      StaticCast<DcbNetDevice> (topology.GetNode (node1)->GetDevice (port1));
+  Ptr<DcbNetDevice> dev2 =
+      StaticCast<DcbNetDevice> (topology.GetNode (node2)->GetDevice (port2));
 
   std::string rate = linkConfig.rate ();
   std::string delay = linkConfig.delay ();
   dev1->SetAttribute ("DataRate", DataRateValue (DataRate (rate)));
   dev2->SetAttribute ("DataRate", DataRateValue (DataRate (rate)));
-
-  ObjectFactory factory;
-  factory.SetTypeId ("ns3::PointToPointChannel");
-  factory.Set ("Delay", TimeValue (Time (delay)));
-  Ptr<PointToPointChannel> channel = factory.Create<PointToPointChannel> ();
+  
+  Ptr<DcbChannel> channel = CreateObject<DcbChannel> ();
+  channel->SetAttribute("Delay", TimeValue (Time (delay)));
 
   dev1->Attach (channel);
   dev2->Attach (channel);
@@ -302,18 +308,32 @@ ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, DcTopolo
 void
 ProtobufTopologyLoader::AssignAddresses (DcTopology &topology)
 {
+  NS_LOG_FUNCTION (this);
   NetDeviceContainer container;
-  InternetStackHelper stack;
-  for (const DcTopology::TopoNode &node : topology)
+  DcbStackHelper hostStack;
+  for (DcTopology::HostIterator host = topology.hosts_begin();
+       host != topology.hosts_end();
+       host++)
     {
-      for (int i = 0; i < node->GetNDevices (); i++)
+      for (int i = 0; i < (*host)->GetNDevices (); i++)
         {
-          container.Add (node->GetDevice (i));
+          container.Add ((*host)->GetDevice (i));
         }
       // InternetStackHelper will install a LoopbackNetDevice to the node.
       // We do not add them to the `container` so that the Ipv4AddressHelper
       // won't assign a redundant address to the LoopbackNetDevice.
-      stack.Install (node.nodePtr);
+      hostStack.Install (host->nodePtr);
+    }
+  DcbSwitchStackHelper switchStack;
+  for (DcTopology::SwitchIterator sw = topology.switches_begin();
+       sw != topology.switches_end();
+       sw ++)
+    {
+      for (int i = 0; i < (*sw)->GetNDevices (); i++)
+        {
+          container.Add ((*sw)->GetDevice (i));
+        }
+      switchStack.Install (sw->nodePtr);
     }
 
   Ipv4AddressHelper address;
@@ -324,12 +344,14 @@ ProtobufTopologyLoader::AssignAddresses (DcTopology &topology)
 void
 ProtobufTopologyLoader::InitGlobalRouting ()
 {
+  NS_LOG_FUNCTION (this);
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 }
 
 void
 ProtobufTopologyLoader::LogIpAddress (const DcTopology &topology) const
 {
+  NS_LOG_FUNCTION (this);
   int ni = 0;
   for (const auto &node : topology)
     {
@@ -353,6 +375,7 @@ ProtobufTopologyLoader::LogIpAddress (const DcTopology &topology) const
 void
 ProtobufTopologyLoader::LogAllRoutes (const DcTopology &topology) const
 {
+  NS_LOG_FUNCTION (this);
   int ni = 0;
   for (const auto &node : topology)
     {
@@ -373,6 +396,26 @@ ProtobufTopologyLoader::LogAllRoutes (const DcTopology &topology) const
         }
       ni++;
     }
+}
+
+void
+ProtobufTopologyLoader::LogGlobalRouting (DcTopology& topology) const
+{
+  for (DcTopology::SwitchIterator sw = topology.switches_begin();
+       sw != topology.switches_end();
+       sw ++) {
+    Ptr<Ipv4ListRouting> lrouting = DynamicCast<Ipv4ListRouting>((*sw)->GetObject<Ipv4>()
+                                                                 ->GetRoutingProtocol());
+    int16_t prio;
+    Ptr<Ipv4GlobalRouting> glb = DynamicCast<Ipv4GlobalRouting>(lrouting->GetRoutingProtocol(0, prio));
+    uint32_t n = glb->GetNRoutes();
+    for (int i = 0; i < n; i++) {
+      NS_LOG_DEBUG ("global: " << *glb->GetRoute(i));
+    }
+    BooleanValue b;
+    glb->GetAttribute("RandomEcmpRouting", b);
+    NS_LOG_DEBUG("ecmp: " << b);
+  }
 }
 
 } // namespace ns3

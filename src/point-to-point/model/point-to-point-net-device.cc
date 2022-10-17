@@ -240,7 +240,7 @@ PointToPointNetDevice::TransmitStart (Ptr<Packet> p)
 
   //
   // This function is called to start the process of transmitting a packet.
-  // We need to tell the channel that we've started wiggling the wire and
+  // We need t tell the channel that we've started wiggling the wire and
   // schedule an event that will be executed when the transmission is complete.
   //
   NS_ASSERT_MSG (m_txMachineState == READY, "Must be READY to transmit");

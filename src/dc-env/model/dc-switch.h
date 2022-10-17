@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include "ns3/node.h" 
 #include "ns3/net-device.h"
-#include "ns3/switch-mmu.h"
+// #include "ns3/switch-mmu.h"
 // #include "ns3/dpsk-net-device.h"
 // #include "ns3/dpsk-machine.h"
 #include <map>
@@ -65,7 +65,7 @@ public:
 
   void SetNQueues (uint32_t nQueues);
 
-  void InstallMmu (Ptr<SwitchMmu> mmu);
+  // void InstallMmu (Ptr<SwitchMmu> mmu);
 
 protected:
 
@@ -73,7 +73,7 @@ protected:
 
   uint32_t m_nQueues; // number of queues
 
-  Ptr<SwitchMmu> m_mmu;
+  // Ptr<SwitchMmu> m_mmu;
 }; // class DcSwitch
 
 } // namespace ns3

@@ -25,8 +25,7 @@
 #include "ns3/net-device.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/dpsk-module.h"
-#include "ns3/pfc-module.h"
+// #include "ns3/dpsk-module.h"
 #include "ns3/point-to-point-net-device.h"
 #include "ns3/topology.pb.h"
 
@@ -264,7 +263,14 @@ public:
   HostIterator
   hosts_begin ()
   {
-    return HostIterator (&m_nodes[0], m_nodes.end ());
+    // return the first HOST
+    for (TopoNode& node : m_nodes)
+      {
+        if (node.type == TopoNode::HOST) {
+          return HostIterator (&node, m_nodes.end ());
+        }
+    }
+    return HostIterator (&(*m_nodes.end ()), m_nodes.end ());
   }
   
   HostIterator
@@ -307,7 +313,14 @@ public:
   SwitchIterator
   switches_begin ()
   {
-    return SwitchIterator (&m_nodes[0], m_nodes.end ());
+    // return the first HOST
+    for (TopoNode& node : m_nodes)
+      {
+        if (node.type == TopoNode::SWITCH) {
+          return SwitchIterator (&node, m_nodes.end ());
+        }
+    }
+    return SwitchIterator (&(*m_nodes.end ()), m_nodes.end ());
   }
   
   SwitchIterator

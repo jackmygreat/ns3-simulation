@@ -74,13 +74,12 @@ protected:
   /**
    * Add one port to the switch `sw` according to portConfig
    */
-  void AddOnePortToSwitch (const ns3_proto::SwitchPortConfig portConfig, const Ptr<DcSwitch> sw,
-                           const Ptr<SwitchMmu> mmu);
+  void AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig, const Ptr<DcSwitch> sw);
 
   /**
    * Config SwitchMmu
    */
-  void ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig, const Ptr<SwitchMmu> mmu);
+  // void ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig, const Ptr<SwitchMmu> mmu);
 
   void InstallLink (const ns3_proto::Link &linkConfig, DcTopology &topology);
 
@@ -97,6 +96,7 @@ private:
 
   void LogIpAddress (const DcTopology& topology) const; // for debug
   void LogAllRoutes (const DcTopology& topology) const; // for debug
+  void LogGlobalRouting (DcTopology& topology) const; // for debug
 };
 
 } // namespace ns3
