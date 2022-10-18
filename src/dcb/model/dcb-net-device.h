@@ -31,6 +31,10 @@ template <typename Item> class Queue;
 class ErrorModel;
 class DcbChannel; 
 
+/**
+ * DcbNetDevice is used to provide Data Center Bridging (IEEE 802.1) functions.
+ * Currently support Priority-based Flow Control (IEEE 802.1Qbb)
+ */
 class DcbNetDevice : public NetDevice
 {
 public:

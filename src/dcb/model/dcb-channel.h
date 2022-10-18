@@ -27,6 +27,11 @@ namespace ns3 {
 class DcbNetDevice;
 class Packet;
 
+/**
+ * DcbChannel is the same as a PointToPointChannel except that it supports
+ * DcbNetDevice instead of PointToPointNetDevice.
+ * (Maybe transfer the DcbChannel to a template class is better for future usage.)
+ */
 class DcbChannel : public Channel
 {
 public:

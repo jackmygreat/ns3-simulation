@@ -263,10 +263,43 @@ public:
   /*    *\/ */
   /*   TracedCallback<Ptr<const Packet>> m_dropped; */
 
-  bool m_pfcEnabled;
+private:
 
-  /* NetDeive ingress queue length in unit of splits (80 bytes) */
-  std::vector<uint32_t> m_pfcCounter; 
+  struct Pfc {
+    struct PortInfo {
+      uint32_t queueLength;
+      uint32_t reserve;
+    };
+    bool isPaused;
+    /* NetDeive ingress queue length in unit of cells (80 bytes) */
+    std::vector<PortInfo> ports;
+
+    Pfc () : isPaused (false) {}
+
+    /**
+     * Increment the PFC counter for the index in-device
+     * \param index index of the in-device
+     * \param packetSize size of the packet in bytes
+     */
+    inline void IncrementPfcQueueCounter (uint32_t index, uint32_t packetSize);
+
+    /**
+     * Decrement the PFC counter for the index in-device
+     * \param index index of the in-device
+     * \param packetSize size of the packet in bytes
+     */
+    inline void DecrementPfcQueueCounter (uint32_t index, uint32_t packetSize);
+
+    bool CheckShouldPause (uint32_t index, uint32_t packetSize);
+  };
+
+  void GeneratePauseFrame ();
+
+private:
+  constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
+
+  bool m_pfcEnabled;
+  Pfc m_pfc;
 };
 
 class DeviceIndexTag : public Tag

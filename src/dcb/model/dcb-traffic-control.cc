@@ -27,6 +27,7 @@
 #include "ns3/type-id.h"
 #include "ns3/simulator.h"
 #include "../utils/pfc-header.h"
+#include <cmath>
 
 namespace ns3 {
 
@@ -66,30 +67,35 @@ DcbTrafficControl::~DcbTrafficControl ()
 void
 DcbTrafficControl::RegisterDeviceNumber (uint32_t num)
 {
-  m_pfcCounter.resize (num);
+  m_pfc.ports.resize (num);
 }
 
 void
-DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
+DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,
                             const Address &from, const Address &to,
                             NetDevice::PacketType packetType)
 {
-  NS_LOG_FUNCTION (this << device << p << protocol << from << to << packetType);
+  NS_LOG_FUNCTION (this << device << packet << protocol << from << to << packetType);
   if (m_pfcEnabled) // PFC logic
     {
       uint32_t index = device->GetIfIndex ();
-	  // NS_LOG_DEBUG (Simulator::GetContext() << " receive packet from " << index);
       DeviceIndexTag tag (index);
-      p->AddPacketTag (tag);
-      m_pfcCounter[index]++; // NOTICE: no checking for better performance, be careful
+      packet->AddPacketTag (tag); // egress will read the index from tag to decrement counter
+      if (m_pfc.CheckShouldPause (index, packet->GetSize ()))
+        {
+          // TODO
+          GeneratePauseFrame ();
+        }
+      m_pfc.IncrementPfcQueueCounter (index, packet->GetSize ());
     }
 
-  TrafficControlLayer::Receive (device, p, protocol, from, to, packetType);
+  TrafficControlLayer::Receive (device, packet, protocol, from, to, packetType);
 }
 
 void
-DcbTrafficControl::ReceivePfc (Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol, const Address &from,
-            const Address &to, NetDevice::PacketType packetType)
+DcbTrafficControl::ReceivePfc (Ptr<NetDevice> device, Ptr<const Packet> p, uint16_t protocol,
+                               const Address &from, const Address &to,
+                               NetDevice::PacketType packetType)
 {
   // TODO: process PFC pause frame
 }
@@ -101,14 +107,36 @@ DcbTrafficControl::Send (Ptr<NetDevice> device, Ptr<QueueDiscItem> item)
   if (m_pfcEnabled) // PFC logic
     {
       DeviceIndexTag tag;
-      if (item->GetPacket ()->RemovePacketTag (tag))
+      Ptr<Packet> packet = item->GetPacket ();
+      if (packet->RemovePacketTag (tag)) // ingress should set the index into the tag
         {
-          m_pfcCounter[tag.GetIndex ()]--; // NOTICE: no checking for better performance, be careful
+          m_pfc.DecrementPfcQueueCounter (tag.GetIndex (), packet->GetSize ());
           NS_LOG_DEBUG ("Tag at egress: " << Simulator::GetContext () << " " << tag.GetIndex ());
         }
     }
 
   TrafficControlLayer::Send (device, item);
+}
+
+inline void
+DcbTrafficControl::Pfc::IncrementPfcQueueCounter (uint32_t index, uint32_t packetSize)
+{
+  // NOTICE: no index checking for better performance, be careful
+  ports[index].queueLength += static_cast<uint32_t> (ceil (packetSize / CELL_SIZE));
+}
+
+inline void
+DcbTrafficControl::Pfc::DecrementPfcQueueCounter (uint32_t index, uint32_t packetSize)
+{
+  // NOTICE: no index checking nor value checking for better performance, be careful
+  ports[index].queueLength -= static_cast<uint32_t> (ceil (packetSize / CELL_SIZE));
+}
+
+bool
+DcbTrafficControl::Pfc::CheckShouldPause (uint32_t index, uint32_t packetSize)
+{
+  // TODO: add support for dynamic threshold
+  return ports[index].queueLength + packetSize > ports[index].reserve;
 }
 
 DeviceIndexTag::DeviceIndexTag (uint32_t index) : m_index (index)
