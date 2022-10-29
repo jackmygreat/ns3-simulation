@@ -157,6 +157,11 @@ PausableQueueDisc::CheckConfig (void)
       NS_LOG_ERROR ("PausableQueueDisc cannot have internal queues");
       return false;
     }
+  if (m_pfcEnabled && GetQuota() != 1)
+    {
+      NS_LOG_ERROR ("Quota of PausableQueueDisc should be 1");
+      return false;
+    }
   if (GetNQueueDiscClasses () == 0)
     {
       // create 8 fifo queue discs
