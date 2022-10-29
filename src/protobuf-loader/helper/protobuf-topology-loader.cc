@@ -175,7 +175,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
       dev->SetAddress (Mac48Address::Allocate ());
 
       ObjectFactory queueFactory;
-      queueFactory.SetTypeId ("ns3::DropTailQueue<Packet>");
+      queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId());
       Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
       dev->SetQueue (queue);
     }
@@ -245,7 +245,7 @@ ProtobufTopologyLoader::AddPortToSwitch (const ns3_proto::SwitchPortConfig portC
   dev->SetAddress (Mac48Address::Allocate ());
 
   ObjectFactory queueFactory;
-  queueFactory.SetTypeId ("ns3::DropTailQueue<Packet>");
+  queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId());
   Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
   dev->SetQueue (queue);
 
