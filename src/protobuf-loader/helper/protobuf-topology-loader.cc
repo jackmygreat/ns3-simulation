@@ -166,8 +166,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
 {
   NS_LOG_FUNCTION (this);
   const Ptr<DcHost> host = CreateObject<DcHost> ();
-
-  // TODO: optimize code here
+  
   for (auto port : hostGroup.ports ())
     {
       // create a net device for the port

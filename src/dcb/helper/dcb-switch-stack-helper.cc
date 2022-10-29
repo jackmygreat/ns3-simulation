@@ -133,7 +133,7 @@ DcbSwitchStackHelper::Initialize ()
   listRouting.Add (globalRouting, -10);
   SetRoutingHelper (listRouting);
   // SetRoutingHelper (staticRoutingv6);
-  m_tcFactory.SetTypeId ("ns3::DcbTrafficControl");
+  m_tcFactory.SetTypeId (DcbTrafficControl::GetTypeId());
   m_tcFactory.Set ("PfcEnabled", BooleanValue (true));
   m_pfcEnabled = true;
 }
@@ -334,7 +334,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
   arp->SetTrafficControl (tc);
 
   ObjectFactory qDiscFactory;
-  qDiscFactory.SetTypeId ("ns3::PausableQueueDisc");
+  qDiscFactory.SetTypeId (PausableQueueDisc::GetTypeId());
   qDiscFactory.Set ("PfcEnabled", BooleanValue (m_pfcEnabled));
 
   const uint32_t devN =
