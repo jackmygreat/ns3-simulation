@@ -309,7 +309,7 @@ DcbNetDevice::TransmitComplete (void)
       if (p)
         {
           m_snifferTrace (p);
-          TransmitStart(p);
+          TransmitStart (p);
         }
       // Ask the egress buffer to pop next packet if there is any packet not paused.
       m_queueDisc->Run ();
@@ -326,7 +326,7 @@ DcbNetDevice::TransmitComplete (void)
       //
       m_snifferTrace (p);
       // m_promiscSnifferTrace (p);
-      TransmitStart (p);      
+      TransmitStart (p);
     }
 }
 
