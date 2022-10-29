@@ -67,8 +67,8 @@ PROTOBUF_CONSTEXPR PortQueueConfig::PortQueueConfig(
     ::_pbi::ConstantInitialized): _impl_{
     /*decltype(_impl_._has_bits_)*/{}
   , /*decltype(_impl_._cached_size_)*/{}
-  , /*decltype(_impl_.pfcreserved_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.pfcheadroom_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.pfcreserve_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.pfcxon_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ecnkmin_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ecnkmax_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.ecnpmax_)*/0} {}
@@ -214,8 +214,8 @@ const uint32_t TableStruct_topology_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.pfcreserved_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.pfcheadroom_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.pfcreserve_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.pfcxon_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.ecnkmin_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.ecnkmax_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::PortQueueConfig, _impl_.ecnpmax_),
@@ -322,35 +322,34 @@ const char descriptor_table_protodef_topology_2eproto[] PROTOBUF_SECTION_VARIABL
   "eed\"$\n\016HostPortConfig\022\022\n\npfcEnabled\030\001 \001("
   "\010\"Z\n\tHostGroup\022\020\n\010nodesNum\030\001 \001(\r\022\021\n\tbase"
   "Index\030\002 \001(\r\022(\n\005ports\030\003 \003(\0132\031.ns3_proto.H"
-  "ostPortConfig\"\313\001\n\017PortQueueConfig\022\030\n\013pfc"
-  "Reserved\030\001 \001(\tH\000\210\001\001\022\030\n\013pfcHeadroom\030\002 \001(\t"
-  "H\001\210\001\001\022\024\n\007ecnKMin\030\004 \001(\tH\002\210\001\001\022\024\n\007ecnKMax\030\005"
-  " \001(\tH\003\210\001\001\022\024\n\007ecnPMax\030\006 \001(\001H\004\210\001\001B\016\n\014_pfcR"
-  "eservedB\016\n\014_pfcHeadroomB\n\n\010_ecnKMinB\n\n\010_"
-  "ecnKMaxB\n\n\010_ecnPMax\"\226\001\n\020SwitchPortConfig"
-  "\022\022\n\npfcEnabled\030\001 \001(\010\022\033\n\016pfcPassThrough\030\002"
-  " \001(\010H\000\210\001\001\022\022\n\necnEnabled\030\003 \001(\010\022*\n\006queues\030"
-  "\004 \003(\0132\032.ns3_proto.PortQueueConfigB\021\n\017_pf"
-  "cPassThrough\"W\n\017SwitchMmuConfig\022\022\n\nbuffe"
-  "rSize\030\001 \001(\t\022\034\n\017pfcDynamicShift\030\002 \001(\rH\000\210\001"
-  "\001B\022\n\020_pfcDynamicShift\"\231\001\n\013SwitchGroup\022\020\n"
-  "\010nodesNum\030\001 \001(\r\022\021\n\tbaseIndex\030\002 \001(\r\022\'\n\003mm"
-  "u\030\003 \001(\0132\032.ns3_proto.SwitchMmuConfig\022\020\n\010q"
-  "ueueNum\030\004 \001(\r\022*\n\005ports\030\005 \003(\0132\033.ns3_proto"
-  ".SwitchPortConfig\"o\n\010AllNodes\022\013\n\003num\030\001 \001"
-  "(\r\022(\n\nhostGroups\030\002 \003(\0132\024.ns3_proto.HostG"
-  "roup\022,\n\014switchGroups\030\003 \003(\0132\026.ns3_proto.S"
-  "witchGroup\"_\n\004Link\022\r\n\005node1\030\001 \001(\r\022\r\n\005nod"
-  "e2\030\002 \001(\r\022\r\n\005port1\030\003 \001(\r\022\r\n\005port2\030\004 \001(\r\022\014"
-  "\n\004rate\030\005 \001(\t\022\r\n\005delay\030\006 \001(\t\"}\n\010Topology\022"
-  "-\n\014globalConfig\030\001 \001(\0132\027.ns3_proto.Global"
-  "Config\022\"\n\005nodes\030\002 \001(\0132\023.ns3_proto.AllNod"
-  "es\022\036\n\005links\030\003 \003(\0132\017.ns3_proto.Linkb\006prot"
-  "o3"
+  "ostPortConfig\"\277\001\n\017PortQueueConfig\022\027\n\npfc"
+  "Reserve\030\001 \001(\tH\000\210\001\001\022\023\n\006pfcXon\030\002 \001(\tH\001\210\001\001\022"
+  "\024\n\007ecnKMin\030\004 \001(\tH\002\210\001\001\022\024\n\007ecnKMax\030\005 \001(\tH\003"
+  "\210\001\001\022\024\n\007ecnPMax\030\006 \001(\001H\004\210\001\001B\r\n\013_pfcReserve"
+  "B\t\n\007_pfcXonB\n\n\010_ecnKMinB\n\n\010_ecnKMaxB\n\n\010_"
+  "ecnPMax\"\226\001\n\020SwitchPortConfig\022\022\n\npfcEnabl"
+  "ed\030\001 \001(\010\022\033\n\016pfcPassThrough\030\002 \001(\010H\000\210\001\001\022\022\n"
+  "\necnEnabled\030\003 \001(\010\022*\n\006queues\030\004 \003(\0132\032.ns3_"
+  "proto.PortQueueConfigB\021\n\017_pfcPassThrough"
+  "\"W\n\017SwitchMmuConfig\022\022\n\nbufferSize\030\001 \001(\t\022"
+  "\034\n\017pfcDynamicShift\030\002 \001(\rH\000\210\001\001B\022\n\020_pfcDyn"
+  "amicShift\"\231\001\n\013SwitchGroup\022\020\n\010nodesNum\030\001 "
+  "\001(\r\022\021\n\tbaseIndex\030\002 \001(\r\022\'\n\003mmu\030\003 \001(\0132\032.ns"
+  "3_proto.SwitchMmuConfig\022\020\n\010queueNum\030\004 \001("
+  "\r\022*\n\005ports\030\005 \003(\0132\033.ns3_proto.SwitchPortC"
+  "onfig\"o\n\010AllNodes\022\013\n\003num\030\001 \001(\r\022(\n\nhostGr"
+  "oups\030\002 \003(\0132\024.ns3_proto.HostGroup\022,\n\014swit"
+  "chGroups\030\003 \003(\0132\026.ns3_proto.SwitchGroup\"_"
+  "\n\004Link\022\r\n\005node1\030\001 \001(\r\022\r\n\005node2\030\002 \001(\r\022\r\n\005"
+  "port1\030\003 \001(\r\022\r\n\005port2\030\004 \001(\r\022\014\n\004rate\030\005 \001(\t"
+  "\022\r\n\005delay\030\006 \001(\t\"}\n\010Topology\022-\n\014globalCon"
+  "fig\030\001 \001(\0132\027.ns3_proto.GlobalConfig\022\"\n\005no"
+  "des\030\002 \001(\0132\023.ns3_proto.AllNodes\022\036\n\005links\030"
+  "\003 \003(\0132\017.ns3_proto.Linkb\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_topology_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_topology_2eproto = {
-    false, false, 1162, descriptor_table_protodef_topology_2eproto,
+    false, false, 1150, descriptor_table_protodef_topology_2eproto,
     "topology.proto",
     &descriptor_table_topology_2eproto_once, nullptr, 0, 10,
     schemas, file_default_instances, TableStruct_topology_2eproto::offsets,
@@ -983,10 +982,10 @@ void HostGroup::InternalSwap(HostGroup* other) {
 class PortQueueConfig::_Internal {
  public:
   using HasBits = decltype(std::declval<PortQueueConfig>()._impl_._has_bits_);
-  static void set_has_pfcreserved(HasBits* has_bits) {
+  static void set_has_pfcreserve(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
-  static void set_has_pfcheadroom(HasBits* has_bits) {
+  static void set_has_pfcxon(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
   }
   static void set_has_ecnkmin(HasBits* has_bits) {
@@ -1012,27 +1011,27 @@ PortQueueConfig::PortQueueConfig(const PortQueueConfig& from)
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){from._impl_._has_bits_}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.pfcreserved_){}
-    , decltype(_impl_.pfcheadroom_){}
+    , decltype(_impl_.pfcreserve_){}
+    , decltype(_impl_.pfcxon_){}
     , decltype(_impl_.ecnkmin_){}
     , decltype(_impl_.ecnkmax_){}
     , decltype(_impl_.ecnpmax_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _impl_.pfcreserved_.InitDefault();
+  _impl_.pfcreserve_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
+    _impl_.pfcreserve_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_pfcreserved()) {
-    _this->_impl_.pfcreserved_.Set(from._internal_pfcreserved(), 
+  if (from._internal_has_pfcreserve()) {
+    _this->_impl_.pfcreserve_.Set(from._internal_pfcreserve(), 
       _this->GetArenaForAllocation());
   }
-  _impl_.pfcheadroom_.InitDefault();
+  _impl_.pfcxon_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
+    _impl_.pfcxon_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (from._internal_has_pfcheadroom()) {
-    _this->_impl_.pfcheadroom_.Set(from._internal_pfcheadroom(), 
+  if (from._internal_has_pfcxon()) {
+    _this->_impl_.pfcxon_.Set(from._internal_pfcxon(), 
       _this->GetArenaForAllocation());
   }
   _impl_.ecnkmin_.InitDefault();
@@ -1062,19 +1061,19 @@ inline void PortQueueConfig::SharedCtor(
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.pfcreserved_){}
-    , decltype(_impl_.pfcheadroom_){}
+    , decltype(_impl_.pfcreserve_){}
+    , decltype(_impl_.pfcxon_){}
     , decltype(_impl_.ecnkmin_){}
     , decltype(_impl_.ecnkmax_){}
     , decltype(_impl_.ecnpmax_){0}
   };
-  _impl_.pfcreserved_.InitDefault();
+  _impl_.pfcreserve_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
+    _impl_.pfcreserve_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.pfcheadroom_.InitDefault();
+  _impl_.pfcxon_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
+    _impl_.pfcxon_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.ecnkmin_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -1097,8 +1096,8 @@ PortQueueConfig::~PortQueueConfig() {
 
 inline void PortQueueConfig::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
-  _impl_.pfcreserved_.Destroy();
-  _impl_.pfcheadroom_.Destroy();
+  _impl_.pfcreserve_.Destroy();
+  _impl_.pfcxon_.Destroy();
   _impl_.ecnkmin_.Destroy();
   _impl_.ecnkmax_.Destroy();
 }
@@ -1116,10 +1115,10 @@ void PortQueueConfig::Clear() {
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
-      _impl_.pfcreserved_.ClearNonDefaultToEmpty();
+      _impl_.pfcreserve_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      _impl_.pfcheadroom_.ClearNonDefaultToEmpty();
+      _impl_.pfcxon_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000004u) {
       _impl_.ecnkmin_.ClearNonDefaultToEmpty();
@@ -1140,23 +1139,23 @@ const char* PortQueueConfig::_InternalParse(const char* ptr, ::_pbi::ParseContex
     uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // optional string pfcReserved = 1;
+      // optional string pfcReserve = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
-          auto str = _internal_mutable_pfcreserved();
+          auto str = _internal_mutable_pfcreserve();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.pfcReserved"));
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.pfcReserve"));
         } else
           goto handle_unusual;
         continue;
-      // optional string pfcHeadroom = 2;
+      // optional string pfcXon = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
-          auto str = _internal_mutable_pfcheadroom();
+          auto str = _internal_mutable_pfcxon();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.pfcHeadroom"));
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.PortQueueConfig.pfcXon"));
         } else
           goto handle_unusual;
         continue;
@@ -1219,24 +1218,24 @@ uint8_t* PortQueueConfig::_InternalSerialize(
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // optional string pfcReserved = 1;
-  if (_internal_has_pfcreserved()) {
+  // optional string pfcReserve = 1;
+  if (_internal_has_pfcreserve()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_pfcreserved().data(), static_cast<int>(this->_internal_pfcreserved().length()),
+      this->_internal_pfcreserve().data(), static_cast<int>(this->_internal_pfcreserve().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.PortQueueConfig.pfcReserved");
+      "ns3_proto.PortQueueConfig.pfcReserve");
     target = stream->WriteStringMaybeAliased(
-        1, this->_internal_pfcreserved(), target);
+        1, this->_internal_pfcreserve(), target);
   }
 
-  // optional string pfcHeadroom = 2;
-  if (_internal_has_pfcheadroom()) {
+  // optional string pfcXon = 2;
+  if (_internal_has_pfcxon()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_pfcheadroom().data(), static_cast<int>(this->_internal_pfcheadroom().length()),
+      this->_internal_pfcxon().data(), static_cast<int>(this->_internal_pfcxon().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.PortQueueConfig.pfcHeadroom");
+      "ns3_proto.PortQueueConfig.pfcXon");
     target = stream->WriteStringMaybeAliased(
-        2, this->_internal_pfcheadroom(), target);
+        2, this->_internal_pfcxon(), target);
   }
 
   // optional string ecnKMin = 4;
@@ -1283,18 +1282,18 @@ size_t PortQueueConfig::ByteSizeLong() const {
 
   cached_has_bits = _impl_._has_bits_[0];
   if (cached_has_bits & 0x0000001fu) {
-    // optional string pfcReserved = 1;
+    // optional string pfcReserve = 1;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-          this->_internal_pfcreserved());
+          this->_internal_pfcreserve());
     }
 
-    // optional string pfcHeadroom = 2;
+    // optional string pfcXon = 2;
     if (cached_has_bits & 0x00000002u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-          this->_internal_pfcheadroom());
+          this->_internal_pfcxon());
     }
 
     // optional string ecnKMin = 4;
@@ -1338,10 +1337,10 @@ void PortQueueConfig::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const 
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x0000001fu) {
     if (cached_has_bits & 0x00000001u) {
-      _this->_internal_set_pfcreserved(from._internal_pfcreserved());
+      _this->_internal_set_pfcreserve(from._internal_pfcreserve());
     }
     if (cached_has_bits & 0x00000002u) {
-      _this->_internal_set_pfcheadroom(from._internal_pfcheadroom());
+      _this->_internal_set_pfcxon(from._internal_pfcxon());
     }
     if (cached_has_bits & 0x00000004u) {
       _this->_internal_set_ecnkmin(from._internal_ecnkmin());
@@ -1375,12 +1374,12 @@ void PortQueueConfig::InternalSwap(PortQueueConfig* other) {
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.pfcreserved_, lhs_arena,
-      &other->_impl_.pfcreserved_, rhs_arena
+      &_impl_.pfcreserve_, lhs_arena,
+      &other->_impl_.pfcreserve_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.pfcheadroom_, lhs_arena,
-      &other->_impl_.pfcheadroom_, rhs_arena
+      &_impl_.pfcxon_, lhs_arena,
+      &other->_impl_.pfcxon_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
       &_impl_.ecnkmin_, lhs_arena,

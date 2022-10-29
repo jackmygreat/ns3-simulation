@@ -21,8 +21,13 @@
 #ifndef DCB_TRAFFIC_CONTROL_H
 #define DCB_TRAFFIC_CONTROL_H
 
+#include "dcb-net-device.h"
+#include "ns3/drop-tail-queue.h"
+#include "ns3/net-device.h"
 #include "ns3/tag-buffer.h"
+#include "ns3/pfc-frame.h"
 #include "ns3/traffic-control-layer.h"
+#include "ns3/ipv4-queue-disc-item.h"
 #include <vector>
 
 namespace ns3 {
@@ -173,10 +178,13 @@ public:
   /*    *\/ */
   /*   void SetNode (Ptr<Node> node); */
 
+  using TrafficControlLayer::SetRootQueueDiscOnDevice;
+  virtual void SetRootQueueDiscOnDevice (Ptr<DcbNetDevice> device, Ptr<PausableQueueDisc> qDisc);
+
   /**
    * Register NetDevice number for PFC to initiate counters.
    */
-  virtual void RegisterDeviceNumber(uint32_t num);
+  virtual void RegisterDeviceNumber (uint32_t num);
 
   /**
    * \brief Called by NetDevices, incoming packet
@@ -206,7 +214,23 @@ public:
    * \param item a queue item including a packet and additional information
    */
   virtual void Send (Ptr<NetDevice> device, Ptr<QueueDiscItem> item) override;
-  
+
+  /*
+   * \brief Set the EnableVec field of PFC to deviceIndex with enableVec.
+   * enableVec should be a 8 bits variable, each bit of it represents whether
+   * PFC is enabled on the corresponding priority.
+   */
+  void SetEnableVec (uint32_t deviceIndex, uint8_t enableVec);
+
+  /**
+   * \brief Set static PFC configuration
+   * \param index Index of the port
+   * \param priority Priority queue
+   * \param reserve Reserved buffer space for the queue (aka. XOFF)
+   * \param xon Resume threshold (aka. XON)
+   */
+  void SetPfcOfPortPriority (uint32_t index, uint32_t priority, uint32_t reserve, uint32_t xon);
+
   /* protected: */
 
   /*   virtual void DoDispose (void); */
@@ -264,36 +288,147 @@ public:
   /*   TracedCallback<Ptr<const Packet>> m_dropped; */
 
 private:
+  /**
+   * Pfc consists of several ports represented by PortInfo
+   */
+  struct Pfc
+  {
 
-  struct Pfc {
-    struct PortInfo {
-      uint32_t queueLength;
-      uint32_t reserve;
+    /**
+     * A port has 8 priority queues and stores an PFC enableVec
+     */
+    struct PortInfo
+    {
+
+      constexpr static uint8_t queueNum = 8;
+
+      struct IngressQueueInfo
+      {
+        uint32_t reserve;
+        uint32_t xon; 
+        uint32_t queueLength;
+        bool isPaused = false;
+
+        bool hasEvent = false;
+        EventId pauseEvent;
+
+        IngressQueueInfo () = default;
+        
+        inline void
+        ReplacePauseEvent (EventId event)
+        {
+          if (hasEvent)
+            {
+              pauseEvent.Cancel();
+            }
+          hasEvent = true;
+          pauseEvent = event;
+        }
+        inline void
+        CancelPauseEvent ()
+        {
+          if (hasEvent)
+            {
+              hasEvent = false;
+              pauseEvent.Cancel();
+            }
+        }
+      };
+      std::vector<IngressQueueInfo> m_ingressQueues;
+      uint8_t m_enableVec;
+
+      PortInfo () : m_ingressQueues (std::vector<IngressQueueInfo> (queueNum)), m_enableVec (0xff)
+      {
+      }
+
+      PortInfo (uint8_t enableVec)
+          : m_ingressQueues (std::vector<IngressQueueInfo> (queueNum)), m_enableVec (enableVec)
+      {
+      }
+
+      inline const IngressQueueInfo &
+      getQueue (uint8_t priority) const
+      {
+        return m_ingressQueues[priority];
+      }
+
+      inline IngressQueueInfo &
+      getQueue (uint8_t priority)
+      {
+        return m_ingressQueues[priority];
+      }
+      
     };
-    bool isPaused;
     /* NetDeive ingress queue length in unit of cells (80 bytes) */
     std::vector<PortInfo> ports;
 
-    Pfc () : isPaused (false) {}
+    Pfc () = default;
+
+    inline void
+    addPort (uint8_t enableVec = 0xff)
+    {
+      ports.push_back (PortInfo (enableVec));
+    }
+
+    inline bool
+    CheckEnableVec (uint32_t index, uint8_t cls)
+    {
+      return (ports[index].m_enableVec & (1 << cls)) == 1;
+    }
+
+    inline PortInfo::IngressQueueInfo &
+    getQueue (uint32_t index, uint8_t priority)
+    {
+      return ports[index].m_ingressQueues[priority];
+    }
+    inline const PortInfo::IngressQueueInfo &
+    getQueue (uint32_t index, uint8_t priority) const
+    {
+      return ports[index].m_ingressQueues[priority];
+    }
 
     /**
      * Increment the PFC counter for the index in-device
      * \param index index of the in-device
      * \param packetSize size of the packet in bytes
      */
-    inline void IncrementPfcQueueCounter (uint32_t index, uint32_t packetSize);
+    inline void
+    IncrementPfcQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize)
+    {
+      // NOTICE: no index checking for better performance, be careful
+      ports[index].getQueue (priority).queueLength +=
+          static_cast<uint32_t> (ceil (packetSize / CELL_SIZE));
+    }
 
     /**
      * Decrement the PFC counter for the index in-device
      * \param index index of the in-device
      * \param packetSize size of the packet in bytes
      */
-    inline void DecrementPfcQueueCounter (uint32_t index, uint32_t packetSize);
-
-    bool CheckShouldPause (uint32_t index, uint32_t packetSize);
+    inline void
+    DecrementPfcQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize)
+    {
+      // NOTICE: no index checking nor value checking for better performance, be careful
+      ports[index].getQueue (priority).queueLength -=
+          static_cast<uint32_t> (ceil (packetSize / CELL_SIZE));
+    }
+    
+    bool CheckShouldSendPause (uint32_t port, uint8_t priority, uint32_t packetSize) const;
+    bool CheckShouldSendResume (uint32_t port, uint8_t priority) const;
+    inline void
+    SetPaused (uint32_t port, uint8_t priority, bool paused)
+    {
+      ports[port].getQueue(priority).isPaused = paused;
+    }
   };
 
-  void GeneratePauseFrame ();
+  static Ptr<Packet> GeneratePauseFrame (uint8_t priority, uint16_t quanta = 0xffff);
+
+  static Ptr<Packet> GeneratePauseFrame (uint8_t enableVec, uint16_t quanta[8]);
+
+  static inline uint8_t PeekPriorityOfPacket (const Ptr<const Packet> packet);
+
+  friend class DcbSwitchStackHelper; // Enabling stack helper to reuse the struct Pfc.
 
 private:
   constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
@@ -329,6 +464,38 @@ private:
   uint32_t m_index; //!< the device index carried by the tag
 
 }; // class DevIndexTag
+
+  
+/**
+  * \brief Class of Service (priority) tag for PFC priority.
+  */
+class CoSTag : public Tag
+{
+public:
+  CoSTag () = default;
+
+  CoSTag (uint8_t cos);
+
+  void SetCoS (uint8_t cos);
+
+  uint8_t GetCoS () const;
+
+  static TypeId GetTypeId (void);
+
+  virtual TypeId GetInstanceTypeId (void) const override;
+
+  virtual uint32_t GetSerializedSize () const override;
+
+  virtual void Serialize (TagBuffer i) const override;
+
+  virtual void Deserialize (TagBuffer i) override;
+
+  virtual void Print (std::ostream &os) const override;
+
+private:
+  uint8_t m_cos; //!< the Class-of-Service carried by the tag
+
+}; // class CoSTag
 
 } // namespace ns3
 

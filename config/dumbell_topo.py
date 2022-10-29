@@ -16,6 +16,7 @@ globalConfig = {
 }
 
 hostPortConfig = {
+    # "type": "ns3::DcbNetDevice",
     "pfcEnabled": True
 }
 
@@ -27,8 +28,10 @@ hostGroupConfig = {
 
 switchPortQueueConfig1 = {
     # PFC configurations
-    "pfcReserved": "288 KiB",
-    "pfcHeadroom": "30 KiB",
+    # "pfcReserved": "288 KiB",
+    # "pfcHeadroom": "30 KiB",
+    "pfcReserve": "1000B",
+    "pfcXon": "1000B",
 
     # ECN configurations
     "ecnKMin": "200 KiB",
@@ -39,8 +42,10 @@ switchPortQueueConfig1 = {
 
 switchPortQueueConfig2 = {
     # PFC configurations
-    "pfcReserved": "300 KiB",
-    "pfcHeadroom": "50 KiB",
+    # "pfcReserve": "300 KiB",
+    # "pfcHeadroom": "50 KiB",
+    "pfcReserve": "1000B",
+    "pfcXon": "1000B",
 
     # ECN configurations
     "ecnKMin": "220 KiB",

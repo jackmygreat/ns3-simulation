@@ -25,6 +25,7 @@
 #include "ns3/dc-topology.h"
 #include "ns3/dc-switch.h"
 #include "ns3/dc-host.h"
+#include "ns3/dcb-net-device.h"
 #include "ns3/topology.pb.h"
 
 /**
@@ -74,12 +75,9 @@ protected:
   /**
    * Add one port to the switch `sw` according to portConfig
    */
-  void AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig, const Ptr<DcSwitch> sw);
+  Ptr<DcbNetDevice> AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig, const Ptr<DcSwitch> sw);
 
-  /**
-   * Config SwitchMmu
-   */
-  // void ConfigMmu (const ns3_proto::SwitchMmuConfig mmuConfig, const Ptr<SwitchMmu> mmu);
+  void AssignAddress (const Ptr<Node> node, const Ptr<NetDevice> device);
 
   void InstallLink (const ns3_proto::Link &linkConfig, DcTopology &topology);
 

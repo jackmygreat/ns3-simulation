@@ -32,6 +32,7 @@
 #include "ns3/internet-trace-helper.h"
 #include "ns3/ipv4-routing-helper.h"
 #include "ns3/ipv6-routing-helper.h"
+#include <_types/_uint32_t.h>
 
 
 namespace ns3 {
@@ -121,6 +122,8 @@ public:
 
   void SetPfcEnabled (bool enable);
 
+  void ConfigPfc (uint32_t port, uint32_t priority, uint32_t reserve, uint32_t xon);
+
   /**
   * Assign a fixed random variable stream number to the random variables
   * used by this model.  Return the number of streams (possibly zero) that
@@ -133,6 +136,16 @@ public:
   * \return the number of stream indices assigned by this helper
   */
   int64_t AssignStreams (NodeContainer c, int64_t stream);
+
+private:
+
+  struct PfcConfig {
+    uint32_t port, priority, reserve, xon;
+    PfcConfig (uint32_t p, uint32_t prior, uint32_t resv, uint32_t x) :
+      port(p), priority (prior), reserve(resv), xon(x) {}
+  };
+
+  std::vector<PfcConfig> m_pfcConfigs;
   
 private:
   /**

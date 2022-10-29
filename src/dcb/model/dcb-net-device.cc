@@ -16,6 +16,7 @@
  * Author: Pavinberg <pavin0702@gmail.com>
  */
 
+#include "ns3/boolean.h"
 #include "ns3/simulator.h"
 #include "dcb-net-device.h"
 #include "dcb-channel.h"
@@ -51,6 +52,8 @@ DcbNetDevice::GetTypeId (void)
           .AddAttribute ("DataRate", "The default data rate for point to point links",
                          DataRateValue (DataRate ("100Gb/s")),
                          MakeDataRateAccessor (&DcbNetDevice::m_bps), MakeDataRateChecker ())
+          .AddAttribute ("PfcEnabled", "Enable PFC functions", BooleanValue (false),
+                         MakeBooleanAccessor (&DcbNetDevice::m_pfcEnabled), MakeBooleanChecker ())
           .AddAttribute ("InterframeGap", "The time to wait between packet (frame) transmissions",
                          TimeValue (Seconds (0.0)),
                          MakeTimeAccessor (&DcbNetDevice::m_tInterframeGap), MakeTimeChecker ())
@@ -189,7 +192,8 @@ DcbNetDevice::Receive (Ptr<Packet> packet)
       //
 
       m_macRxTrace (originalPacket);
-      m_rxCallback (this, packet, protocol, GetRemote ()); // calling Node::NonPromiscReceiveFromDevice
+      m_rxCallback (this, packet, protocol,
+                    GetRemote ()); // calling Node::NonPromiscReceiveFromDevice
     }
 }
 
@@ -254,7 +258,9 @@ DcbNetDevice::TransmitStart (Ptr<Packet> packet)
   // We need t tell the channel that we've started wiggling the wire and
   // schedule an event that will be executed when the transmission is complete.
   //
+
   NS_ASSERT_MSG (m_txMachineState == READY, "Must be READY to transmit");
+
   m_txMachineState = BUSY;
   m_currentPkt = packet;
   m_phyTxBeginTrace (m_currentPkt);
@@ -293,18 +299,35 @@ DcbNetDevice::TransmitComplete (void)
   m_currentPkt = 0;
 
   Ptr<Packet> p = m_queue->Dequeue ();
-  if (p == 0)
+  if (m_pfcEnabled)
     {
-      NS_LOG_LOGIC ("No pending packets in device queue after tx complete");
-      return;
+      // We let the egress buffer, which is a PausableQueueDisc, to pop one packet at
+      // a time and send out through this device. As a result, at most one data packet
+      // should be in the m_queue.
+      // If device queue has packets left, they must be control frames. Send them
+      // immedidately.
+      if (p)
+        {
+          m_snifferTrace (p);
+          TransmitStart(p);
+        }
+      // Ask the egress buffer to pop next packet if there is any packet not paused.
+      m_queueDisc->Run ();
     }
-
-  //
-  // Got another packet off of the queue, so start the transmit process again.
-  //
-  m_snifferTrace (p);
-  // m_promiscSnifferTrace (p);
-  TransmitStart (p);
+  else
+    {
+      if (p == 0)
+        {
+          NS_LOG_LOGIC ("No pending packets in device queue after tx complete");
+          return;
+        }
+      //
+      // Got another packet off of the queue, so start the transmit process again.
+      //
+      m_snifferTrace (p);
+      // m_promiscSnifferTrace (p);
+      TransmitStart (p);      
+    }
 }
 
 Address
@@ -330,6 +353,13 @@ DcbNetDevice::SetDataRate (DataRate bps)
 {
   NS_LOG_FUNCTION (this);
   m_bps = bps;
+}
+
+DataRate
+DcbNetDevice::GetDataRate () const
+{
+  NS_LOG_FUNCTION (this);
+  return m_bps;
 }
 
 void
@@ -533,6 +563,27 @@ DcbNetDevice::SupportsSendFrom (void) const
 {
   NS_LOG_FUNCTION (this);
   return false;
+}
+
+void
+DcbNetDevice::SetQueueDisc (Ptr<PausableQueueDisc> queueDisc)
+{
+  NS_LOG_FUNCTION (this << queueDisc);
+  m_queueDisc = queueDisc;
+}
+
+Ptr<PausableQueueDisc>
+DcbNetDevice::GetQueueDisc () const
+{
+  NS_LOG_FUNCTION (this);
+  return m_queueDisc;
+}
+
+void
+DcbNetDevice::SetPfcEnabled (bool enabled)
+{
+  NS_LOG_FUNCTION (this << enabled);
+  m_pfcEnabled = enabled;
 }
 
 bool

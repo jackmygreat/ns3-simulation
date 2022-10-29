@@ -23,6 +23,7 @@
 #include "ns3/net-device.h"
 #include "ns3/data-rate.h"
 #include "ns3/traced-callback.h"
+#include "pausable-queue-disc.h"
 
 
 namespace ns3 {
@@ -143,6 +144,12 @@ public:
   virtual void SetPromiscReceiveCallback (PromiscReceiveCallback cb) override;
 
   virtual bool SupportsSendFrom (void) const override;
+
+  DataRate GetDataRate () const;
+
+  void SetQueueDisc (Ptr<PausableQueueDisc> queueDisc);
+  Ptr<PausableQueueDisc> GetQueueDisc () const;
+  void SetPfcEnabled (bool enabled);
 
   /**
    * \brief Assign operator
@@ -278,6 +285,14 @@ private:
    * \see class DropTailQueue
    */
   Ptr<Queue<Packet> > m_queue;
+
+  /**
+   * Whether this device support PFC functions
+   */
+  bool m_pfcEnabled = false;
+
+  // The QueueDisc correspond to this device
+  Ptr<PausableQueueDisc> m_queueDisc;
   
   /**
    * Error model for receive packet events

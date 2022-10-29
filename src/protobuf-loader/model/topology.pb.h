@@ -693,46 +693,46 @@ class PortQueueConfig final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kPfcReservedFieldNumber = 1,
-    kPfcHeadroomFieldNumber = 2,
+    kPfcReserveFieldNumber = 1,
+    kPfcXonFieldNumber = 2,
     kEcnKMinFieldNumber = 4,
     kEcnKMaxFieldNumber = 5,
     kEcnPMaxFieldNumber = 6,
   };
-  // optional string pfcReserved = 1;
-  bool has_pfcreserved() const;
+  // optional string pfcReserve = 1;
+  bool has_pfcreserve() const;
   private:
-  bool _internal_has_pfcreserved() const;
+  bool _internal_has_pfcreserve() const;
   public:
-  void clear_pfcreserved();
-  const std::string& pfcreserved() const;
+  void clear_pfcreserve();
+  const std::string& pfcreserve() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_pfcreserved(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_pfcreserved();
-  PROTOBUF_NODISCARD std::string* release_pfcreserved();
-  void set_allocated_pfcreserved(std::string* pfcreserved);
+  void set_pfcreserve(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_pfcreserve();
+  PROTOBUF_NODISCARD std::string* release_pfcreserve();
+  void set_allocated_pfcreserve(std::string* pfcreserve);
   private:
-  const std::string& _internal_pfcreserved() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcreserved(const std::string& value);
-  std::string* _internal_mutable_pfcreserved();
+  const std::string& _internal_pfcreserve() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcreserve(const std::string& value);
+  std::string* _internal_mutable_pfcreserve();
   public:
 
-  // optional string pfcHeadroom = 2;
-  bool has_pfcheadroom() const;
+  // optional string pfcXon = 2;
+  bool has_pfcxon() const;
   private:
-  bool _internal_has_pfcheadroom() const;
+  bool _internal_has_pfcxon() const;
   public:
-  void clear_pfcheadroom();
-  const std::string& pfcheadroom() const;
+  void clear_pfcxon();
+  const std::string& pfcxon() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_pfcheadroom(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_pfcheadroom();
-  PROTOBUF_NODISCARD std::string* release_pfcheadroom();
-  void set_allocated_pfcheadroom(std::string* pfcheadroom);
+  void set_pfcxon(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_pfcxon();
+  PROTOBUF_NODISCARD std::string* release_pfcxon();
+  void set_allocated_pfcxon(std::string* pfcxon);
   private:
-  const std::string& _internal_pfcheadroom() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcheadroom(const std::string& value);
-  std::string* _internal_mutable_pfcheadroom();
+  const std::string& _internal_pfcxon() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_pfcxon(const std::string& value);
+  std::string* _internal_mutable_pfcxon();
   public:
 
   // optional string ecnKMin = 4;
@@ -794,8 +794,8 @@ class PortQueueConfig final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcreserved_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcheadroom_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcreserve_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr pfcxon_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ecnkmin_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr ecnkmax_;
     double ecnpmax_;
@@ -2126,140 +2126,140 @@ HostGroup::ports() const {
 
 // PortQueueConfig
 
-// optional string pfcReserved = 1;
-inline bool PortQueueConfig::_internal_has_pfcreserved() const {
+// optional string pfcReserve = 1;
+inline bool PortQueueConfig::_internal_has_pfcreserve() const {
   bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
   return value;
 }
-inline bool PortQueueConfig::has_pfcreserved() const {
-  return _internal_has_pfcreserved();
+inline bool PortQueueConfig::has_pfcreserve() const {
+  return _internal_has_pfcreserve();
 }
-inline void PortQueueConfig::clear_pfcreserved() {
-  _impl_.pfcreserved_.ClearToEmpty();
+inline void PortQueueConfig::clear_pfcreserve() {
+  _impl_.pfcreserve_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000001u;
 }
-inline const std::string& PortQueueConfig::pfcreserved() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.pfcReserved)
-  return _internal_pfcreserved();
+inline const std::string& PortQueueConfig::pfcreserve() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.pfcReserve)
+  return _internal_pfcreserve();
 }
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
-void PortQueueConfig::set_pfcreserved(ArgT0&& arg0, ArgT... args) {
+void PortQueueConfig::set_pfcreserve(ArgT0&& arg0, ArgT... args) {
  _impl_._has_bits_[0] |= 0x00000001u;
- _impl_.pfcreserved_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.pfcReserved)
+ _impl_.pfcreserve_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.pfcReserve)
 }
-inline std::string* PortQueueConfig::mutable_pfcreserved() {
-  std::string* _s = _internal_mutable_pfcreserved();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.pfcReserved)
+inline std::string* PortQueueConfig::mutable_pfcreserve() {
+  std::string* _s = _internal_mutable_pfcreserve();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.pfcReserve)
   return _s;
 }
-inline const std::string& PortQueueConfig::_internal_pfcreserved() const {
-  return _impl_.pfcreserved_.Get();
+inline const std::string& PortQueueConfig::_internal_pfcreserve() const {
+  return _impl_.pfcreserve_.Get();
 }
-inline void PortQueueConfig::_internal_set_pfcreserved(const std::string& value) {
+inline void PortQueueConfig::_internal_set_pfcreserve(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.pfcreserved_.Set(value, GetArenaForAllocation());
+  _impl_.pfcreserve_.Set(value, GetArenaForAllocation());
 }
-inline std::string* PortQueueConfig::_internal_mutable_pfcreserved() {
+inline std::string* PortQueueConfig::_internal_mutable_pfcreserve() {
   _impl_._has_bits_[0] |= 0x00000001u;
-  return _impl_.pfcreserved_.Mutable(GetArenaForAllocation());
+  return _impl_.pfcreserve_.Mutable(GetArenaForAllocation());
 }
-inline std::string* PortQueueConfig::release_pfcreserved() {
-  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.pfcReserved)
-  if (!_internal_has_pfcreserved()) {
+inline std::string* PortQueueConfig::release_pfcreserve() {
+  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.pfcReserve)
+  if (!_internal_has_pfcreserve()) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000001u;
-  auto* p = _impl_.pfcreserved_.Release();
+  auto* p = _impl_.pfcreserve_.Release();
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcreserved_.IsDefault()) {
-    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
+  if (_impl_.pfcreserve_.IsDefault()) {
+    _impl_.pfcreserve_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return p;
 }
-inline void PortQueueConfig::set_allocated_pfcreserved(std::string* pfcreserved) {
-  if (pfcreserved != nullptr) {
+inline void PortQueueConfig::set_allocated_pfcreserve(std::string* pfcreserve) {
+  if (pfcreserve != nullptr) {
     _impl_._has_bits_[0] |= 0x00000001u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000001u;
   }
-  _impl_.pfcreserved_.SetAllocated(pfcreserved, GetArenaForAllocation());
+  _impl_.pfcreserve_.SetAllocated(pfcreserve, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcreserved_.IsDefault()) {
-    _impl_.pfcreserved_.Set("", GetArenaForAllocation());
+  if (_impl_.pfcreserve_.IsDefault()) {
+    _impl_.pfcreserve_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.pfcReserved)
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.pfcReserve)
 }
 
-// optional string pfcHeadroom = 2;
-inline bool PortQueueConfig::_internal_has_pfcheadroom() const {
+// optional string pfcXon = 2;
+inline bool PortQueueConfig::_internal_has_pfcxon() const {
   bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
   return value;
 }
-inline bool PortQueueConfig::has_pfcheadroom() const {
-  return _internal_has_pfcheadroom();
+inline bool PortQueueConfig::has_pfcxon() const {
+  return _internal_has_pfcxon();
 }
-inline void PortQueueConfig::clear_pfcheadroom() {
-  _impl_.pfcheadroom_.ClearToEmpty();
+inline void PortQueueConfig::clear_pfcxon() {
+  _impl_.pfcxon_.ClearToEmpty();
   _impl_._has_bits_[0] &= ~0x00000002u;
 }
-inline const std::string& PortQueueConfig::pfcheadroom() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.pfcHeadroom)
-  return _internal_pfcheadroom();
+inline const std::string& PortQueueConfig::pfcxon() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.PortQueueConfig.pfcXon)
+  return _internal_pfcxon();
 }
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
-void PortQueueConfig::set_pfcheadroom(ArgT0&& arg0, ArgT... args) {
+void PortQueueConfig::set_pfcxon(ArgT0&& arg0, ArgT... args) {
  _impl_._has_bits_[0] |= 0x00000002u;
- _impl_.pfcheadroom_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.pfcHeadroom)
+ _impl_.pfcxon_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.PortQueueConfig.pfcXon)
 }
-inline std::string* PortQueueConfig::mutable_pfcheadroom() {
-  std::string* _s = _internal_mutable_pfcheadroom();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.pfcHeadroom)
+inline std::string* PortQueueConfig::mutable_pfcxon() {
+  std::string* _s = _internal_mutable_pfcxon();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.PortQueueConfig.pfcXon)
   return _s;
 }
-inline const std::string& PortQueueConfig::_internal_pfcheadroom() const {
-  return _impl_.pfcheadroom_.Get();
+inline const std::string& PortQueueConfig::_internal_pfcxon() const {
+  return _impl_.pfcxon_.Get();
 }
-inline void PortQueueConfig::_internal_set_pfcheadroom(const std::string& value) {
+inline void PortQueueConfig::_internal_set_pfcxon(const std::string& value) {
   _impl_._has_bits_[0] |= 0x00000002u;
-  _impl_.pfcheadroom_.Set(value, GetArenaForAllocation());
+  _impl_.pfcxon_.Set(value, GetArenaForAllocation());
 }
-inline std::string* PortQueueConfig::_internal_mutable_pfcheadroom() {
+inline std::string* PortQueueConfig::_internal_mutable_pfcxon() {
   _impl_._has_bits_[0] |= 0x00000002u;
-  return _impl_.pfcheadroom_.Mutable(GetArenaForAllocation());
+  return _impl_.pfcxon_.Mutable(GetArenaForAllocation());
 }
-inline std::string* PortQueueConfig::release_pfcheadroom() {
-  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.pfcHeadroom)
-  if (!_internal_has_pfcheadroom()) {
+inline std::string* PortQueueConfig::release_pfcxon() {
+  // @@protoc_insertion_point(field_release:ns3_proto.PortQueueConfig.pfcXon)
+  if (!_internal_has_pfcxon()) {
     return nullptr;
   }
   _impl_._has_bits_[0] &= ~0x00000002u;
-  auto* p = _impl_.pfcheadroom_.Release();
+  auto* p = _impl_.pfcxon_.Release();
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcheadroom_.IsDefault()) {
-    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
+  if (_impl_.pfcxon_.IsDefault()) {
+    _impl_.pfcxon_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   return p;
 }
-inline void PortQueueConfig::set_allocated_pfcheadroom(std::string* pfcheadroom) {
-  if (pfcheadroom != nullptr) {
+inline void PortQueueConfig::set_allocated_pfcxon(std::string* pfcxon) {
+  if (pfcxon != nullptr) {
     _impl_._has_bits_[0] |= 0x00000002u;
   } else {
     _impl_._has_bits_[0] &= ~0x00000002u;
   }
-  _impl_.pfcheadroom_.SetAllocated(pfcheadroom, GetArenaForAllocation());
+  _impl_.pfcxon_.SetAllocated(pfcxon, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.pfcheadroom_.IsDefault()) {
-    _impl_.pfcheadroom_.Set("", GetArenaForAllocation());
+  if (_impl_.pfcxon_.IsDefault()) {
+    _impl_.pfcxon_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.pfcHeadroom)
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.PortQueueConfig.pfcXon)
 }
 
 // optional string ecnKMin = 4;

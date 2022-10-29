@@ -24,8 +24,8 @@ message HostGroup {
 }
 
 message PortQueueConfig {	
-	optional string pfcReserved = 1;
-	optional string pfcHeadroom = 2;
+	optional string pfcReserve = 1;
+	optional string pfcXon = 2;
 
 	optional string ecnKMin = 4;
 	optional string ecnKMax = 5;
