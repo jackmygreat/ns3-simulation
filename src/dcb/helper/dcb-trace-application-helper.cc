@@ -18,40 +18,46 @@
  * Author: Pavinberg (pavin0702@gmail.com)
  */
 
-#ifndef PROTOBUF_FLOWS_LOADER_H
-#define PROTOBUF_FLOWS_LOADER_H
+#include "dcb-trace-application-helper.h"
+#include "ns3/node.h"
 
-#include "ns3/dc-topology.h"
-#include "ns3/flows.pb.h"
-
-/**
- * \file
- * \ingroup protobuf-loader
- * ns3::ProtobufFlowsLoader declaration
- */
 namespace ns3 {
 
-class ProtobufFlowsLoader
+TraceApplicationHelper::TraceApplicationHelper ()
 {
-public:
-  ProtobufFlowsLoader ();
+  m_factory.SetTypeId (TraceApplication::GetTypeId ());
+}
 
-  void LoadFlowsTo (Ptr<DcTopology> topology);
+void
+TraceApplicationHelper::SetProtocolGroup (ProtocolGroup protoGroup)
+{
+  m_protoGroup = protoGroup;
+}
 
-protected:
+void
+TraceApplicationHelper::SetCdf (const TraceApplication::TraceCdf& cdf)
+{
+  
+}
 
-  /**
-   * \brief Read flows configuration from m_protoBinaryName file.
-   */
-  ns3_proto::Flows ReadProtoFlows ();
+void
+TraceApplicationHelper::SetAttribute (std::string name, const AttributeValue &value)
+{
+  m_factory.Set (name, value);
+}
 
-private:
-  // Notice: this variable should be consistent with `FlowsGenerator.outputFile`
-  // in config/flows_helper.py
-  std::string m_protoBinaryName = "config/flows.bin";
+ApplicationContainer
+TraceApplicationHelper::Install (Ptr<Node> node) const
+{
+  return ApplicationContainer (InstallPriv (node));
+}
 
-}; // class ProtobufFlowsLoader
+Ptr<Application>
+TraceApplicationHelper::InstallPriv (Ptr<Node> node) const
+{
+  Ptr<Application> app = m_factory.Create<TraceApplication> ();
+  node->AddApplication (app);
+  return app;
+}
 
-} // namespace ns3
-
-#endif
+} //namespace ns3

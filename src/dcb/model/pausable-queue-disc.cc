@@ -23,6 +23,7 @@
 #include "ns3/assert.h"
 #include "ns3/boolean.h"
 #include "ns3/fatal-error.h"
+#include "ns3/integer.h"
 #include "ns3/log-macros-enabled.h"
 #include "ns3/log.h"
 #include "ns3/object-base.h"
@@ -30,6 +31,7 @@
 #include "ns3/queue-disc.h"
 #include "ns3/queue-item.h"
 #include "ns3/type-id.h"
+#include "ns3/uinteger.h"
 
 namespace ns3 {
 
@@ -45,13 +47,22 @@ PausableQueueDisc::GetTypeId ()
           .SetParent<QueueDisc> ()
           .SetGroupName ("Dcb")
           .AddConstructor<PausableQueueDisc> ()
-          .AddAttribute ("PfcEnabled", "Wether PFC is enabled", BooleanValue (true),
-                         MakeBooleanAccessor (&PausableQueueDisc::m_pfcEnabled),
-                         MakeBooleanChecker ());
+          .AddAttribute ("FcEnabled", "Wether flow control is enabled", BooleanValue (true),
+                         MakeBooleanAccessor (&PausableQueueDisc::m_fcEnabled),
+                         MakeBooleanChecker ())
+          .AddAttribute ("TrafficControlCallback", "Callback when deque completed",
+                         CallbackValue(MakeNullCallback<void, uint32_t, uint32_t, Ptr<Packet>> ()),
+                         MakeCallbackAccessor (&PausableQueueDisc::m_tcEgress),
+                         MakeCallbackChecker ());
   return tid;
 }
 
 PausableQueueDisc::PausableQueueDisc ()
+{
+  NS_LOG_FUNCTION (this);
+}
+
+PausableQueueDisc::PausableQueueDisc (uint32_t port): m_portIndex(port)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -72,13 +83,31 @@ void
 PausableQueueDisc::Run ()
 {
   NS_LOG_FUNCTION (this);
-  // TODO: Not supporting Requeue () at this moment
-  Ptr<QueueDiscItem> item = DoDequeue();
-  if (item)
+  if (RunBegin ())
     {
-      NS_ASSERT_MSG (m_send, "Send callback not set");
-      m_send (item); // m_send is usually set to NetDevice::Send ()
+      // TODO: Not supporting Requeue () at this moment
+      Ptr<QueueDiscItem> item = DoDequeue ();
+      if (item)
+        {
+          NS_ASSERT_MSG (m_send, "Send callback not set");
+          m_send (item); // m_send is usually set to NetDevice::Send ()
+        }
     }
+  // RunEnd () is called by DcbNetDevice::TransmitComplete ()
+}
+
+void
+PausableQueueDisc::SetPortIndex (uint32_t portIndex)
+{
+  NS_LOG_FUNCTION (this << portIndex);  
+  m_portIndex = portIndex;
+}
+
+void
+PausableQueueDisc::SetFCEnabled (bool enable)
+{
+  NS_LOG_FUNCTION (this << enable);  
+  m_fcEnabled = enable;
 }
 
 void
@@ -86,6 +115,13 @@ PausableQueueDisc::SetPaused (uint8_t priority, bool paused)
 {
   NS_LOG_FUNCTION (this);
   GetQueueDiscClass (priority)->SetPaused (paused);
+}
+
+void
+PausableQueueDisc::RegisterTrafficControlCallback (Callback<void, uint32_t, uint32_t, Ptr<Packet>> cb)
+{
+  NS_LOG_FUNCTION (this);
+  m_tcEgress = cb;
 }
 
 bool
@@ -112,14 +148,15 @@ PausableQueueDisc::DoDequeue ()
 {
   NS_LOG_FUNCTION (this);
   Ptr<QueueDiscItem> item = 0;
-
+  
   for (uint32_t i = 0; i < GetNQueueDiscClasses (); i++)
     {
       Ptr<PausableQueueDiscClass> qdclass = GetQueueDiscClass (i);
-      if ((!m_pfcEnabled || !qdclass->IsPaused ()) &&
+      if ((!m_fcEnabled || !qdclass->IsPaused ()) &&
           (item = qdclass->GetQueueDisc ()->Dequeue ()) != 0)
         {
           NS_LOG_LOGIC ("Popoed from priority " << i << ": " << item);
+          m_tcEgress (m_portIndex, i, item->GetPacket());
           return item;
         }
     }
@@ -136,7 +173,7 @@ PausableQueueDisc::DoPeek ()
   for (uint32_t i = 0; i < GetNQueueDiscClasses (); i++)
     {
       Ptr<PausableQueueDiscClass> qdclass = GetQueueDiscClass (i);
-      if ((!m_pfcEnabled || !qdclass->IsPaused ()) &&
+      if ((!m_fcEnabled || !qdclass->IsPaused ()) &&
           (item = qdclass->GetQueueDisc ()->Dequeue ()) != 0)
         {
           NS_LOG_LOGIC ("Peeked from priority " << i << ": " << item);
@@ -157,11 +194,11 @@ PausableQueueDisc::CheckConfig (void)
       NS_LOG_ERROR ("PausableQueueDisc cannot have internal queues");
       return false;
     }
-  if (m_pfcEnabled && GetQuota() != 1)
-    {
-      NS_LOG_ERROR ("Quota of PausableQueueDisc should be 1");
-      return false;
-    }
+  // if (m_fcEnabled && GetQuota () != 1)
+  //   {
+  //     NS_LOG_ERROR ("Quota of PausableQueueDisc should be 1");
+  //     return false;
+  //   }
   if (GetNQueueDiscClasses () == 0)
     {
       // create 8 fifo queue discs

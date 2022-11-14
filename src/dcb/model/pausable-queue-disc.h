@@ -53,6 +53,7 @@ public:
   static TypeId GetTypeId (void);
 
   PausableQueueDisc ();
+  PausableQueueDisc (uint32_t port);
 
   virtual ~PausableQueueDisc ();
 
@@ -63,10 +64,14 @@ public:
    */
   Ptr<PausableQueueDiscClass> GetQueueDiscClass (std::size_t i) const;
   
-  void Run (void); // override
+  virtual void Run (void) override;
+
+  void SetPortIndex (uint32_t portIndex);
+  void SetFCEnabled (bool enable);
 
   void SetPaused (uint8_t priority, bool paused);
   
+  void RegisterTrafficControlCallback (Callback<void, uint32_t, uint32_t, Ptr<Packet>> cb);
 
 private:
 
@@ -80,7 +85,11 @@ private:
 
   virtual void InitializeParams (void) override;
 
-  bool m_pfcEnabled;
+  bool m_fcEnabled;
+
+  Callback<void, uint32_t, uint32_t, Ptr<Packet>> m_tcEgress;
+
+  int32_t m_portIndex; //!< the port index this QueueDisc belongs to
 
 }; // class PausableQueueDisc
 

@@ -149,7 +149,7 @@ public:
 
   void SetQueueDisc (Ptr<PausableQueueDisc> queueDisc);
   Ptr<PausableQueueDisc> GetQueueDisc () const;
-  void SetPfcEnabled (bool enabled);
+  void SetFcEnabled (bool enabled);
 
   /**
    * \brief Assign operator
@@ -289,7 +289,7 @@ private:
   /**
    * Whether this device support PFC functions
    */
-  bool m_pfcEnabled = false;
+  bool m_fcEnabled = false;
 
   // The QueueDisc correspond to this device
   Ptr<PausableQueueDisc> m_queueDisc;

@@ -17,7 +17,7 @@ globalConfig = {
 
 hostPortConfig = {
     # "type": "ns3::DcbNetDevice",
-    "pfcEnabled": True
+    "pfcEnabled": False
 }
 
 # Configuration of a group of hosts. In this topology, we shall have 2 groups of hosts.
@@ -55,7 +55,7 @@ switchPortQueueConfig2 = {
 
 # Configuration of the switch port that connects to host
 switchPortConfig1 = {
-    "pfcEnabled": True,
+    "pfcEnabled": False,
     "pfcPassThrough": False,
     "ecnEnabled": True,
     "queues": [switchPortQueueConfig1] * 2

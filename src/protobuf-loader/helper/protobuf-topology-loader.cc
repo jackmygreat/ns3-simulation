@@ -18,8 +18,6 @@
  * Author: Pavinberg (pavin0702@gmail.com)
  */
 
-// #include <_types/_uint32_t.h>
-#include <_types/_uint32_t.h>
 #include <fstream>
 #include <vector>
 #include "ns3/boolean.h"
@@ -40,7 +38,9 @@
 #include "ns3/dcb-net-device.h"
 #include "ns3/dcb-channel.h"
 #include "ns3/dcb-stack-helper.h"
+#include "ns3/dcb-pfc-port.h"
 #include "ns3/dcb-switch-stack-helper.h"
+#include "ns3/dcb-fc-helper.h"
 
 /**
  * \file
@@ -68,15 +68,16 @@ ProtobufTopologyLoader::RunConfigScript (std::string configFile)
 }
 
 /**
-   * \ingroup protobuf-loader
-   * This is the function for user to call to load a topology from the Protobuf
-   */
-DcTopology
+ * \ingroup protobuf-loader
+ * This is the function for user to call to load a topology from the Protobuf
+ */
+Ptr<DcTopology>
 ProtobufTopologyLoader::LoadTopology ()
 {
   NS_LOG_FUNCTION (this);
   ns3_proto::Topology topoConfig = ReadProtoTopology ();
-  DcTopology topology (topoConfig.nodes ().num ());
+  Ptr<DcTopology> topology = CreateObject<DcTopology> (topoConfig.nodes ().num ());
+  // DcTopology topology (topoConfig.nodes ().num ());
   m_ecmpSeed = topoConfig.globalconfig ().randomseed ();
 
   Ipv4AddressGenerator::Init ("10.0.0.0", "255.0.0.0", "0.0.0.1");
@@ -88,6 +89,7 @@ ProtobufTopologyLoader::LoadTopology ()
   InitGlobalRouting ();
 
   // LogIpAddress (topology);
+  LogAllRoutes(topology);
 
   return topology;
 }
@@ -116,7 +118,7 @@ ProtobufTopologyLoader::ReadProtoTopology ()
 void
 ProtobufTopologyLoader::LoadHosts (
     const google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> &hostGroups,
-    DcTopology &topology)
+    Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   for (const ns3_proto::HostGroup &hostGroup : hostGroups)
@@ -126,7 +128,7 @@ ProtobufTopologyLoader::LoadHosts (
       for (size_t i = baseIndex; i < baseIndex + num; i++)
         {
           DcTopology::TopoNode host = CreateOneHost (hostGroup);
-          topology.InstallNode (i, std::move (host));
+          topology->InstallNode (i, std::move (host));
         }
     }
 }
@@ -134,7 +136,7 @@ ProtobufTopologyLoader::LoadHosts (
 void
 ProtobufTopologyLoader::LoadSwitches (
     const google::protobuf::RepeatedPtrField<ns3_proto::SwitchGroup> &switchGroups,
-    DcTopology &topology)
+    Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   for (const ns3_proto::SwitchGroup &switchGroup : switchGroups)
@@ -145,14 +147,14 @@ ProtobufTopologyLoader::LoadSwitches (
       for (size_t i = baseIndex; i < baseIndex + num; i++)
         {
           DcTopology::TopoNode host = CreateOneSwitch (queueNum, switchGroup);
-          topology.InstallNode (i, std::move (host));
+          topology->InstallNode (i, std::move (host));
         }
     }
 }
 
 void
 ProtobufTopologyLoader::LoadLinks (
-    const google::protobuf::RepeatedPtrField<ns3_proto::Link> &linksConfig, DcTopology &topology)
+    const google::protobuf::RepeatedPtrField<ns3_proto::Link> &linksConfig, Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   for (const ns3_proto::Link &linkConfig : linksConfig)
@@ -201,33 +203,30 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
   sw->SetEcmpSeed (m_ecmpSeed);
   sw->SetNQueues (queueNum);
 
-  // Configure SwitchMmu
-  // const Ptr<SwitchMmu> mmu = CreateObject<SwitchMmu> ();
-  // sw->InstallMmu (mmu);
-  // ConfigMmu (switchGroup.mmu (), mmu);
-
   // Configure ports
   DcbSwitchStackHelper switchStack;
-  uint32_t portId = 0;
-  for (auto portConfig : switchGroup.ports ())
+  for (const auto& portConfig : switchGroup.ports ())
     {
       AddPortToSwitch (portConfig, sw);
+    }
+  switchStack.Install (sw);
+
+  // Configure flow control
+  for (uint32_t i = 0; i < switchGroup.ports_size(); i++)
+    {
+      const ns3_proto::SwitchPortConfig& portConfig = switchGroup.ports(i);
       if (portConfig.pfcenabled ()) // Configure PFC
         {
+          DcbPfcPortConfig pfcConfig;
           for (int qi = 0; qi < portConfig.queues_size (); qi++)
             {
               const ns3_proto::PortQueueConfig &queueConfig = portConfig.queues (qi);
               const uint32_t reserve = QueueSize (queueConfig.pfcreserve ()).GetValue ();
               const uint32_t xon = QueueSize (queueConfig.pfcxon ()).GetValue ();
-              switchStack.ConfigPfc (portId, qi, reserve, xon);
+              pfcConfig.AddQueueConfig(qi, reserve, xon);
             }
+          DcbFcHelper::InstallPFCtoNodePort (sw, i, pfcConfig);
         }
-      portId++;
-    }
-  switchStack.Install (sw);
-
-  for (uint32_t i = 0; i < switchGroup.ports_size(); i++)
-    {
       AssignAddress (sw, sw->GetDevice (i));
     }
 
@@ -276,15 +275,16 @@ ProtobufTopologyLoader::AssignAddress (const Ptr<Node> node, const Ptr<NetDevice
 }
 
 void
-ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, DcTopology &topology)
+ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   uint32_t node1 = linkConfig.node1 ();
   uint32_t node2 = linkConfig.node2 ();
   uint32_t port1 = linkConfig.port1 ();
   uint32_t port2 = linkConfig.port2 ();
-  Ptr<DcbNetDevice> dev1 = StaticCast<DcbNetDevice> (topology.GetNode (node1)->GetDevice (port1));
-  Ptr<DcbNetDevice> dev2 = StaticCast<DcbNetDevice> (topology.GetNode (node2)->GetDevice (port2));
+  
+  Ptr<DcbNetDevice> dev1 = StaticCast<DcbNetDevice> (topology->GetNetDeviceOfNode(node1, port1));
+  Ptr<DcbNetDevice> dev2 = StaticCast<DcbNetDevice> (topology->GetNetDeviceOfNode(node2, port2));
 
   std::string rate = linkConfig.rate ();
   std::string delay = linkConfig.delay ();
@@ -299,12 +299,12 @@ ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, DcTopolo
 }
 
 void
-ProtobufTopologyLoader::AssignAddresses (DcTopology &topology)
+ProtobufTopologyLoader::AssignAddresses (Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   NetDeviceContainer container;
-  DcbStackHelper hostStack;
-  for (DcTopology::HostIterator host = topology.hosts_begin (); host != topology.hosts_end ();
+  // DcbStackHelper hostStack;
+  for (DcTopology::HostIterator host = topology->hosts_begin (); host != topology->hosts_end ();
        host++)
     {
       for (int i = 0; i < (*host)->GetNDevices (); i++)
@@ -314,17 +314,17 @@ ProtobufTopologyLoader::AssignAddresses (DcTopology &topology)
       // InternetStackHelper will install a LoopbackNetDevice to the node.
       // We do not add them to the `container` so that the Ipv4AddressHelper
       // won't assign a redundant address to the LoopbackNetDevice.
-      hostStack.Install (host->nodePtr);
+      // hostStack.Install (host->nodePtr);
     }
-  DcbSwitchStackHelper switchStack;
-  for (DcTopology::SwitchIterator sw = topology.switches_begin (); sw != topology.switches_end ();
+  // DcbSwitchStackHelper switchStack;
+  for (DcTopology::SwitchIterator sw = topology->switches_begin (); sw != topology->switches_end ();
        sw++)
     {
       for (int i = 0; i < (*sw)->GetNDevices (); i++)
         {
           container.Add ((*sw)->GetDevice (i));
         }
-      switchStack.Install (sw->nodePtr);
+      // switchStack.Install (sw->nodePtr);
     }
 
   Ipv4AddressHelper address;
@@ -340,11 +340,11 @@ ProtobufTopologyLoader::InitGlobalRouting ()
 }
 
 void
-ProtobufTopologyLoader::LogIpAddress (const DcTopology &topology) const
+ProtobufTopologyLoader::LogIpAddress (const Ptr<const DcTopology> topology) const
 {
   NS_LOG_FUNCTION (this);
   int ni = 0;
-  for (const auto &node : topology)
+  for (const auto &node : *topology)
     {
       Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
       const int nintf = ipv4->GetNInterfaces ();
@@ -364,11 +364,11 @@ ProtobufTopologyLoader::LogIpAddress (const DcTopology &topology) const
 }
 
 void
-ProtobufTopologyLoader::LogAllRoutes (const DcTopology &topology) const
+ProtobufTopologyLoader::LogAllRoutes (const Ptr<const DcTopology> topology) const
 {
   NS_LOG_FUNCTION (this);
   int ni = 0;
-  for (const auto &node : topology)
+  for (const auto &node : *topology)
     {
       Ptr<GlobalRouter> router = node->GetObject<GlobalRouter> ();
       Ptr<Ipv4GlobalRouting> route = router->GetRoutingProtocol ();
@@ -390,9 +390,9 @@ ProtobufTopologyLoader::LogAllRoutes (const DcTopology &topology) const
 }
 
 void
-ProtobufTopologyLoader::LogGlobalRouting (DcTopology &topology) const
+ProtobufTopologyLoader::LogGlobalRouting (const Ptr<DcTopology> topology) const
 {
-  for (DcTopology::SwitchIterator sw = topology.switches_begin (); sw != topology.switches_end ();
+  for (DcTopology::SwitchIterator sw = topology->switches_begin (); sw != topology->switches_end ();
        sw++)
     {
       Ptr<Ipv4ListRouting> lrouting =

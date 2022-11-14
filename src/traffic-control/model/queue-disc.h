@@ -420,7 +420,13 @@ public:
    * Dequeues multiple packets, until a quota is exceeded or sending a packet
    * to the device failed.
    */
-  void Run (void);
+  virtual void Run (void);
+
+  /**
+   * Modelled after the Linux function qdisc_run_end (include/net/sch_generic.h).
+   * Set the qdisc as not running.
+   */
+  void RunEnd (void);
 
   /// Internal queues store QueueDiscItem objects
   typedef Queue<QueueDiscItem> InternalQueue;
@@ -570,9 +576,17 @@ protected:
   /**
    * These fields are moved from private to protected by Pavinberg for easier usage.
    */
-protected: 
+protected:
 
-    SendCallback m_send;              //!< Callback used to send a packet to the receiving object
+  /**
+   * Modelled after the Linux function qdisc_run_begin (include/net/sch_generic.h).
+   * \return false if the qdisc is already running; otherwise, set the qdisc as running and return true.
+   */
+  bool RunBegin (void);
+  
+
+  SendCallback m_send;              //!< Callback used to send a packet to the receiving object
+  bool m_running;                   //!< The queue disc is performing multiple dequeue operations
 
 private:
   /**
@@ -629,19 +643,7 @@ private:
    * \sa QueueDisc::CheckConfig
    */
   virtual void InitializeParams (void) = 0;
-
-  /**
-   * Modelled after the Linux function qdisc_run_begin (include/net/sch_generic.h).
-   * \return false if the qdisc is already running; otherwise, set the qdisc as running and return true.
-   */
-  bool RunBegin (void);
-
-  /**
-   * Modelled after the Linux function qdisc_run_end (include/net/sch_generic.h).
-   * Set the qdisc as not running.
-   */
-  void RunEnd (void);
-
+  
   /**
    * Modelled after the Linux function qdisc_restart (net/sched/sch_generic.c)
    * Dequeue a packet (by calling DequeuePacket) and send it to the device (by calling Transmit).
@@ -699,8 +701,7 @@ private:
   Stats m_stats;                    //!< The collected statistics
   uint32_t m_quota;                 //!< Maximum number of packets dequeued in a qdisc run
   Ptr<NetDeviceQueueInterface> m_devQueueIface;   //!< NetDevice queue interface
-
-  bool m_running;                   //!< The queue disc is performing multiple dequeue operations
+  
   Ptr<QueueDiscItem> m_requeued;    //!< The last packet that failed to be transmitted
   bool m_peeked;                    //!< A packet was dequeued because Peek was called
   std::string m_childQueueDiscDropMsg;  //!< Reason why a packet was dropped by a child queue disc

@@ -24,15 +24,17 @@
  * ns3::ProtobufFlowsLoader implementation.
  */
 
-#include <_types/_uint32_t.h>
 #include <fstream>
 #include <string>
 #include "ns3/nstime.h"
+#include "ns3/tcp-socket-factory.h"
 #include "ns3/udp-echo-helper.h"
+#include "ns3/on-off-helper.h"
 #include "protobuf-flows-loader.h"
 #include "ns3/flows.pb.h"
 #include "ns3/log.h"
 #include "ns3/fatal-error.h"
+#include "ns3/dcb-trace-application.h"
 
 namespace ns3 {
 
@@ -42,24 +44,55 @@ ProtobufFlowsLoader::ProtobufFlowsLoader ()
 {
 }
 
+// void
+// ProtobufFlowsLoader::LoadFlowsTo (DcTopology &topology)
+// {
+//   NS_LOG_FUNCTION (this);
+//   ns3_proto::Flows flowsConfig = ReadProtoFlows ();
+//   for (const ns3_proto::Flow &flow : flowsConfig.flows()) {
+//     const uint32_t dstnode = flow.dstnode();
+//     const uint32_t dstport = flow.dstport();
+//     const uint32_t intfi = 1; // index 0 is loopback interface
+//     UdpEchoClientHelper echoClient (topology.GetInterfaceOfNode(dstnode, intfi).GetAddress(), dstport);
+//     echoClient.SetAttribute ("MaxPackets", UintegerValue (flow.size() / 1024));
+//     echoClient.SetAttribute ("Interval", TimeValue (Seconds (0)));
+//     echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
+//     ApplicationContainer clientApps = echoClient.Install (topology.GetNode(flow.srcnode()).nodePtr);
+//     clientApps.Start (MicroSeconds (flow.arrivetime()));
+//     clientApps.Stop (Seconds (10.0));
+//   }
+// }
+
 void
-ProtobufFlowsLoader::LoadFlowsTo (DcTopology &topology)
+ProtobufFlowsLoader::LoadFlowsTo (Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   ns3_proto::Flows flowsConfig = ReadProtoFlows ();
   for (const ns3_proto::Flow &flow : flowsConfig.flows()) {
     const uint32_t dstnode = flow.dstnode();
-    const uint32_t dstport = flow.dstport();
+    const uint32_t dstport = flow.dstport(); // TODO: always zero for now
     const uint32_t intfi = 1; // index 0 is loopback interface
-    UdpEchoClientHelper echoClient (topology.GetInterfaceOfNode(dstnode, intfi).GetAddress(), dstport);
+
+    // OnOffHelper clientHelper (TcpSocketFactory::GetTypeId(), topology.GetNode(dstnode)->GetDevice(0)->GetAddress());
+    
+    // Ptr<TraceApplication> app = CreateObject<TraceApplication> (topology, flow.srcnode());
+    // app->SetFlowCdf(TraceApplication::TRACE_WEBSEARCH_CDF);
+    // double interval = 1.;
+    // app->SetFlowMeanArriveInterval(interval);
+    // app->SetFlowDestination(topology->GetNetDeviceOfNode(dstnode, 0)->GetAddress(), dstport);
+    // app->Application::SetStartTime (MicroSeconds (flow.arrivetime()));
+
+    UdpEchoClientHelper echoClient (topology->GetInterfaceOfNode(dstnode, intfi).GetAddress(), dstport);
     echoClient.SetAttribute ("MaxPackets", UintegerValue (flow.size() / 1024));
     echoClient.SetAttribute ("Interval", TimeValue (Seconds (0)));
     echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
-    ApplicationContainer clientApps = echoClient.Install (topology.GetNode(flow.srcnode()).nodePtr);
+    
+    ApplicationContainer clientApps = echoClient.Install (topology->GetNode(flow.srcnode()).nodePtr);
     clientApps.Start (MicroSeconds (flow.arrivetime()));
     clientApps.Stop (Seconds (10.0));
   }
 }
+
 
 ns3_proto::Flows
 ProtobufFlowsLoader::ReadProtoFlows ()

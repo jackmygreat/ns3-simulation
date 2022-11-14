@@ -3,21 +3,33 @@ build_lib(
   SOURCE_FILES
       helper/dcb-stack-helper.cc
 	  helper/dcb-switch-stack-helper.cc
+	  helper/dcb-fc-helper.cc
 	  model/dcb-traffic-control.cc
 	  model/dcb-net-device.cc
 	  model/dcb-channel.cc
 	  model/pausable-queue-disc.cc
+	  model/dcb-traffic-control.cc
+	  model/dcb-trace-application.cc
+	  model/dcb-flow-control-port.cc
+	  model/dcb-pfc-port.cc
 	  utils/pfc-frame.cc
   HEADER_FILES
       helper/dcb-stack-helper.h
 	  helper/dcb-switch-stack-helper.h
+	  helper/dcb-fc-helper.h
 	  model/dcb-traffic-control.h
 	  model/dcb-net-device.h
 	  model/dcb-channel.h
 	  model/pausable-queue-disc.h
+	  model/dcb-trace-application.h
+	  model/dcb-socket.h
+	  model/dcb-flow-control-port.h
+	  model/dcb-pfc-port.h
 	  utils/pfc-frame.h
   LIBRARIES_TO_LINK
       ${libcore}
 	  ${libnetwork}
 	  ${libinternet}
+	  ${traffic-control}
+	  ${libdc-env}
 )

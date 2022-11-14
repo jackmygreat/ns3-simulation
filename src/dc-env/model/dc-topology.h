@@ -21,15 +21,12 @@
 #ifndef DC_TOPOLOGY_H
 #define DC_TOPOLOGY_H
 
-#include "ns3/core-module.h"
+#include "ns3/object.h"
 #include "ns3/net-device.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
-// #include "ns3/dpsk-module.h"
 #include "ns3/point-to-point-net-device.h"
 #include "ns3/topology.pb.h"
-
-#include <_types/_uint32_t.h>
 #include <vector>
 #include <iterator>
 #include <cstddef>
@@ -41,6 +38,12 @@
  */
 namespace ns3 {
 
+/**
+ * \breif A datacenter topology representation.
+ *
+ * NOTICE: User should install hosts first then switches because it can keep the host indicies
+ * continuous which is easier for random generator to choose a random host.
+ */
 class DcTopology : public Object
 {
 public:
@@ -67,18 +70,27 @@ public:
     }
   };
 
-  void InstallNodes (ns3_proto::AllNodes nodes);
-
   void InstallNode (const uint32_t index, const TopoNode node);
 
   const TopoNode &GetNode (const uint32_t index) const;
 
-  const Ptr<PointToPointNetDevice> GetNetDeviceOfNode (const uint32_t nodei, const uint32_t devi) const;
+  const Ptr<NetDevice> GetNetDeviceOfNode (const uint32_t nodei, const uint32_t devi) const;
 
   const Ipv4InterfaceAddress GetInterfaceOfNode(const uint32_t nodei, uint32_t intfi) const;
 
+  /**
+   * \brief Create a configured host index random number generator.
+   * Used by applications to find a random destination.
+   * We give each application an configured random number generator (RNG) instead
+   * of a random address directly because of the need of concurrency. RNG is not
+   * thread-safe. So we let the application do the random generation itself.
+   */
+  const Ptr<UniformRandomVariable> CreateRamdomHostChooser () const;
+
 private:
+
   std::vector<TopoNode> m_nodes;
+  uint32_t m_nHosts;
 
 public:
   /**

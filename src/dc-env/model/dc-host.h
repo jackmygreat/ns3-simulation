@@ -20,9 +20,6 @@
 #define DC_HOST_H
 
 #include "ns3/node.h"
-// #include "ns3/dpsk-net-device.h"
-// #include "ns3/dpsk-machine.h"
-
 
 namespace ns3 {
 
@@ -56,13 +53,7 @@ public:
   virtual bool ReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet,
                                   uint16_t protocol, const Address &source,
                                   const Address &destination, NetDevice::PacketType packetType);
-
-  /**
-   * \brief Install DPSK to handle packets directly.
-   * \param dpsk the DPSK framework
-   */
-  // virtual void InstallDpsk (Ptr<Dpsk> dpsk);
-
+  
 }; // class DcHost
 
 } // namespace ns3

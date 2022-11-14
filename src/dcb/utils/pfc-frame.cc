@@ -24,6 +24,34 @@
 
 namespace ns3 {
 
+// static
+Ptr<Packet>
+PfcFrame::GeneratePauseFrame (uint8_t priority, uint16_t quanta)
+{
+  PfcFrame pfcFrame;
+  pfcFrame.EnableClass (priority); // only enable this priority
+  pfcFrame.SetQuanta (priority, quanta);
+
+  Ptr<Packet> packet = Create<Packet> (0);
+  packet->AddHeader (pfcFrame);
+  return packet;
+}
+
+// static
+Ptr<Packet>
+PfcFrame::GeneratePauseFrame (uint8_t enableVec, uint16_t quantaList[8])
+{
+  PfcFrame pfcFrame;
+  pfcFrame.SetEnableClassField (enableVec);
+  for (int cls = 0; cls < 8; cls++)
+    {
+      pfcFrame.SetQuanta (cls, quantaList[cls]);
+    }
+  Ptr<Packet> packet = Create<Packet> (0);
+  packet->AddHeader (pfcFrame);
+  return packet;
+}
+
 PfcFrame::PfcFrame () : m_opcode (DEFAULT_OPCODE), m_enableVec (0)
 {
 }

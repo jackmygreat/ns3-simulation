@@ -1,6 +1,6 @@
 /* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2010 Universita' di Firenze, Italy
+ * Copyright (c) 2008 INRIA
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,42 +15,28 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Author: Pavinberg (pavin0702@gmail.com)
+ * Author: Pavinberg <pavin0702@gmail.com>
  */
 
-#ifndef PROTOBUF_FLOWS_LOADER_H
-#define PROTOBUF_FLOWS_LOADER_H
+#ifndef DCB_FC_HELPER_H
+#define DCB_FC_HELPER_H
 
-#include "ns3/dc-topology.h"
-#include "ns3/flows.pb.h"
+#include "ns3/dcb-pfc-port.h"
 
-/**
- * \file
- * \ingroup protobuf-loader
- * ns3::ProtobufFlowsLoader declaration
- */
 namespace ns3 {
 
-class ProtobufFlowsLoader
+class DcbFcHelper
 {
 public:
-  ProtobufFlowsLoader ();
+  DcbFcHelper ();
 
-  void LoadFlowsTo (Ptr<DcTopology> topology);
+  virtual ~DcbFcHelper ();
 
-protected:
+  static void InstallPFCtoNodePort (Ptr<Node> node, const uint32_t port, const DcbPfcPortConfig &config);
 
-  /**
-   * \brief Read flows configuration from m_protoBinaryName file.
-   */
-  ns3_proto::Flows ReadProtoFlows ();
+  // ... other flow control configurtions should be added here
 
-private:
-  // Notice: this variable should be consistent with `FlowsGenerator.outputFile`
-  // in config/flows_helper.py
-  std::string m_protoBinaryName = "config/flows.bin";
-
-}; // class ProtobufFlowsLoader
+}; // class DcbFcHelper
 
 } // namespace ns3
 

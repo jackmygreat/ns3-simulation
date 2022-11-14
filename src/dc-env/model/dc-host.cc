@@ -17,7 +17,6 @@
  */
 
 #include "dc-host.h"
-#include "ns3/dpsk-net-device.h"
 #include "ns3/log.h"
 #include "ns3/object-base.h"
 #include "ns3/object.h"
@@ -33,7 +32,7 @@ DcHost::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::DcHost")
                           .SetParent<Node> ()
-                          .SetGroupName ("DcMachine")
+                          .SetGroupName ("DcEnv")
                           .AddConstructor<DcHost> ();
   return tid;
 }
@@ -47,15 +46,6 @@ DcHost::~DcHost ()
 {
   NS_LOG_FUNCTION_NOARGS ();
 }
-
-// bool
-// DcHost::NonPromiscReceiveFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet,
-//                                     uint16_t protocol, const Address &from)
-// {
-//   NS_LOG_FUNCTION (this << device << packet << protocol << &from);
-//   Ptr<DpskNetDevice> dpskDev = DynamicCast<DpskNetDevice> (device);
-//   return ReceiveFromDevice (dpskDev, packet, protocol, from, device->GetAddress (), NetDevice::PacketType (0));
-// }
 
 bool
 DcHost::SendFromDevice (Ptr<NetDevice> device, Ptr<const Packet> packet, uint16_t protocol,

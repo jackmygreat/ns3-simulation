@@ -17,7 +17,6 @@
  */
 
 #include "dc-switch.h"
-#include "ns3/dpsk-net-device.h"
 #include "ns3/log.h"
 #include "ns3/net-device.h"
 #include "ns3/type-id.h"
@@ -33,7 +32,7 @@ DcSwitch::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::DcSwitch")
                           .SetParent<Node> ()
-                          .SetGroupName ("DpskMachine")
+                          .SetGroupName ("DcEnv")
                           .AddConstructor<DcSwitch> ();
   return tid;
 }
@@ -76,17 +75,5 @@ DcSwitch::SetNQueues (uint32_t nQueues)
   NS_LOG_FUNCTION (nQueues);
   m_nQueues = nQueues;
 }
-
-// void
-// DcSwitch::InstallMmu (Ptr<SwitchMmu> mmu)
-// {
-//   NS_LOG_FUNCTION (mmu);
-//   m_mmu = mmu;
-//   m_mmu->ConfigNQueue (m_nQueues);
-//   for (int i = 0; i < this->GetNDevices (); i++)
-//     {
-//       // m_mmu->AggregateDevice (this->GetDevice(i));
-//     }
-// }
 
 } // namespace ns3

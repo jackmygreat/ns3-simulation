@@ -22,6 +22,7 @@
 #define PFC_FRAME_H
 
 #include "ns3/header.h"
+#include "ns3/packet.h"
 
 namespace ns3 {
 
@@ -69,6 +70,9 @@ public:
   virtual void Serialize (Buffer::Iterator start) const override;
   virtual uint32_t Deserialize (Buffer::Iterator start) override;
   virtual void Print (std::ostream &os) const override;
+
+  static Ptr<Packet> GeneratePauseFrame (uint8_t priority, uint16_t quanta = 0xffff);
+  static Ptr<Packet> GeneratePauseFrame (uint8_t enableVec, uint16_t quanta[8]);
 
 private:
   constexpr static const uint32_t DEFAULT_OPCODE = 0x0101;

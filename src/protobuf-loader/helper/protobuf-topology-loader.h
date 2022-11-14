@@ -51,7 +51,7 @@ public:
    */
   void RunConfigScript (const std::string configFile);
 
-  DcTopology LoadTopology ();
+  Ptr<DcTopology> LoadTopology ();
 
 protected:
   /**
@@ -60,12 +60,12 @@ protected:
   ns3_proto::Topology ReadProtoTopology ();
 
   void LoadHosts (const google::protobuf::RepeatedPtrField<ns3_proto::HostGroup> &hostGroups,
-                  DcTopology &topology);
+                  Ptr<DcTopology> topology);
 
   void LoadSwitches (const google::protobuf::RepeatedPtrField<ns3_proto::SwitchGroup> &switchGroups,
-                     DcTopology &topology);
+                     Ptr<DcTopology> topology);
   void LoadLinks (const google::protobuf::RepeatedPtrField<ns3_proto::Link> &linksConfig,
-                  DcTopology &topology);
+                  Ptr<DcTopology> topology);
 
   DcTopology::TopoNode CreateOneHost (const ns3_proto::HostGroup &hostGroup);
 
@@ -79,9 +79,9 @@ protected:
 
   void AssignAddress (const Ptr<Node> node, const Ptr<NetDevice> device);
 
-  void InstallLink (const ns3_proto::Link &linkConfig, DcTopology &topology);
+  void InstallLink (const ns3_proto::Link &linkConfig, Ptr<DcTopology> topology);
 
-  void AssignAddresses (DcTopology &topology);
+  void AssignAddresses (Ptr<DcTopology> topology);
 
   void InitGlobalRouting ();
 
@@ -92,9 +92,9 @@ private:
 
   uint32_t m_ecmpSeed = 0;
 
-  void LogIpAddress (const DcTopology& topology) const; // for debug
-  void LogAllRoutes (const DcTopology& topology) const; // for debug
-  void LogGlobalRouting (DcTopology& topology) const; // for debug
+  void LogIpAddress (const Ptr<const DcTopology>topology) const; // for debug
+  void LogAllRoutes (const Ptr<const DcTopology>topology) const; // for debug
+  void LogGlobalRouting (const Ptr<DcTopology>topology) const; // for debug
 };
 
 } // namespace ns3

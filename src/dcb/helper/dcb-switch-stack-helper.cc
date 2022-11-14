@@ -20,9 +20,12 @@
 
 #include "dcb-switch-stack-helper.h"
 
+#include "ns3/dcb-pfc-port.h"
+#include "ns3/dcb-net-device.h"
+#include "ns3/dcb-traffic-control.h"
+#include "ns3/pausable-queue-disc.h"
 #include "ns3/assert.h"
 #include "ns3/boolean.h"
-#include "ns3/dcb-net-device.h"
 #include "ns3/log.h"
 #include "ns3/object.h"
 #include "ns3/names.h"
@@ -49,8 +52,6 @@
 #include "ns3/ipv6-extension-header.h"
 #include "ns3/icmpv6-l4-protocol.h"
 #include "ns3/global-router-interface.h"
-#include "ns3/dcb-traffic-control.h"
-#include "ns3/pausable-queue-disc.h"
 #include "ns3/uinteger.h"
 #include <limits>
 #include <map>
@@ -134,8 +135,7 @@ DcbSwitchStackHelper::Initialize ()
   SetRoutingHelper (listRouting);
   // SetRoutingHelper (staticRoutingv6);
   m_tcFactory.SetTypeId (DcbTrafficControl::GetTypeId());
-  m_tcFactory.Set ("PfcEnabled", BooleanValue (true));
-  m_pfcEnabled = true;
+  m_fcEnabled = true;
 }
 
 DcbSwitchStackHelper::~DcbSwitchStackHelper ()
@@ -177,6 +177,12 @@ DcbSwitchStackHelper::SetRoutingHelper (const Ipv6RoutingHelper &routing)
 }
 
 void
+DcbSwitchStackHelper::SetFCEnabled (bool enable)
+{
+  m_fcEnabled = enable;
+}
+
+void
 DcbSwitchStackHelper::SetIpv6StackInstall (bool enable)
 {
   m_ipv6Enabled = enable;
@@ -186,20 +192,6 @@ void
 DcbSwitchStackHelper::SetIpv6NsRsJitter (bool enable)
 {
   m_ipv6NsRsJitterEnabled = enable;
-}
-
-void
-DcbSwitchStackHelper::SetPfcEnabled (bool enable)
-{
-  m_pfcEnabled = enable;
-  m_tcFactory.Set ("PfcEnabled", BooleanValue (false));
-}
-
-void
-DcbSwitchStackHelper::ConfigPfc (const uint32_t port, const uint32_t priority,
-                                 const uint32_t reserve, const uint32_t xon)
-{
-  m_pfcConfigs.emplace_back (port, priority, reserve, xon);
 }
 
 int64_t
@@ -333,45 +325,39 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
   NS_ASSERT (tc);
   arp->SetTrafficControl (tc);
 
-  ObjectFactory qDiscFactory;
-  qDiscFactory.SetTypeId (PausableQueueDisc::GetTypeId());
-  qDiscFactory.Set ("PfcEnabled", BooleanValue (m_pfcEnabled));
-
   const uint32_t devN =
       node->GetNDevices () - 1; // the last device is LoopbackDevice which we should skip.
 
-  if (m_pfcEnabled)
+  if (m_fcEnabled)
     {
-      // Send only one packet at a time so that it can check PFC pause state
-      qDiscFactory.Set ("Quota", UintegerValue (1));
-
       Ptr<DcbTrafficControl> dcbTc = node->GetObject<DcbTrafficControl> ();
       if (dcbTc == nullptr)
         {
-          NS_FATAL_ERROR ("PFC enabled but there is no DcbTrafficControl aggregated to the node");
+          NS_FATAL_ERROR ("Flow control enabled but there is no DcbTrafficControl aggregated to the node");
         }
 
+      Callback<void, uint32_t, uint32_t, Ptr<Packet>> tcCallback = MakeCallback (&DcbTrafficControl::EgressProcess, dcbTc);
+      
       dcbTc->RegisterDeviceNumber (devN); // to initialize the vector of ports info
       for (int i = 0; i < devN; i++)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);
-          node->RegisterProtocolHandler (
-              MakeCallback (&DcbTrafficControl::ReceivePfc, PeekPointer (dcbTc)),
-              PfcFrame::PROT_NUMBER, dev);
           Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (dev);
           NS_ASSERT_MSG (dcbDev, "DcbNetDevice is not installed");
-          dcbDev->SetPfcEnabled (true);
-          dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDiscFactory.Create<PausableQueueDisc> ());
-        }
-      for (PfcConfig pfcConfig : m_pfcConfigs) // config PFC
-        {
-          dcbTc->SetPfcOfPortPriority (pfcConfig.port, pfcConfig.priority, pfcConfig.reserve,
-                                       pfcConfig.xon);
+
+          Ptr<PausableQueueDisc> qDisc = CreateObject<PausableQueueDisc> (i);
+          qDisc->RegisterTrafficControlCallback(tcCallback);
+          qDisc->SetPortIndex(i);
+          dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);
+          
+          dcbDev->SetFcEnabled(true); // all NetDevices should support FC
         }
     }
   else
     {
       // Set queue disc normally
+      ObjectFactory qDiscFactory;
+      qDiscFactory.SetTypeId (PausableQueueDisc::GetTypeId());
       for (int i = 0; i < devN; i++)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);

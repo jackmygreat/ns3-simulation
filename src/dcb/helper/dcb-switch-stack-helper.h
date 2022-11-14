@@ -32,11 +32,11 @@
 #include "ns3/internet-trace-helper.h"
 #include "ns3/ipv4-routing-helper.h"
 #include "ns3/ipv6-routing-helper.h"
-#include <_types/_uint32_t.h>
 
 
 namespace ns3 {
 
+struct DcbPfcPortConfig;
   
 /**
  * \ingroup dcb
@@ -108,6 +108,8 @@ public:
    */
   void InstallAll (void) const;
 
+  void SetFCEnabled (bool enable);
+
   /**
    * \brief Enable/disable IPv6 stack install.
    * \param enable enable state
@@ -119,10 +121,6 @@ public:
    * \param enable enable state
    */
   void SetIpv6NsRsJitter (bool enable);
-
-  void SetPfcEnabled (bool enable);
-
-  void ConfigPfc (uint32_t port, uint32_t priority, uint32_t reserve, uint32_t xon);
 
   /**
   * Assign a fixed random variable stream number to the random variables
@@ -139,13 +137,13 @@ public:
 
 private:
 
-  struct PfcConfig {
-    uint32_t port, priority, reserve, xon;
-    PfcConfig (uint32_t p, uint32_t prior, uint32_t resv, uint32_t x) :
-      port(p), priority (prior), reserve(resv), xon(x) {}
-  };
+  // struct PfcConfig {
+  //   uint32_t port, priority, reserve, xon;
+  //   PfcConfig (uint32_t p, uint32_t prior, uint32_t resv, uint32_t x) :
+  //     port(p), priority (prior), reserve(resv), xon(x) {}
+  // };
 
-  std::vector<PfcConfig> m_pfcConfigs;
+  std::vector<DcbPfcPortConfig> m_pfcConfigs;
   
 private:
   /**
@@ -267,8 +265,8 @@ private:
   bool m_ipv6NsRsJitterEnabled;
 
   ObjectFactory m_tcFactory;
-
-  bool m_pfcEnabled;
+  
+  bool m_fcEnabled;
 
 };
 

@@ -26,6 +26,8 @@
 #include "ns3/error-model.h"
 #include "ns3/ethernet-header.h"
 #include "ns3/pointer.h"
+#include "ns3/ipv4-header.h"
+#include <stdio.h>
 
 namespace ns3 {
 
@@ -52,8 +54,8 @@ DcbNetDevice::GetTypeId (void)
           .AddAttribute ("DataRate", "The default data rate for point to point links",
                          DataRateValue (DataRate ("100Gb/s")),
                          MakeDataRateAccessor (&DcbNetDevice::m_bps), MakeDataRateChecker ())
-          .AddAttribute ("PfcEnabled", "Enable PFC functions", BooleanValue (false),
-                         MakeBooleanAccessor (&DcbNetDevice::m_pfcEnabled), MakeBooleanChecker ())
+          .AddAttribute ("FcEnabled", "Enable flow control functions", BooleanValue (false),
+                         MakeBooleanAccessor (&DcbNetDevice::m_fcEnabled), MakeBooleanChecker ())
           .AddAttribute ("InterframeGap", "The time to wait between packet (frame) transmissions",
                          TimeValue (Seconds (0.0)),
                          MakeTimeAccessor (&DcbNetDevice::m_tInterframeGap), MakeTimeChecker ())
@@ -158,6 +160,22 @@ DcbNetDevice::DoDispose ()
   NetDevice::DoDispose ();
 }
 
+void PrintRawPacket (Ptr<Packet> p)
+{
+  uint32_t sz = p->GetSerializedSize();
+  uint8_t *buffer = new uint8_t[sz];
+  p->Serialize(buffer, sz);
+  printf("Raw packet:");
+  for (uint32_t i = 0; i < sz; i++)
+    {
+      if (i % 16 == 0)
+        {
+          printf("\n");
+        }
+      printf("%02x ", buffer[i]);
+    }
+}
+
 void
 DcbNetDevice::Receive (Ptr<Packet> packet)
 {
@@ -186,6 +204,14 @@ DcbNetDevice::Receive (Ptr<Packet> packet)
       EthernetHeader ethHeader;
       packet->RemoveHeader (ethHeader);
       protocol = ethHeader.GetLengthType ();
+
+      // ****************************************
+      // TODO: remove this block
+      Ipv4Header ipHeader;
+      packet->PeekHeader(ipHeader);
+      NS_LOG_DEBUG ("Node " << Simulator::GetContext() << " device " << GetIfIndex() << " receiving packet " << ethHeader << " || " << ipHeader);
+      // ****************************************
+      
       //
       // Trace sinks will expect complete packets, not packets without some of the
       // headers.
@@ -219,6 +245,19 @@ DcbNetDevice::Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNu
   // shoving it out the door.
   //
   AddEthernetHeader (packet, protocolNumber);
+
+  // ****************************************
+  // TODO: remove this block
+  uint32_t nodeId = Simulator::GetContext();
+  if (nodeId >= 4)
+    {
+      EthernetHeader ethHeader;
+      packet->PeekHeader(ethHeader);
+      Ipv4Header ipHeader;
+      packet->PeekHeader(ipHeader);
+      NS_LOG_DEBUG ("Node " << Simulator::GetContext() << " device " << GetIfIndex() << " sending packet " << ethHeader << " || " << ipHeader);
+    }
+  // ****************************************
 
   m_macTxTrace (packet);
 
@@ -299,7 +338,7 @@ DcbNetDevice::TransmitComplete (void)
   m_currentPkt = 0;
 
   Ptr<Packet> p = m_queue->Dequeue ();
-  if (m_pfcEnabled)
+  if (m_fcEnabled)
     {
       // We let the egress buffer, which is a PausableQueueDisc, to pop one packet at
       // a time and send out through this device. As a result, at most one data packet
@@ -311,6 +350,7 @@ DcbNetDevice::TransmitComplete (void)
           m_snifferTrace (p);
           TransmitStart (p);
         }
+      m_queueDisc->RunEnd(); // finish the run
       // Ask the egress buffer to pop next packet if there is any packet not paused.
       m_queueDisc->Run ();
     }
@@ -580,10 +620,10 @@ DcbNetDevice::GetQueueDisc () const
 }
 
 void
-DcbNetDevice::SetPfcEnabled (bool enabled)
+DcbNetDevice::SetFcEnabled (bool enabled)
 {
   NS_LOG_FUNCTION (this << enabled);
-  m_pfcEnabled = enabled;
+  m_fcEnabled = enabled;
 }
 
 bool

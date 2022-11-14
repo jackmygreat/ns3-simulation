@@ -19,20 +19,21 @@
  */
 
 #include "dcb-traffic-control.h"
-#include "dcb-net-device.h"
+#include "dcb-flow-control-port.h"
+#include "dcb-pfc-port.h"
 #include "ns3/address.h"
 #include "ns3/boolean.h"
+#include "ns3/callback.h"
 #include "ns3/ethernet-header.h"
 #include "ns3/fatal-error.h"
 #include "ns3/ipv4-queue-disc-item.h"
 #include "ns3/log-macros-enabled.h"
-#include "ns3/net-device.h"
 #include "ns3/nstime.h"
 #include "ns3/pfc-frame.h"
-#include "ns3/traffic-control-layer.h"
 #include "ns3/type-id.h"
 #include "ns3/simulator.h"
 #include "ns3/ipv4-header.h"
+#include "ns3/socket.h"
 #include "pausable-queue-disc.h"
 #include <cmath>
 
@@ -48,10 +49,7 @@ DcbTrafficControl::GetTypeId (void)
   static TypeId tid = TypeId ("ns3::DcbTrafficControl")
                           .SetParent<TrafficControlLayer> ()
                           .SetGroupName ("Dcb")
-                          .AddConstructor<DcbTrafficControl> ()
-                          .AddAttribute ("PfcEnabled", "Whether enable PFC.", BooleanValue (false),
-                                         MakeBooleanAccessor (&DcbTrafficControl::m_pfcEnabled),
-                                         MakeBooleanChecker ());
+                          .AddConstructor<DcbTrafficControl> ();
   return tid;
 }
 
@@ -81,9 +79,10 @@ DcbTrafficControl::SetRootQueueDiscOnDevice (Ptr<DcbNetDevice> device, Ptr<Pausa
 }
 
 void
-DcbTrafficControl::RegisterDeviceNumber (uint32_t num)
+DcbTrafficControl::RegisterDeviceNumber (const uint32_t num)
 {
-  m_pfc.ports.resize (num);
+  NS_LOG_FUNCTION (this << num);
+  m_ports.resize (num);
 }
 
 void
@@ -92,184 +91,106 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
                             NetDevice::PacketType packetType)
 {
   NS_LOG_FUNCTION (this << device << packet << protocol << from << to << packetType);
-  if (m_pfcEnabled) // PFC logic
+  
+  // Add priority to packet tag
+  uint8_t priority = PeekPriorityOfPacket (packet);
+  CoSTag cosTag;
+  cosTag.SetCoS (priority);
+  packet->AddPacketTag (cosTag); // CoSTag is removed in PausableQueueDisc::DoEnqueue
+
+  // Add from-index to packet tag
+  uint32_t index = device->GetIfIndex ();
+  DeviceIndexTag tag (index);
+  packet->AddPacketTag (tag); // egress will read the index from tag to decrement counter
+  // update ingress queue length
+  IncrementIngressQueueCounter (index, priority, packet->GetSize ());
+
+  if (m_ports[index].FcEnabled())
     {
-      uint32_t index = device->GetIfIndex ();
-      uint8_t priority = PeekPriorityOfPacket (packet);
-      
-      // Add priority to packet tag
-      CoSTag cosTag;
-      cosTag.SetCoS (priority);
-      packet->AddPacketTag (cosTag);
-      
-      if (m_pfc.CheckEnableVec (index, priority)) // if PFC is enabled on this priority
-        {
-          // Add ingress port index to packet tag
-          DeviceIndexTag tag (index);
-          packet->AddPacketTag (tag); // egress will read the index from tag to decrement counter
-
-          if (m_pfc.CheckShouldSendPause (index, priority, packet->GetSize ()))
-            {
-              NS_LOG_DEBUG ("Send pause frame from " << Simulator::GetContext () << " port " << index);
-              Ptr<Packet> pfcFrame = GeneratePauseFrame (priority);
-              // pause frames are sent directly to device without queueing in egress QueueDisc
-              device->Send (pfcFrame, from, PfcFrame::PROT_NUMBER);
-              m_pfc.SetPaused(index, priority, true); // mark this ingress queue as paused
-            }
-          m_pfc.IncrementPfcQueueCounter (index, priority, packet->GetSize ());
-        }
+      // run flow control ingress process
+      m_ports[index].GetFC ()->IngressProcess (packet, protocol, from, to, packetType);
     }
-
   TrafficControlLayer::Receive (device, packet, protocol, from, to, packetType);
 }
 
 void
-DcbTrafficControl::ReceivePfc (Ptr<NetDevice> dev, Ptr<const Packet> packet,
-                               uint16_t protocol, const Address &from, const Address &to,
-                               NetDevice::PacketType packetType)
+DcbTrafficControl::EgressProcess (uint32_t outPort, uint32_t priority, Ptr<Packet> packet)
 {
-  NS_LOG_FUNCTION(this << dev << protocol << from << to);
+  NS_LOG_FUNCTION (this << outPort << priority << packet);
+  DeviceIndexTag tag;
+  packet->RemovePacketTag(tag);
+  uint32_t fromIdx = tag.GetIndex();
+  DecrementIngressQueueCounter(fromIdx, priority, packet->GetSize());
 
-  Ptr<DcbNetDevice> device = DynamicCast<DcbNetDevice>(dev);
-  const uint32_t index = device->GetIfIndex ();
-  PfcFrame pfcFrame;
-  packet->PeekHeader (pfcFrame);
-  uint8_t enableVec = pfcFrame.GetEnableClassField ();
-  for (uint8_t priority = 0; enableVec > 0; enableVec >>= 1, priority++)
+  m_ports[outPort].CallFCPacketOutPipeline (fromIdx, packet);
+  if (m_ports[fromIdx].FcEnabled())
     {
-      if (enableVec & 1)
-        {
-          uint16_t quanta = pfcFrame.GetQuanta (priority);
-          if (quanta > 0)
-            {
-              uint64_t bitRate = device->GetDataRate ().GetBitRate ();
-              Time pauseTime = NanoSeconds (1e9 * quanta * PfcFrame::QUANTUM_BIT / bitRate);
-              Ptr<PausableQueueDisc> qDisc = device->GetQueueDisc ();
-              qDisc->SetPaused (priority, true);
-              EventId event =
-                  Simulator::Schedule (pauseTime, &PausableQueueDisc::SetPaused, qDisc, priority,
-                                       false); // resume the queue after the pause time.
-              m_pfc.getQueue(index, priority).ReplacePauseEvent (event);
-              NS_LOG_LOGIC("PFC: port " << index << " priority " << priority << " is paused");
-            }
-          else
-            {
-              m_pfc.getQueue(index, priority).CancelPauseEvent();
-              NS_LOG_LOGIC("PFC: port " << index << " priority " << priority << " is resumed");
-            }
-        }
+      m_ports[outPort].GetFC()->EgressProcess(packet);
     }
 }
 
 void
-DcbTrafficControl::Send (Ptr<NetDevice> device, Ptr<QueueDiscItem> item)
+DcbTrafficControl::InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc)
 {
-  NS_LOG_FUNCTION (this << device << item);
-  const Ptr<Packet> packet = item->GetPacket ();
-  // Get priority from packet tag.
-  // We use tag rather than DSCP field to get the priority because in this way strategy
-  // can use different ways to set priority.
-  CoSTag cosTag;
-  packet->PeekPacketTag (cosTag);
-  const uint8_t priority = cosTag.GetCoS ();
-  
-  if (m_pfcEnabled) // PFC logic: update counter and check if should send Resume Frame
+  NS_LOG_FUNCTION (this << portIdx);
+  m_ports[portIdx].SetFC (fc);
+
+  // Set egress callback to other ports.
+  // When we enable FC on one port, it means that other ports may do something when
+  // sending out the packet.
+  // For example, if we config PFC on port 0, than ports other than 0 should check
+  // whether port 0 has to send RESUME frame when sending out a packet.
+  PortInfo::FCPacketOutCb cb = MakeCallback(&DcbFlowControlPort::PacketOutCallbackProcess, fc);
+  for (auto& port: m_ports)
     {
-      DeviceIndexTag devTag;
-      if (packet->RemovePacketTag (devTag))
-        {
-          const uint32_t fromIdx = devTag.GetIndex ();
-          m_pfc.DecrementPfcQueueCounter (fromIdx, priority, packet->GetSize ());
-          if (m_pfc.CheckShouldSendResume (fromIdx, priority))
-            {
-              NS_LOG_DEBUG ("Send Resume frame from " << Simulator::GetContext () << " port "
-                                                      << fromIdx);
-              Ptr<Packet> pfcFrame = GeneratePauseFrame (priority, (uint16_t) 0);
-              device->GetNode ()->GetDevice (fromIdx)->Send (pfcFrame, Address (),
-                                                             PfcFrame::PROT_NUMBER);
-              m_pfc.SetPaused(fromIdx, priority, false);
-            }
-        }
+      port.AddPacketOutCallback(portIdx, cb);
     }
-
-  TrafficControlLayer::Send (device, item);
 }
 
-void
-DcbTrafficControl::SetEnableVec (uint32_t deviceIndex, uint8_t enableVec)
-{
-  m_pfc.ports[deviceIndex].m_enableVec = enableVec;
-}
-
-void
-DcbTrafficControl::SetPfcOfPortPriority (uint32_t index, uint32_t priority, uint32_t reserve,
-                                         uint32_t xon)
-{
-  if (index >= m_pfc.ports.size ())
-    {
-      NS_FATAL_ERROR ("Index of port " << index << " is out of range of " << m_pfc.ports.size ());
-    }
-  if (priority >= 8)
-    {
-      NS_FATAL_ERROR ("PFC priority should be 0~7, your input is " << priority);
-    }
-  if (xon > reserve)
-    {
-      NS_FATAL_ERROR ("XON should be less or equal to reserve");
-    }
-  Pfc::PortInfo::IngressQueueInfo &q = m_pfc.ports[index].getQueue (priority);
-  q.xon = xon;
-  q.reserve = reserve;
-}
-
-bool
-DcbTrafficControl::Pfc::CheckShouldSendPause (uint32_t port, uint8_t priority,
-                                              uint32_t packetSize) const
-{
-  // TODO: add support for dynamic threshold
-  const PortInfo::IngressQueueInfo &q = ports[port].getQueue (priority);
-  return !q.isPaused && q.queueLength + packetSize > q.reserve;
-}
-bool
-DcbTrafficControl::Pfc::CheckShouldSendResume (uint32_t port, uint8_t priority) const
-{
-  // TODO: add support for dynamic threshold
-  const PortInfo::IngressQueueInfo &q = ports[port].getQueue (priority);
-  return q.isPaused && q.queueLength <= q.xon;
-}
-
-Ptr<Packet>
-DcbTrafficControl::GeneratePauseFrame (uint8_t priority, uint16_t quanta)
-{
-  PfcFrame pfcFrame;
-  pfcFrame.EnableClass (priority); // only enable this priority
-  pfcFrame.SetQuanta (priority, quanta);
-
-  Ptr<Packet> packet = Create<Packet> (0);
-  packet->AddHeader (pfcFrame);
-  return packet;
-}
-
-Ptr<Packet>
-DcbTrafficControl::GeneratePauseFrame (uint8_t enableVec, uint16_t quantaList[8])
-{
-  PfcFrame pfcFrame;
-  pfcFrame.SetEnableClassField (enableVec);
-  for (int cls = 0; cls < 8; cls++)
-    {
-      pfcFrame.SetQuanta (cls, quantaList[cls]);
-    }
-  Ptr<Packet> packet = Create<Packet> (0);
-  packet->AddHeader (pfcFrame);
-  return packet;
-}
-
-inline uint8_t
-DcbTrafficControl::PeekPriorityOfPacket (Ptr<const Packet> packet)
+// static
+uint8_t
+DcbTrafficControl::PeekPriorityOfPacket (const Ptr<const Packet> packet)
 {
   Ipv4Header ipv4Header;
   packet->PeekHeader (ipv4Header);
-  return ipv4Header.GetDscp () >> 3;
+  return Socket::IpTos2Priority (ipv4Header.GetTos ());
+  // return ipv4Header.GetDscp () >> 3;
+}
+
+inline void
+DcbTrafficControl::IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize)
+{
+  // NOTICE: no index checking nor value checking for better performance, be careful
+  m_ports[index].IncreQueueLength(priority, static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
+}
+
+void
+DcbTrafficControl::DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize)
+{
+  // NOTICE: no index checking nor value checking for better performance, be careful
+  m_ports[index].IncreQueueLength(priority, -static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
+}
+
+void
+DcbTrafficControl::PortInfo::AddPacketOutCallback (uint32_t fromIdx, FCPacketOutCb cb)
+{
+  NS_LOG_FUNCTION (this);
+  m_fcPacketOutPipeline.emplace_back(fromIdx, cb);
+}
+
+void
+DcbTrafficControl::PortInfo::CallFCPacketOutPipeline (uint32_t fromIdx, Ptr<Packet> packet)
+{
+  NS_LOG_FUNCTION (this << packet);
+
+  for (auto& handler: m_fcPacketOutPipeline)
+    {
+      if (handler.first == fromIdx)
+        {
+          const FCPacketOutCb& cb = handler.second;
+          cb (packet);
+        }
+    }
 }
 
 /** Tags implementation **/
