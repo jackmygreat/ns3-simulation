@@ -33,14 +33,12 @@ NS_OBJECT_ENSURE_REGISTERED (DcbFlowControlPort);
 TypeId
 DcbFlowControlPort::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::DcbFlowControlPort")
-                          .SetParent<Object> ()
-                          .SetGroupName ("Dcb");
+  static TypeId tid = TypeId ("ns3::DcbFlowControlPort").SetParent<Object> ().SetGroupName ("Dcb");
   return tid;
 }
 
 DcbFlowControlPort::DcbFlowControlPort (Ptr<NetDevice> dev, Ptr<DcbTrafficControl> tc)
-  : m_dev (dev), m_tc (tc), m_enableIngressControl (true), m_enableEgressControl(false)
+    : m_dev (dev), m_tc (tc), m_enableIngressControl (true), m_enableEgressControl (false)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -63,12 +61,12 @@ DcbFlowControlPort::IngressProcess (Ptr<const Packet> packet, uint16_t protocol,
 }
 
 void
-DcbFlowControlPort::PacketOutCallbackProcess (Ptr<Packet> packet)
+DcbFlowControlPort::PacketOutCallbackProcess (uint8_t priority, Ptr<Packet> packet)
 {
   NS_LOG_FUNCTION (this << packet);
   if (m_enableIngressControl)
     {
-      DoPacketOutCallbackProcess(packet);
+      DoPacketOutCallbackProcess (priority, packet);
     }
 }
 

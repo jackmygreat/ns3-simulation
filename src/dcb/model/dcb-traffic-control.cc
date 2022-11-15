@@ -91,7 +91,7 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
                             NetDevice::PacketType packetType)
 {
   NS_LOG_FUNCTION (this << device << packet << protocol << from << to << packetType);
-  
+
   // Add priority to packet tag
   uint8_t priority = PeekPriorityOfPacket (packet);
   CoSTag cosTag;
@@ -103,9 +103,12 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
   DeviceIndexTag tag (index);
   packet->AddPacketTag (tag); // egress will read the index from tag to decrement counter
   // update ingress queue length
-  IncrementIngressQueueCounter (index, priority, packet->GetSize ());
+  Ipv4Header ipv4Header;
+  packet->PeekHeader (ipv4Header);
+  IncrementIngressQueueCounter (index, priority,
+                                packet->GetSize () - ipv4Header.GetSerializedSize ());
 
-  if (m_ports[index].FcEnabled())
+  if (m_ports[index].FcEnabled ())
     {
       // run flow control ingress process
       m_ports[index].GetFC ()->IngressProcess (packet, protocol, from, to, packetType);
@@ -114,18 +117,18 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
 }
 
 void
-DcbTrafficControl::EgressProcess (uint32_t outPort, uint32_t priority, Ptr<Packet> packet)
+DcbTrafficControl::EgressProcess (uint32_t outPort, uint8_t priority, Ptr<Packet> packet)
 {
   NS_LOG_FUNCTION (this << outPort << priority << packet);
   DeviceIndexTag tag;
-  packet->RemovePacketTag(tag);
-  uint32_t fromIdx = tag.GetIndex();
-  DecrementIngressQueueCounter(fromIdx, priority, packet->GetSize());
+  packet->RemovePacketTag (tag);
+  uint32_t fromIdx = tag.GetIndex ();
+  DecrementIngressQueueCounter (fromIdx, priority, packet->GetSize ());
 
-  m_ports[outPort].CallFCPacketOutPipeline (fromIdx, packet);
-  if (m_ports[fromIdx].FcEnabled())
+  m_ports[outPort].CallFCPacketOutPipeline (fromIdx, priority, packet);
+  if (m_ports[outPort].FcEnabled ())
     {
-      m_ports[outPort].GetFC()->EgressProcess(packet);
+      m_ports[outPort].GetFC ()->EgressProcess (packet);
     }
 }
 
@@ -140,10 +143,10 @@ DcbTrafficControl::InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc
   // sending out the packet.
   // For example, if we config PFC on port 0, than ports other than 0 should check
   // whether port 0 has to send RESUME frame when sending out a packet.
-  PortInfo::FCPacketOutCb cb = MakeCallback(&DcbFlowControlPort::PacketOutCallbackProcess, fc);
-  for (auto& port: m_ports)
+  PortInfo::FCPacketOutCb cb = MakeCallback (&DcbFlowControlPort::PacketOutCallbackProcess, fc);
+  for (auto &port : m_ports)
     {
-      port.AddPacketOutCallback(portIdx, cb);
+      port.AddPacketOutCallback (portIdx, cb);
     }
 }
 
@@ -158,37 +161,41 @@ DcbTrafficControl::PeekPriorityOfPacket (const Ptr<const Packet> packet)
 }
 
 inline void
-DcbTrafficControl::IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize)
+DcbTrafficControl::IncrementIngressQueueCounter (uint32_t index, uint8_t priority,
+                                                 uint32_t packetSize)
 {
   // NOTICE: no index checking nor value checking for better performance, be careful
-  m_ports[index].IncreQueueLength(priority, static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
+  m_ports[index].IncreQueueLength (priority, static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
 }
 
 void
-DcbTrafficControl::DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize)
+DcbTrafficControl::DecrementIngressQueueCounter (uint32_t index, uint8_t priority,
+                                                 uint32_t packetSize)
 {
   // NOTICE: no index checking nor value checking for better performance, be careful
-  m_ports[index].IncreQueueLength(priority, -static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
+  m_ports[index].IncreQueueLength (priority,
+                                   -static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
 }
 
 void
 DcbTrafficControl::PortInfo::AddPacketOutCallback (uint32_t fromIdx, FCPacketOutCb cb)
 {
   NS_LOG_FUNCTION (this);
-  m_fcPacketOutPipeline.emplace_back(fromIdx, cb);
+  m_fcPacketOutPipeline.emplace_back (fromIdx, cb);
 }
 
 void
-DcbTrafficControl::PortInfo::CallFCPacketOutPipeline (uint32_t fromIdx, Ptr<Packet> packet)
+DcbTrafficControl::PortInfo::CallFCPacketOutPipeline (uint32_t fromIdx, uint8_t priority,
+                                                      Ptr<Packet> packet)
 {
   NS_LOG_FUNCTION (this << packet);
 
-  for (auto& handler: m_fcPacketOutPipeline)
+  for (auto &handler : m_fcPacketOutPipeline)
     {
       if (handler.first == fromIdx)
         {
-          const FCPacketOutCb& cb = handler.second;
-          cb (packet);
+          const FCPacketOutCb &cb = handler.second;
+          cb (priority, packet);
         }
     }
 }

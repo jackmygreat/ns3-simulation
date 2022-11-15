@@ -160,19 +160,20 @@ DcbNetDevice::DoDispose ()
   NetDevice::DoDispose ();
 }
 
-void PrintRawPacket (Ptr<Packet> p)
+void
+PrintRawPacket (Ptr<Packet> p)
 {
-  uint32_t sz = p->GetSerializedSize();
+  uint32_t sz = p->GetSerializedSize ();
   uint8_t *buffer = new uint8_t[sz];
-  p->Serialize(buffer, sz);
-  printf("Raw packet:");
+  p->Serialize (buffer, sz);
+  printf ("Raw packet:");
   for (uint32_t i = 0; i < sz; i++)
     {
       if (i % 16 == 0)
         {
-          printf("\n");
+          printf ("\n");
         }
-      printf("%02x ", buffer[i]);
+      printf ("%02x ", buffer[i]);
     }
 }
 
@@ -205,13 +206,6 @@ DcbNetDevice::Receive (Ptr<Packet> packet)
       packet->RemoveHeader (ethHeader);
       protocol = ethHeader.GetLengthType ();
 
-      // ****************************************
-      // TODO: remove this block
-      Ipv4Header ipHeader;
-      packet->PeekHeader(ipHeader);
-      NS_LOG_DEBUG ("Node " << Simulator::GetContext() << " device " << GetIfIndex() << " receiving packet " << ethHeader << " || " << ipHeader);
-      // ****************************************
-      
       //
       // Trace sinks will expect complete packets, not packets without some of the
       // headers.
@@ -244,20 +238,8 @@ DcbNetDevice::Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNu
   // Stick a point to point protocol header on the packet in preparation for
   // shoving it out the door.
   //
-  AddEthernetHeader (packet, protocolNumber);
 
-  // ****************************************
-  // TODO: remove this block
-  uint32_t nodeId = Simulator::GetContext();
-  if (nodeId >= 4)
-    {
-      EthernetHeader ethHeader;
-      packet->PeekHeader(ethHeader);
-      Ipv4Header ipHeader;
-      packet->PeekHeader(ipHeader);
-      NS_LOG_DEBUG ("Node " << Simulator::GetContext() << " device " << GetIfIndex() << " sending packet " << ethHeader << " || " << ipHeader);
-    }
-  // ****************************************
+  AddEthernetHeader (packet, protocolNumber);
 
   m_macTxTrace (packet);
 
@@ -350,7 +332,7 @@ DcbNetDevice::TransmitComplete (void)
           m_snifferTrace (p);
           TransmitStart (p);
         }
-      m_queueDisc->RunEnd(); // finish the run
+      m_queueDisc->RunEnd (); // finish the run
       // Ask the egress buffer to pop next packet if there is any packet not paused.
       m_queueDisc->Run ();
     }

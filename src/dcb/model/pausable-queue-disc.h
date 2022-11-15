@@ -30,26 +30,23 @@ namespace ns3 {
 class PausableQueueDiscClass : public QueueDiscClass
 {
 public:
-
   static TypeId GetTypeId ();
 
   PausableQueueDiscClass ();
   virtual ~PausableQueueDiscClass ();
-  
+
   bool IsPaused () const;
 
   void SetPaused (bool paused);
 
 private:
-  
   bool m_isPaused;
 }; // PausableQueueDiscClass
-  
 
-class PausableQueueDisc : public QueueDisc {
+class PausableQueueDisc : public QueueDisc
+{
 
 public:
-
   static TypeId GetTypeId (void);
 
   PausableQueueDisc ();
@@ -63,18 +60,19 @@ public:
    * \return the i-th queue disc class.
    */
   Ptr<PausableQueueDiscClass> GetQueueDiscClass (std::size_t i) const;
-  
+
   virtual void Run (void) override;
 
   void SetPortIndex (uint32_t portIndex);
   void SetFCEnabled (bool enable);
 
   void SetPaused (uint8_t priority, bool paused);
-  
-  void RegisterTrafficControlCallback (Callback<void, uint32_t, uint32_t, Ptr<Packet>> cb);
+
+  typedef Callback<void, uint32_t, uint8_t, Ptr<Packet>> TCEgressCallback;
+
+  void RegisterTrafficControlCallback (TCEgressCallback cb);
 
 private:
-
   virtual bool DoEnqueue (Ptr<QueueDiscItem> item) override;
 
   virtual Ptr<QueueDiscItem> DoDequeue (void) override;
@@ -87,7 +85,7 @@ private:
 
   bool m_fcEnabled;
 
-  Callback<void, uint32_t, uint32_t, Ptr<Packet>> m_tcEgress;
+  TCEgressCallback m_tcEgress;
 
   int32_t m_portIndex; //!< the port index this QueueDisc belongs to
 

@@ -74,16 +74,9 @@ DcbPfcPort::DoIngressProcess (Ptr<const Packet> packet, uint16_t protocol, const
 }
 
 void
-DcbPfcPort::DoPacketOutCallbackProcess (Ptr<Packet> packet)
+DcbPfcPort::DoPacketOutCallbackProcess (uint8_t priority, Ptr<Packet> packet)
 {
   NS_LOG_FUNCTION (this);
-
-  // Get priority from packet tag.
-  // We use tag rather than DSCP field to get the priority because in this way
-  // we can use different strategies to set priority.
-  CoSTag cosTag;
-  packet->PeekPacketTag (cosTag);
-  const uint8_t priority = cosTag.GetCoS ();
 
   if (CheckShouldSendResume (priority))
     {
@@ -117,7 +110,7 @@ DcbPfcPort::ReceivePfc (Ptr<NetDevice> dev, Ptr<const Packet> packet, uint16_t p
         {
           uint16_t quanta = pfcFrame.GetQuanta (priority);
           Ptr<PausableQueueDisc> qDisc = device->GetQueueDisc ();
-          
+
           if (quanta > 0)
             {
               uint64_t bitRate = device->GetDataRate ().GetBitRate ();
@@ -127,15 +120,15 @@ DcbPfcPort::ReceivePfc (Ptr<NetDevice> dev, Ptr<const Packet> packet, uint16_t p
                   Simulator::Schedule (pauseTime, &PausableQueueDisc::SetPaused, qDisc, priority,
                                        false); // resume the queue after the pause time.
               UpdatePauseEvent (priority, event);
-              NS_LOG_LOGIC ("PFC: node " << Simulator::GetContext() << " port " << index
-                            << " priority " << (uint32_t) priority << " is paused");
+              NS_LOG_LOGIC ("PFC: node " << Simulator::GetContext () << " port " << index
+                                         << " priority " << (uint32_t) priority << " is paused");
             }
           else
             {
-              qDisc->SetPaused(priority, false);
+              qDisc->SetPaused (priority, false);
               CancelPauseEvent (priority);
-              NS_LOG_LOGIC ("PFC: node " << Simulator::GetContext() << " port " << index
-                            << " priority " << (uint32_t) priority << " is resumed");
+              NS_LOG_LOGIC ("PFC: node " << Simulator::GetContext () << " port " << index
+                                         << " priority " << (uint32_t) priority << " is resumed");
             }
         }
     }

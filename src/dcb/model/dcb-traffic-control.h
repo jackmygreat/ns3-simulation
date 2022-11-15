@@ -147,13 +147,14 @@ public:
    * \breif Called after egress queue pops out a packet.
    * For example, it can be used for flow control doing some egress action.
    */
-  void EgressProcess (uint32_t port, uint32_t priority, Ptr<Packet> packet);
+  void EgressProcess (uint32_t port, uint8_t priority, Ptr<Packet> packet);
 
-  inline uint32_t GetIngressQueueLength (uint32_t port, uint32_t priority) const
+  inline uint32_t
+  GetIngressQueueLength (uint32_t port, uint32_t priority) const
   {
-    return m_ports[port].GetQueueLength(priority);
+    return m_ports[port].GetQueueLength (priority);
   }
-  
+
   void InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc);
 
   static uint8_t PeekPriorityOfPacket (const Ptr<const Packet> packet);
@@ -162,7 +163,7 @@ public:
   class PortInfo
   {
   public:
-    typedef Callback <void, Ptr<Packet>> FCPacketOutCb;
+    typedef Callback<void, uint8_t, Ptr<Packet>> FCPacketOutCb;
 
     PortInfo () = default;
 
@@ -175,30 +176,35 @@ public:
      * \brief Call corresponding callbacks when a packet from `fromIdx` is going
      * out through this port.
      */
-    void CallFCPacketOutPipeline (uint32_t fromIdx, Ptr<Packet> packet);
+    void CallFCPacketOutPipeline (uint32_t fromIdx, uint8_t priority, Ptr<Packet> packet);
 
-    inline uint32_t GetQueueLength (uint32_t priority) const
+    inline uint32_t
+    GetQueueLength (uint32_t priority) const
     {
       return m_ingressQueueLength[priority];
     }
-    
-    inline void IncreQueueLength (uint32_t priority, int32_t val)
+
+    inline void
+    IncreQueueLength (uint32_t priority, int32_t val)
     {
       m_ingressQueueLength[priority] += val;
     }
 
-    inline void SetFC (Ptr<DcbFlowControlPort> fc)
+    inline void
+    SetFC (Ptr<DcbFlowControlPort> fc)
     {
       m_fcEnabled = true;
       m_fc = fc;
     }
 
-    inline bool FcEnabled () const
+    inline bool
+    FcEnabled () const
     {
       return m_fcEnabled;
     }
 
-    inline Ptr<DcbFlowControlPort> GetFC () const
+    inline Ptr<DcbFlowControlPort>
+    GetFC () const
     {
       return m_fc;
     }
@@ -207,21 +213,17 @@ public:
     uint32_t m_ingressQueueLength[PRIORITY_NUMBER];
     bool m_fcEnabled;
     Ptr<DcbFlowControlPort> m_fc;
-    std::vector<std::pair<uint32_t, FCPacketOutCb> >  m_fcPacketOutPipeline;
-    
+    std::vector<std::pair<uint32_t, FCPacketOutCb>> m_fcPacketOutPipeline;
   };
 
 protected:
-  
   void IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize);
   void DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize);
 
 private:
-
   constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
-  
+
   std::vector<PortInfo> m_ports;
-  
 };
 
 class DeviceIndexTag : public Tag
@@ -252,7 +254,6 @@ private:
 
 }; // class DevIndexTag
 
-  
 /**
   * \brief Class of Service (priority) tag for PFC priority.
   */

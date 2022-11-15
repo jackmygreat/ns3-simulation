@@ -134,7 +134,7 @@ DcbSwitchStackHelper::Initialize ()
   listRouting.Add (globalRouting, -10);
   SetRoutingHelper (listRouting);
   // SetRoutingHelper (staticRoutingv6);
-  m_tcFactory.SetTypeId (DcbTrafficControl::GetTypeId());
+  m_tcFactory.SetTypeId (DcbTrafficControl::GetTypeId ());
   m_fcEnabled = true;
 }
 
@@ -333,11 +333,13 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
       Ptr<DcbTrafficControl> dcbTc = node->GetObject<DcbTrafficControl> ();
       if (dcbTc == nullptr)
         {
-          NS_FATAL_ERROR ("Flow control enabled but there is no DcbTrafficControl aggregated to the node");
+          NS_FATAL_ERROR (
+              "Flow control enabled but there is no DcbTrafficControl aggregated to the node");
         }
 
-      Callback<void, uint32_t, uint32_t, Ptr<Packet>> tcCallback = MakeCallback (&DcbTrafficControl::EgressProcess, dcbTc);
-      
+      PausableQueueDisc::TCEgressCallback tcCallback =
+          MakeCallback (&DcbTrafficControl::EgressProcess, dcbTc);
+
       dcbTc->RegisterDeviceNumber (devN); // to initialize the vector of ports info
       for (int i = 0; i < devN; i++)
         {
@@ -346,18 +348,18 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
           NS_ASSERT_MSG (dcbDev, "DcbNetDevice is not installed");
 
           Ptr<PausableQueueDisc> qDisc = CreateObject<PausableQueueDisc> (i);
-          qDisc->RegisterTrafficControlCallback(tcCallback);
-          qDisc->SetPortIndex(i);
+          qDisc->RegisterTrafficControlCallback (tcCallback);
+          qDisc->SetPortIndex (i);
           dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);
-          
-          dcbDev->SetFcEnabled(true); // all NetDevices should support FC
+
+          dcbDev->SetFcEnabled (true); // all NetDevices should support FC
         }
     }
   else
     {
       // Set queue disc normally
       ObjectFactory qDiscFactory;
-      qDiscFactory.SetTypeId (PausableQueueDisc::GetTypeId());
+      qDiscFactory.SetTypeId (PausableQueueDisc::GetTypeId ());
       for (int i = 0; i < devN; i++)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);

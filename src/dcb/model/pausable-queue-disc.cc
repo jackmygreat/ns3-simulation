@@ -51,7 +51,7 @@ PausableQueueDisc::GetTypeId ()
                          MakeBooleanAccessor (&PausableQueueDisc::m_fcEnabled),
                          MakeBooleanChecker ())
           .AddAttribute ("TrafficControlCallback", "Callback when deque completed",
-                         CallbackValue(MakeNullCallback<void, uint32_t, uint32_t, Ptr<Packet>> ()),
+                         CallbackValue (MakeNullCallback<void, uint32_t, uint32_t, Ptr<Packet>> ()),
                          MakeCallbackAccessor (&PausableQueueDisc::m_tcEgress),
                          MakeCallbackChecker ());
   return tid;
@@ -62,7 +62,7 @@ PausableQueueDisc::PausableQueueDisc ()
   NS_LOG_FUNCTION (this);
 }
 
-PausableQueueDisc::PausableQueueDisc (uint32_t port): m_portIndex(port)
+PausableQueueDisc::PausableQueueDisc (uint32_t port) : m_portIndex (port)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -90,6 +90,7 @@ PausableQueueDisc::Run ()
       if (item)
         {
           NS_ASSERT_MSG (m_send, "Send callback not set");
+          item->AddHeader ();
           m_send (item); // m_send is usually set to NetDevice::Send ()
         }
     }
@@ -99,14 +100,14 @@ PausableQueueDisc::Run ()
 void
 PausableQueueDisc::SetPortIndex (uint32_t portIndex)
 {
-  NS_LOG_FUNCTION (this << portIndex);  
+  NS_LOG_FUNCTION (this << portIndex);
   m_portIndex = portIndex;
 }
 
 void
 PausableQueueDisc::SetFCEnabled (bool enable)
 {
-  NS_LOG_FUNCTION (this << enable);  
+  NS_LOG_FUNCTION (this << enable);
   m_fcEnabled = enable;
 }
 
@@ -118,7 +119,7 @@ PausableQueueDisc::SetPaused (uint8_t priority, bool paused)
 }
 
 void
-PausableQueueDisc::RegisterTrafficControlCallback (Callback<void, uint32_t, uint32_t, Ptr<Packet>> cb)
+PausableQueueDisc::RegisterTrafficControlCallback (TCEgressCallback cb)
 {
   NS_LOG_FUNCTION (this);
   m_tcEgress = cb;
@@ -131,6 +132,9 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
 
   // TODO: Use Classify to call PacketFilter
 
+  // Get priority from packet tag.
+  // We use tag rather than DSCP field to get the priority because in this way
+  // we can use different strategies to set priority.
   CoSTag cosTag;
   if (item->GetPacket ()->RemovePacketTag (cosTag))
     {
@@ -148,7 +152,7 @@ PausableQueueDisc::DoDequeue ()
 {
   NS_LOG_FUNCTION (this);
   Ptr<QueueDiscItem> item = 0;
-  
+
   for (uint32_t i = 0; i < GetNQueueDiscClasses (); i++)
     {
       Ptr<PausableQueueDiscClass> qdclass = GetQueueDiscClass (i);
@@ -156,7 +160,7 @@ PausableQueueDisc::DoDequeue ()
           (item = qdclass->GetQueueDisc ()->Dequeue ()) != 0)
         {
           NS_LOG_LOGIC ("Popoed from priority " << i << ": " << item);
-          m_tcEgress (m_portIndex, i, item->GetPacket());
+          m_tcEgress (m_portIndex, i, item->GetPacket ());
           return item;
         }
     }

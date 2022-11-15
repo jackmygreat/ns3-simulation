@@ -34,39 +34,38 @@ struct DcbPfcPortConfig
   {
     uint32_t priority, reserve, xon;
     QueueConfig (uint32_t prior, uint32_t resv, uint32_t x)
-      : priority (prior), reserve (resv), xon (x)
+        : priority (prior), reserve (resv), xon (x)
     {
     }
   }; //struct QueueConfig
-  
-  void AddQueueConfig (uint32_t prior, uint32_t resv, uint32_t x)
+
+  void
+  AddQueueConfig (uint32_t prior, uint32_t resv, uint32_t x)
   {
-    queues.emplace_back(prior, resv, x);
+    queues.emplace_back (prior, resv, x);
   }
-   
+
   uint32_t port;
   uint8_t enableVec = 0xff;
   std::vector<QueueConfig> queues;
-  
+
 }; // struct DcbPfcPortConfig
 
 class DcbPfcPort : public DcbFlowControlPort
 {
 public:
-
   static TypeId GetTypeId ();
 
   DcbPfcPort (Ptr<NetDevice> dev, Ptr<DcbTrafficControl> tc);
   virtual ~DcbPfcPort ();
 
-  virtual void DoIngressProcess (Ptr<const Packet> packet, uint16_t protocol,
-                               const Address &from, const Address &to,
-                               NetDevice::PacketType packetType) override;
+  virtual void DoIngressProcess (Ptr<const Packet> packet, uint16_t protocol, const Address &from,
+                                 const Address &to, NetDevice::PacketType packetType) override;
   /**
    * \brief Process when a packet previously came from this port is going to send
    * out though other port.
    */
-  virtual void DoPacketOutCallbackProcess (Ptr<Packet> packet) override;
+  virtual void DoPacketOutCallbackProcess (uint8_t priority, Ptr<Packet> packet) override;
 
   /**
    * \brief Egress process. Do nothing in PFC. 
@@ -84,7 +83,7 @@ public:
    * PFC is enabled on the corresponding priority.
    */
   void SetEnableVec (uint8_t enableVec);
-  
+
 protected:
   /**
    * A port has 8 priority queues and stores an PFC enableVec
@@ -117,9 +116,9 @@ protected:
     std::vector<IngressQueueInfo> m_ingressQueues;
     uint8_t m_enableVec;
   }; // struct PortInfo
-  
+
   bool CheckEnableVec (uint8_t cls);
-  
+
   bool CheckShouldSendPause (uint8_t priority, uint32_t packetSize) const;
   bool CheckShouldSendResume (uint8_t priority) const;
 
@@ -129,7 +128,6 @@ protected:
   void CancelPauseEvent (uint8_t priority);
 
 private:
-  
   PortInfo m_port;
 
 }; // class DcbPfcPort
