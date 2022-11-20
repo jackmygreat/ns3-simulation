@@ -29,7 +29,6 @@
 #include "ns3/pfc-frame.h"
 #include "ns3/traffic-control-layer.h"
 #include "ns3/ipv4-queue-disc-item.h"
-#include <_types/_uint32_t.h>
 #include <vector>
 
 namespace ns3 {
