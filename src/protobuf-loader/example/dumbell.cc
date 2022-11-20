@@ -19,6 +19,7 @@
  */
 
 #include "ns3/core-module.h"
+#include "ns3/log.h"
 #include "ns3/protobuf-topology-loader.h"
 #include "ns3/protobuf-flows-loader.h"
 
@@ -30,12 +31,21 @@ main ()
   // std::string fname = "config/dumbell.bin";
   ProtobufTopologyLoader topoLoader;
   // topoLoader.RunConfigScript("config/dumbell_topo.py");
-  DcTopology topology = topoLoader.LoadTopology();
+  Ptr<DcTopology> topology = topoLoader.LoadTopology();
 
-  ProtobufFlowsLoader flowsLoader;
-  flowsLoader.LoadFlowsTo(topology);
+  // ProtobufFlowsLoader flowsLoader;
+  // flowsLoader.LoadFlowsTo(topology);
 
   LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+  LogComponentEnable ("TraceApplication", LOG_LEVEL_INFO);
+  LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
+
+  LogComponentEnable ("ProtobufTopologyLoader", LOG_LEVEL_DEBUG);
+  LogComponentEnable ("DcbTrafficControl", LOG_LEVEL_INFO);
+  LogComponentEnable ("DcbSwitchStackHelper", LOG_LEVEL_INFO);
+  // LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_WARN);
+  LogComponentEnable ("DcbPfcPort", LOG_LEVEL_DEBUG);
+  // LogComponentEnable ("PausableQueueDisc", LOG_LEVEL_LOGIC);
 
   Simulator::Run ();
   Simulator::Destroy ();
