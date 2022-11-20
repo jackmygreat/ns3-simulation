@@ -24,10 +24,10 @@
 #include "ns3/log-macros-enabled.h"
 #include "ns3/object-base.h"
 #include "ns3/object.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/point-to-point-net-device.h"
 #include "ns3/topology.pb.h"
 #include "ns3/type-id.h"
-#include <_types/_uint32_t.h>
 
 /**
  * \file
@@ -85,7 +85,7 @@ DcTopology::GetNode (const uint32_t index) const
 const Ptr<NetDevice>
 DcTopology::GetNetDeviceOfNode (const uint32_t nodei, const uint32_t devi) const
 {
-  const int ndev = GetNode (nodei)->GetNDevices ();
+  const uint32_t ndev = GetNode (nodei)->GetNDevices ();
   if (devi >= ndev)
     {
       NS_FATAL_ERROR ("port index " << devi << " is out of bound, since there are " << ndev
@@ -98,7 +98,7 @@ const Ipv4InterfaceAddress
 DcTopology::GetInterfaceOfNode (const uint32_t nodei, uint32_t intfi) const
 {
   Ptr<Ipv4> ipv4 = GetNode (nodei)->GetObject<Ipv4> ();
-  const int nintf = ipv4->GetNInterfaces ();
+  const uint32_t nintf = ipv4->GetNInterfaces ();
   if (intfi > nintf)
     {
       NS_FATAL_ERROR ("interface index " << intfi << " is out of bound, since there are " << nintf
@@ -110,9 +110,9 @@ DcTopology::GetInterfaceOfNode (const uint32_t nodei, uint32_t intfi) const
 const Ptr<UniformRandomVariable>
 DcTopology::CreateRamdomHostChooser () const
 {
-  Ptr<UniformRandomVariable> rng = Create<UniformRandomVariable> ();
-  rng->SetAttribute ("Min", IntegerValue (0));
-  rng->SetAttribute ("Max", IntegerValue (m_nHosts));
+  Ptr<UniformRandomVariable> rng = CreateObject<UniformRandomVariable> ();
+  rng->SetAttribute ("Min", DoubleValue (0));
+  rng->SetAttribute ("Max", DoubleValue (m_nHosts));
   return rng;
 }
 

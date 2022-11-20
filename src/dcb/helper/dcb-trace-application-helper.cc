@@ -19,13 +19,16 @@
  */
 
 #include "dcb-trace-application-helper.h"
+#include "ns3/dc-topology.h"
 #include "ns3/node.h"
+#include "ns3/dcb-net-device.h"
+#include "ns3/nstime.h"
 
 namespace ns3 {
 
-TraceApplicationHelper::TraceApplicationHelper ()
+TraceApplicationHelper::TraceApplicationHelper (Ptr<DcTopology> topo)
+  : m_topology (topo), m_cdf (nullptr), m_flowMeanInterval(0.)
 {
-  m_factory.SetTypeId (TraceApplication::GetTypeId ());
 }
 
 void
@@ -35,29 +38,57 @@ TraceApplicationHelper::SetProtocolGroup (ProtocolGroup protoGroup)
 }
 
 void
-TraceApplicationHelper::SetCdf (const TraceApplication::TraceCdf& cdf)
+TraceApplicationHelper::SetCdf (const TraceApplication::TraceCdf &cdf)
 {
-  
+  m_cdf = &cdf;
 }
 
 void
-TraceApplicationHelper::SetAttribute (std::string name, const AttributeValue &value)
+TraceApplicationHelper::SetLoad (Ptr<const DcbNetDevice> dev, double load)
 {
-  m_factory.Set (name, value);
+  NS_ASSERT_MSG (m_cdf, "Must set CDF to TraceApplicationHelper before setting load.");
+  double mean = CalculateCdfMeanSize (m_cdf);
+  m_flowMeanInterval = mean * 8 / (dev->GetDataRate ().GetBitRate () * load) * 1e6; // us
 }
+
+// void
+// TraceApplicationHelper::SetAttribute (std::string name, const AttributeValue &value)
+// {
+//   m_factory.Set (name, value);
+// }
 
 ApplicationContainer
 TraceApplicationHelper::Install (Ptr<Node> node) const
 {
+  NS_ASSERT_MSG (m_cdf, "[TraceApplicationHelper] CDF not set, please call SetCdf ().");
+  NS_ASSERT_MSG (m_flowMeanInterval > 0, "[TraceApplicationHelper] Load not set, please call SetLoad ().");
   return ApplicationContainer (InstallPriv (node));
 }
 
 Ptr<Application>
 TraceApplicationHelper::InstallPriv (Ptr<Node> node) const
 {
-  Ptr<Application> app = m_factory.Create<TraceApplication> ();
+  Ptr<TraceApplication> app = CreateObject<TraceApplication> (m_topology, node->GetId());
+  app->SetFlowCdf (*m_cdf);
+  app->SetFlowMeanArriveInterval (m_flowMeanInterval);
+  // set socket according to ProtocolGroup
   node->AddApplication (app);
   return app;
+}
+
+// static
+double
+TraceApplicationHelper::CalculateCdfMeanSize (const TraceApplication::TraceCdf * const cdf)
+{
+  double res = 0.;
+  auto [ls, lp] = (*cdf)[0];
+  for (auto [s, p] : (*cdf))
+    {
+      res += (s + ls) / 2.0 * (p - lp);
+      ls = s;
+      lp = p;
+    }
+  return res;
 }
 
 } //namespace ns3

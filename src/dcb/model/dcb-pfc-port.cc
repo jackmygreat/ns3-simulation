@@ -22,7 +22,6 @@
 #include "dcb-flow-control-port.h"
 #include "dcb-traffic-control.h"
 #include "ns3/simulator.h"
-#include <_types/_uint32_t.h>
 
 namespace ns3 {
 
@@ -197,7 +196,7 @@ DcbPfcPort::CancelPauseEvent (uint8_t priority)
 
 DcbPfcPort::PortInfo::PortInfo (uint32_t index) : m_index (index)
 {
-  m_ingressQueues.resize (DcbTrafficControl::PRIORITY_NUMBER);
+  m_ingressQueues.resize (DcbTrafficControl::PRIORITY_NUMBER, IngressQueueInfo());
   m_enableVec = 0xff;
 }
 
@@ -224,6 +223,7 @@ DcbPfcPort::PortInfo::getQueue (uint8_t priority)
 /**
  * class DcbPfcControl::PortInfo::IngressQueueInfo implementation starts.
  */
+
 inline void
 DcbPfcPort::PortInfo::IngressQueueInfo::ReplacePauseEvent (EventId event)
 {

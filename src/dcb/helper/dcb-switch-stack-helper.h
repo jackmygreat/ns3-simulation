@@ -35,8 +35,6 @@
 
 
 namespace ns3 {
-
-struct DcbPfcPortConfig;
   
 /**
  * \ingroup dcb
@@ -136,14 +134,6 @@ public:
   int64_t AssignStreams (NodeContainer c, int64_t stream);
 
 private:
-
-  // struct PfcConfig {
-  //   uint32_t port, priority, reserve, xon;
-  //   PfcConfig (uint32_t p, uint32_t prior, uint32_t resv, uint32_t x) :
-  //     port(p), priority (prior), reserve(resv), xon(x) {}
-  // };
-
-  std::vector<DcbPfcPortConfig> m_pfcConfigs;
   
 private:
   /**

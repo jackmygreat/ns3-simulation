@@ -4,6 +4,7 @@ build_lib(
       helper/dcb-stack-helper.cc
 	  helper/dcb-switch-stack-helper.cc
 	  helper/dcb-fc-helper.cc
+	  helper/dcb-trace-application-helper.cc
 	  model/dcb-traffic-control.cc
 	  model/dcb-net-device.cc
 	  model/dcb-channel.cc
@@ -17,6 +18,7 @@ build_lib(
       helper/dcb-stack-helper.h
 	  helper/dcb-switch-stack-helper.h
 	  helper/dcb-fc-helper.h
+	  helper/dcb-trace-application-helper.h
 	  model/dcb-traffic-control.h
 	  model/dcb-net-device.h
 	  model/dcb-channel.h

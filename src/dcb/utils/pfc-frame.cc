@@ -19,8 +19,6 @@
  */
 
 #include "pfc-frame.h"
-#include <_types/_uint16_t.h>
-#include <_types/_uint32_t.h>
 
 namespace ns3 {
 

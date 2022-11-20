@@ -20,6 +20,7 @@
 
 #include "dcb-net-device.h"
 #include "ns3/integer.h"
+#include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
 #include "ns3/simulator.h"
 #include "ns3/double.h"
@@ -54,7 +55,7 @@ TraceApplication::GetTypeId ()
 }
 
 TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex)
-    : m_topology (topology), m_nodeIndex (nodeIndex), m_connected (false), m_totBytes (0)
+    : m_topology (topology), m_nodeIndex (nodeIndex), m_totBytes (0)
 
 {
   NS_LOG_FUNCTION (this);
@@ -96,6 +97,7 @@ TraceApplication::StartApplication (void)
     {
       t += GetNextFlowArriveInterval ();
       ScheduleNextFlow (t);
+      break; // TODO: remove break
     }
 }
 
@@ -122,9 +124,14 @@ TraceApplication::CreateNewRandomSocket ()
     {
       destNode = m_hostIndexRng->GetInteger (); // randomly send to a host
   } while (destNode == m_nodeIndex);
-  Address destAddr = m_topology->GetNetDeviceOfNode (destNode, 0)->GetAddress ();
+  Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode(destNode, 1).GetAddress(); // 0 interface is LoopbackNetDevice
+  InetSocketAddress destAddr = InetSocketAddress (ipv4Addr, 1234); 
 
-  socket->Connect (destAddr);
+  ret = socket->Connect (destAddr);
+  if (ret == -1)
+    {
+      NS_FATAL_ERROR ("Socket connection failed");
+    }
   socket->SetAllowBroadcast (false);
 
   // m_socket->SetConnectCallback (MakeCallback (&TraceApplication::ConnectionSucceeded, this),
@@ -154,7 +161,7 @@ TraceApplication::SendNextPacket (Flow *flow)
   const uint32_t packetSize = std::min (flow->remainBytes, MSS);
   Ptr<Packet> packet = Create<Packet> (packetSize);
   int actual = flow->socket->Send (packet);
-  if (actual == packetSize)
+  if (actual == static_cast<int>(packetSize))
     {
       m_totBytes += packetSize;
       // const uint32_t headerSize = m_socket->GetSerializedHeaderSize ();
@@ -166,17 +173,19 @@ TraceApplication::SendNextPacket (Flow *flow)
             { // Schedule next packet
               flow->remainBytes -= MSS;
               Simulator::Schedule (txTime, &TraceApplication::SendNextPacket, this, flow);
+              return;
             }
           else
-            { // flow completes
+            {
+              // flow completes
               // TODO: do some trace here
               // ...
-
-              // m_flows.erase (flow);
-              flow->Dispose ();
-              flow = nullptr;
             }
         }
+      // m_flows.erase (flow);
+      flow->Dispose ();
+      // Dispose will delete the struct leading to flow a dangling pointer.
+      flow = nullptr;
     }
   else
     {
@@ -188,7 +197,7 @@ void
 TraceApplication::SetFlowMeanArriveInterval (double interval)
 {
   NS_LOG_FUNCTION (this << interval);
-  m_flowArriveTimeRng->SetAttribute ("Mean", DoubleValue (interval));
+  m_flowArriveTimeRng->SetAttribute ("Mean", DoubleValue (interval)); // in microseconds
 }
 
 void
@@ -236,14 +245,14 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
     {
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("At time " << Simulator::Now ().As (Time::S) << " client received "
+          NS_LOG_INFO ("TraceApplication: At time " << Simulator::Now ().As (Time::S) << " client received "
                                   << packet->GetSize () << " bytes from "
                                   << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port "
                                   << InetSocketAddress::ConvertFrom (from).GetPort ());
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("At time " << Simulator::Now ().As (Time::S) << " client received "
+          NS_LOG_INFO ("TraceApplication: At time " << Simulator::Now ().As (Time::S) << " client received "
                                   << packet->GetSize () << " bytes from "
                                   << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port "
                                   << Inet6SocketAddress::ConvertFrom (from).GetPort ());

@@ -341,7 +341,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
           MakeCallback (&DcbTrafficControl::EgressProcess, dcbTc);
 
       dcbTc->RegisterDeviceNumber (devN); // to initialize the vector of ports info
-      for (int i = 0; i < devN; i++)
+      for (uint32_t i = 0; i < devN; i++)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);
           Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (dev);
@@ -360,7 +360,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
       // Set queue disc normally
       ObjectFactory qDiscFactory;
       qDiscFactory.SetTypeId (PausableQueueDisc::GetTypeId ());
-      for (int i = 0; i < devN; i++)
+      for (uint32_t i = 0; i < devN; i++)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);
           tc->SetRootQueueDiscOnDevice (dev, qDiscFactory.Create<PausableQueueDisc> ());

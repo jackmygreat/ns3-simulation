@@ -22,26 +22,32 @@
 #define TRACE_APPLICATION_HELPER_H
 
 #include "ns3/application-container.h"
+#include "ns3/dc-topology.h"
+#include "ns3/dcb-net-device.h"
 #include "ns3/dcb-trace-application.h"
+#include "ns3/net-device.h"
 #include "ns3/object-factory.h"
 
 namespace ns3 {
 
+class DcbNetDevice;
+
 class TraceApplicationHelper
 {
 public:
-  TraceApplicationHelper ();
+  TraceApplicationHelper (Ptr<DcTopology> topology);
   
   ApplicationContainer Install (Ptr<Node> node) const;
 
   enum ProtocolGroup {
+    RAW_UDP,
     TCP,
-    UDP,
     RoCEv2
   };
   
   void SetProtocolGroup (ProtocolGroup protoGroup);
   void SetCdf (const TraceApplication::TraceCdf& cdf);
+  void SetLoad (Ptr<const DcbNetDevice> dev, double load);
 
   /**
    * Record an attribute to be set in each Application after it is is created.
@@ -49,7 +55,7 @@ public:
    * \param name the name of the attribute to set
    * \param value the value of the attribute to set
    */
-  void SetAttribute (std::string name, const AttributeValue &value);
+  // void SetAttribute (std::string name, const AttributeValue &value);
 
 private:
 
@@ -62,8 +68,12 @@ private:
    */
   Ptr<Application> InstallPriv (Ptr<Node> node) const;
 
+  static double CalculateCdfMeanSize (const TraceApplication::TraceCdf * const cdf);
+
+  Ptr<DcTopology> m_topology;
   ProtocolGroup m_protoGroup;
-  ObjectFactory m_factory; //!< Object factory.
+  TraceApplication::TraceCdf* m_cdf;
+  double m_flowMeanInterval;
 
 }; // class TraceApplicationHelper
 

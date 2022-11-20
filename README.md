@@ -139,9 +139,7 @@ You can find more information in the [manual](https://www.nsnam.org/docs/manual/
 
 1. Install Protobuf
 
-	Follow the [instructions](https://github.com/protocolbuffers/protobuf/blob/main/src/README.md) in the official page.
-	
-	To build from source, download the one of the [releases](https://github.com/protocolbuffers/protobuf/releases/latest). Since we only need support for C++ and Python, user can download the release of "protobuf-python".
+	Basically speaking, user should follow the [instructions](https://github.com/protocolbuffers/protobuf/blob/main/src/README.md) in the official page. Specifically, download the one of the [releases](https://github.com/protocolbuffers/protobuf/releases/latest). Since we only need support for C++ and Python, user can download the release of "protobuf-python".	 
 	
 2. Configure ns-3 to use protobuf
    

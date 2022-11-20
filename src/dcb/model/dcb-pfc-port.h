@@ -98,7 +98,7 @@ protected:
 
       bool hasEvent;
       EventId pauseEvent;
-
+      
       IngressQueueInfo () = default;
 
       void ReplacePauseEvent (EventId event);

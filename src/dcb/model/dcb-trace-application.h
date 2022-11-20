@@ -73,14 +73,12 @@ public:
       delete this; // TODO: is it ok to suicide here?
     }
   };
-
-  void SetFlowMeanArriveInterval (double interval);
-
+  
   typedef const std::vector<std::pair<double, double>> TraceCdf;
 
   void SetFlowCdf (const TraceCdf &cdf);
-
-  void SetFlowDestination (const Address dest, const uint16_t port);
+  
+  void SetFlowMeanArriveInterval (double interval);
 
   constexpr static inline const uint64_t MSS = 1000; // bytes
 
@@ -184,7 +182,7 @@ private:
 
   const Ptr<DcTopology>  m_topology;        //!< The topology
   const uint32_t         m_nodeIndex;       //!< Node index this application belongs to
-  bool                   m_connected;       //!< True if connected
+  // bool                   m_connected;       //!< True if connected
   DataRate               m_socketLinkRate;  //!< Link rate of the deice
   uint64_t               m_totBytes;        //!< Total bytes sent so far
   TypeId                 m_tid;             //!< Type of the socket used

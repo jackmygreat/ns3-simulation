@@ -18,8 +18,11 @@
  * Author: Pavinberg (pavin0702@gmail.com)
  */
 
+#include <_types/_uint32_t.h>
 #include <fstream>
 #include <vector>
+#include <filesystem>
+#include "ns3/application-container.h"
 #include "ns3/boolean.h"
 #include "ns3/data-rate.h"
 #include "ns3/dc-topology.h"
@@ -34,12 +37,15 @@
 #include "ns3/queue-size.h"
 #include "ns3/topology.pb.h"
 #include "ns3/traced-value.h"
+#include "ns3/udp-echo-helper.h"
 #include "protobuf-topology-loader.h"
 #include "ns3/dcb-net-device.h"
 #include "ns3/dcb-channel.h"
 #include "ns3/dcb-stack-helper.h"
 #include "ns3/dcb-pfc-port.h"
 #include "ns3/dcb-switch-stack-helper.h"
+#include "ns3/dcb-trace-application.h"
+#include "ns3/dcb-trace-application-helper.h"
 #include "ns3/dcb-fc-helper.h"
 
 /**
@@ -85,11 +91,9 @@ ProtobufTopologyLoader::LoadTopology ()
   LoadHosts (topoConfig.nodes ().hostgroups (), topology);
   LoadSwitches (topoConfig.nodes ().switchgroups (), topology);
   LoadLinks (topoConfig.links (), topology);
-  // AssignAddresses (topology);
   InitGlobalRouting ();
 
-  // LogIpAddress (topology);
-  LogAllRoutes(topology);
+  InstallApplications(topology);
 
   return topology;
 }
@@ -185,7 +189,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
   DcbStackHelper hostStack;
   hostStack.Install (host);
 
-  for (uint32_t i = 0; i < hostGroup.ports_size(); i++)
+  for (int i = 0; i < hostGroup.ports_size(); i++)
     {
       AssignAddress (host, host->GetDevice (i));
     }
@@ -212,7 +216,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
   switchStack.Install (sw);
 
   // Configure flow control
-  for (uint32_t i = 0; i < switchGroup.ports_size(); i++)
+  for (int i = 0; i < switchGroup.ports_size(); i++)
     {
       const ns3_proto::SwitchPortConfig& portConfig = switchGroup.ports(i);
       if (portConfig.pfcenabled ()) // Configure PFC
@@ -299,44 +303,51 @@ ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, Ptr<DcTo
 }
 
 void
-ProtobufTopologyLoader::AssignAddresses (Ptr<DcTopology> topology)
-{
-  NS_LOG_FUNCTION (this);
-  NetDeviceContainer container;
-  // DcbStackHelper hostStack;
-  for (DcTopology::HostIterator host = topology->hosts_begin (); host != topology->hosts_end ();
-       host++)
-    {
-      for (int i = 0; i < (*host)->GetNDevices (); i++)
-        {
-          container.Add ((*host)->GetDevice (i));
-        }
-      // InternetStackHelper will install a LoopbackNetDevice to the node.
-      // We do not add them to the `container` so that the Ipv4AddressHelper
-      // won't assign a redundant address to the LoopbackNetDevice.
-      // hostStack.Install (host->nodePtr);
-    }
-  // DcbSwitchStackHelper switchStack;
-  for (DcTopology::SwitchIterator sw = topology->switches_begin (); sw != topology->switches_end ();
-       sw++)
-    {
-      for (int i = 0; i < (*sw)->GetNDevices (); i++)
-        {
-          container.Add ((*sw)->GetDevice (i));
-        }
-      // switchStack.Install (sw->nodePtr);
-    }
-
-  Ipv4AddressHelper address;
-  address.SetBase ("10.0.0.0", "255.0.0.0");
-  address.Assign (container);
-}
-
-void
 ProtobufTopologyLoader::InitGlobalRouting ()
 {
   NS_LOG_FUNCTION (this);
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
+}
+
+void
+ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
+{
+  NS_LOG_FUNCTION (this);
+
+  TraceApplicationHelper appHelper (topology);
+  appHelper.SetProtocolGroup(TraceApplicationHelper::ProtocolGroup::RAW_UDP);
+  appHelper.SetCdf(TraceApplication::TRACE_WEBSEARCH_CDF);
+  Ptr<Node> sender = topology->GetNode(0).nodePtr;
+
+  UdpEchoServerHelper echoServer (1234);
+  DcTopology::HostIterator it = topology->hosts_begin();
+  for (it++; it != topology->hosts_end(); it++)
+    {
+      Ptr<Node> receiver = it->nodePtr;
+      ApplicationContainer apps = echoServer.Install (receiver);
+      apps.Start(MilliSeconds(1));
+      apps.Stop(MilliSeconds(10));
+    }
+  
+  appHelper.SetLoad (DynamicCast<DcbNetDevice>(sender->GetDevice(0)), 1.0);
+  ApplicationContainer appc = appHelper.Install(sender);
+  appc.Start (MilliSeconds(2));
+  appc.Stop (MilliSeconds(10));
+  
+  
+  // for (DcTopology::HostIterator it = topology->hosts_begin(); it != topology->hosts_end(); it++)
+  //   {
+  //     Ptr<const DcbNetDevice> dev = DynamicCast<DcbNetDevice>((*it)->GetDevice(0));
+  //     appHelper.SetLoad (dev, 1.0);
+  //     ApplicationContainer appc = appHelper.Install (it->nodePtr);
+  //     appc.Start (MilliSeconds(2));
+  //     appc.Stop (MilliSeconds(10));
+
+  //     UdpEchoServerHelper echoServer (9);
+  //     ApplicationContainer apps = echoServer.Install (it->nodePtr);
+  //     apps.Start(MilliSeconds(1));
+  //     apps.Stop(MilliSeconds(10));
+  //   }
 }
 
 void
@@ -401,7 +412,7 @@ ProtobufTopologyLoader::LogGlobalRouting (const Ptr<DcTopology> topology) const
       Ptr<Ipv4GlobalRouting> glb =
           DynamicCast<Ipv4GlobalRouting> (lrouting->GetRoutingProtocol (0, prio));
       uint32_t n = glb->GetNRoutes ();
-      for (int i = 0; i < n; i++)
+      for (uint32_t i = 0; i < n; i++)
         {
           NS_LOG_DEBUG ("global: " << *glb->GetRoute (i));
         }

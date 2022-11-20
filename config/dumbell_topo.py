@@ -30,8 +30,8 @@ switchPortQueueConfig1 = {
     # PFC configurations
     # "pfcReserved": "288 KiB",
     # "pfcHeadroom": "30 KiB",
-    "pfcReserve": "1000B",
-    "pfcXon": "1000B",
+    "pfcReserve": "2 KiB",
+    "pfcXon": "1 KiB",
 
     # ECN configurations
     "ecnKMin": "200 KiB",
@@ -44,8 +44,8 @@ switchPortQueueConfig2 = {
     # PFC configurations
     # "pfcReserve": "300 KiB",
     # "pfcHeadroom": "50 KiB",
-    "pfcReserve": "1000B",
-    "pfcXon": "1000B",
+    "pfcReserve": "2 KiB",
+    "pfcXon": "1 KiB",
 
     # ECN configurations
     "ecnKMin": "220 KiB",

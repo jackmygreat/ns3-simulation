@@ -81,9 +81,9 @@ protected:
 
   void InstallLink (const ns3_proto::Link &linkConfig, Ptr<DcTopology> topology);
 
-  void AssignAddresses (Ptr<DcTopology> topology);
-
   void InitGlobalRouting ();
+
+  void InstallApplications (Ptr<DcTopology> topology);
 
 private:
   // Notice: this variable should be consistent with `TopologyGenerator.outputFile`
