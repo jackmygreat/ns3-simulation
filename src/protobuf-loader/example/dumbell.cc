@@ -21,7 +21,6 @@
 #include "ns3/core-module.h"
 #include "ns3/log.h"
 #include "ns3/protobuf-topology-loader.h"
-#include "ns3/protobuf-flows-loader.h"
 
 using namespace ns3;
 

@@ -20,7 +20,6 @@
 
 #include <fstream>
 #include <vector>
-#include <filesystem>
 #include "ns3/application-container.h"
 #include "ns3/boolean.h"
 #include "ns3/data-rate.h"
@@ -64,7 +63,9 @@ ProtobufTopologyLoader::ProtobufTopologyLoader ()
 void
 ProtobufTopologyLoader::RunConfigScript (std::string configFile)
 {
-  if (!std::filesystem::exists (configFile))
+  std::ifstream s;
+  s.open (configFile);
+  if (!s)
     {
       NS_FATAL_ERROR ("Python config file '" << configFile << "' does not exist");
     }
@@ -92,7 +93,7 @@ ProtobufTopologyLoader::LoadTopology ()
   LoadLinks (topoConfig.links (), topology);
   InitGlobalRouting ();
 
-  InstallApplications(topology);
+  InstallApplications (topology);
 
   return topology;
 }
@@ -157,7 +158,8 @@ ProtobufTopologyLoader::LoadSwitches (
 
 void
 ProtobufTopologyLoader::LoadLinks (
-    const google::protobuf::RepeatedPtrField<ns3_proto::Link> &linksConfig, Ptr<DcTopology> topology)
+    const google::protobuf::RepeatedPtrField<ns3_proto::Link> &linksConfig,
+    Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
   for (const ns3_proto::Link &linkConfig : linksConfig)
@@ -171,7 +173,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
 {
   NS_LOG_FUNCTION (this);
   const Ptr<DcHost> host = CreateObject<DcHost> ();
-  
+
   for (auto port : hostGroup.ports ())
     {
       // create a net device for the port
@@ -180,7 +182,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
       dev->SetAddress (Mac48Address::Allocate ());
 
       ObjectFactory queueFactory;
-      queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId());
+      queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId ());
       Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
       dev->SetQueue (queue);
     }
@@ -188,7 +190,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
   DcbStackHelper hostStack;
   hostStack.Install (host);
 
-  for (int i = 0; i < hostGroup.ports_size(); i++)
+  for (int i = 0; i < hostGroup.ports_size (); i++)
     {
       AssignAddress (host, host->GetDevice (i));
     }
@@ -208,16 +210,16 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
 
   // Configure ports
   DcbSwitchStackHelper switchStack;
-  for (const auto& portConfig : switchGroup.ports ())
+  for (const auto &portConfig : switchGroup.ports ())
     {
       AddPortToSwitch (portConfig, sw);
     }
   switchStack.Install (sw);
 
   // Configure flow control
-  for (int i = 0; i < switchGroup.ports_size(); i++)
+  for (int i = 0; i < switchGroup.ports_size (); i++)
     {
-      const ns3_proto::SwitchPortConfig& portConfig = switchGroup.ports(i);
+      const ns3_proto::SwitchPortConfig &portConfig = switchGroup.ports (i);
       if (portConfig.pfcenabled ()) // Configure PFC
         {
           DcbPfcPortConfig pfcConfig;
@@ -226,7 +228,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
               const ns3_proto::PortQueueConfig &queueConfig = portConfig.queues (qi);
               const uint32_t reserve = QueueSize (queueConfig.pfcreserve ()).GetValue ();
               const uint32_t xon = QueueSize (queueConfig.pfcxon ()).GetValue ();
-              pfcConfig.AddQueueConfig(qi, reserve, xon);
+              pfcConfig.AddQueueConfig (qi, reserve, xon);
             }
           DcbFcHelper::InstallPFCtoNodePort (sw, i, pfcConfig);
         }
@@ -247,7 +249,7 @@ ProtobufTopologyLoader::AddPortToSwitch (const ns3_proto::SwitchPortConfig portC
   dev->SetAddress (Mac48Address::Allocate ());
 
   ObjectFactory queueFactory;
-  queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId());
+  queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId ());
   Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
   dev->SetQueue (queue);
 
@@ -285,9 +287,9 @@ ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, Ptr<DcTo
   uint32_t node2 = linkConfig.node2 ();
   uint32_t port1 = linkConfig.port1 ();
   uint32_t port2 = linkConfig.port2 ();
-  
-  Ptr<DcbNetDevice> dev1 = StaticCast<DcbNetDevice> (topology->GetNetDeviceOfNode(node1, port1));
-  Ptr<DcbNetDevice> dev2 = StaticCast<DcbNetDevice> (topology->GetNetDeviceOfNode(node2, port2));
+
+  Ptr<DcbNetDevice> dev1 = StaticCast<DcbNetDevice> (topology->GetNetDeviceOfNode (node1, port1));
+  Ptr<DcbNetDevice> dev2 = StaticCast<DcbNetDevice> (topology->GetNetDeviceOfNode (node2, port2));
 
   std::string rate = linkConfig.rate ();
   std::string delay = linkConfig.delay ();
@@ -314,26 +316,25 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
   NS_LOG_FUNCTION (this);
 
   TraceApplicationHelper appHelper (topology);
-  appHelper.SetProtocolGroup(TraceApplicationHelper::ProtocolGroup::RAW_UDP);
-  appHelper.SetCdf(TraceApplication::TRACE_WEBSEARCH_CDF);
-  Ptr<Node> sender = topology->GetNode(0).nodePtr;
+  appHelper.SetProtocolGroup (TraceApplicationHelper::ProtocolGroup::RAW_UDP);
+  appHelper.SetCdf (TraceApplication::TRACE_WEBSEARCH_CDF);
+  Ptr<Node> sender = topology->GetNode (0).nodePtr;
 
   UdpEchoServerHelper echoServer (1234);
-  DcTopology::HostIterator it = topology->hosts_begin();
-  for (it++; it != topology->hosts_end(); it++)
+  DcTopology::HostIterator it = topology->hosts_begin ();
+  for (it++; it != topology->hosts_end (); it++)
     {
       Ptr<Node> receiver = it->nodePtr;
       ApplicationContainer apps = echoServer.Install (receiver);
-      apps.Start(MilliSeconds(1));
-      apps.Stop(MilliSeconds(10));
+      apps.Start (MilliSeconds (1));
+      apps.Stop (MilliSeconds (10));
     }
-  
-  appHelper.SetLoad (DynamicCast<DcbNetDevice>(sender->GetDevice(0)), 1.0);
-  ApplicationContainer appc = appHelper.Install(sender);
-  appc.Start (MilliSeconds(2));
-  appc.Stop (MilliSeconds(10));
-  
-  
+
+  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 1.0);
+  ApplicationContainer appc = appHelper.Install (sender);
+  appc.Start (MilliSeconds (2));
+  appc.Stop (MilliSeconds (10));
+
   // for (DcTopology::HostIterator it = topology->hosts_begin(); it != topology->hosts_end(); it++)
   //   {
   //     Ptr<const DcbNetDevice> dev = DynamicCast<DcbNetDevice>((*it)->GetDevice(0));
