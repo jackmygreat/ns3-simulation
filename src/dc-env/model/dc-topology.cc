@@ -47,7 +47,7 @@ DcTopology::GetTypeId ()
   return tid;
 }
 
-DcTopology::DcTopology (uint32_t nodeNum)
+DcTopology::DcTopology (uint32_t nodeNum) : m_nHosts(0)
 {
   NS_LOG_FUNCTION (this);
   m_nodes.resize (nodeNum);

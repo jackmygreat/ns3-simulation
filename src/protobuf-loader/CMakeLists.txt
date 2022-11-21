@@ -37,5 +37,6 @@ if(${NS3_PROTOBUF})
 		${libdc-env}
 		${libdcb}
 	    ${PROTOBUF_LIBRARY}
+		stdc++fs
 	)
 endif()
