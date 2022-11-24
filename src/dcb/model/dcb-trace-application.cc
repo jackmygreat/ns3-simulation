@@ -55,12 +55,31 @@ TraceApplication::GetTypeId ()
 }
 
 TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex)
-    : m_topology (topology), m_nodeIndex (nodeIndex), m_totBytes (0)
+    : m_topology (topology), m_nodeIndex (nodeIndex), m_randomDestination (true), m_totBytes (0)
 
 {
   NS_LOG_FUNCTION (this);
 
   m_hostIndexRng = topology->CreateRamdomHostChooser ();
+
+  InitForRngs ();
+}
+
+TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex, uint32_t destIndex)
+    : m_topology (topology), m_nodeIndex (nodeIndex), m_randomDestination (false), m_totBytes (0)
+{
+  NS_LOG_FUNCTION (this);
+
+  // 0 interface is LoopbackNetDevice
+  m_destAddr = topology->GetInterfaceOfNode (destIndex, 1).GetAddress ();
+
+  InitForRngs ();
+}
+
+void
+TraceApplication::InitForRngs ()
+{
+  NS_LOG_FUNCTION (this);
 
   m_flowArriveTimeRng = CreateObject<ExponentialRandomVariable> ();
   m_flowArriveTimeRng->SetAntithetic (true);
@@ -68,7 +87,8 @@ TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex
   m_flowSizeRng = CreateObject<EmpiricalRandomVariable> ();
   m_flowSizeRng->SetAttribute ("Interpolate", BooleanValue (true));
 
-  Ptr<DcbNetDevice> dev = DynamicCast<DcbNetDevice> (topology->GetNetDeviceOfNode (nodeIndex, 0));
+  Ptr<DcbNetDevice> dev =
+      DynamicCast<DcbNetDevice> (m_topology->GetNetDeviceOfNode (m_nodeIndex, 0));
   m_socketLinkRate = dev->GetDataRate ();
 }
 
@@ -92,12 +112,10 @@ TraceApplication::StartApplication (void)
   // The ConnectionComplete upcall will start timers at that time
   //if (!m_connected) return;
 
-  Time t = Simulator::Now ();
-  while (t < m_stopTime)
+  for (Time t = Simulator::Now () + GetNextFlowArriveInterval ();
+       t < m_stopTime; t += GetNextFlowArriveInterval ())
     {
-      t += GetNextFlowArriveInterval ();
       ScheduleNextFlow (t);
-      break; // TODO: remove break
     }
 }
 
@@ -107,33 +125,49 @@ TraceApplication::StopApplication (void)
   NS_LOG_FUNCTION (this);
 }
 
-Ptr<Socket>
-TraceApplication::CreateNewRandomSocket ()
+InetSocketAddress
+TraceApplication::GetDestinationAddr () const
 {
+  NS_LOG_FUNCTION (this);
+
+  uint32_t portNum = 1234; // TODO: dynamic port
+  if (m_randomDestination)
+    { // randomly send to a host
+      uint32_t destNode;
+      do
+        {
+          destNode = m_hostIndexRng->GetInteger ();
+        } while (destNode == m_nodeIndex);
+      Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode (destNode, 1)
+        .GetAddress (); // 0 interface is LoopbackNetDevice
+      return InetSocketAddress (ipv4Addr, portNum);
+    }
+  else
+    {
+      return InetSocketAddress (m_destAddr, portNum);
+    }
+}
+
+Ptr<Socket>
+TraceApplication::CreateNewSocket ()
+{
+  NS_LOG_FUNCTION (this);
+
   Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_tid);
   socket->BindToNetDevice (GetNode ()->GetDevice (0));
-
   int ret = socket->Bind ();
   if (ret == -1)
     {
       NS_FATAL_ERROR ("Failed to bind socket");
     }
 
-  uint32_t destNode;
-  do
-    {
-      destNode = m_hostIndexRng->GetInteger (); // randomly send to a host
-  } while (destNode == m_nodeIndex);
-  Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode(destNode, 1).GetAddress(); // 0 interface is LoopbackNetDevice
-  InetSocketAddress destAddr = InetSocketAddress (ipv4Addr, 1234); 
-
+  InetSocketAddress destAddr = GetDestinationAddr();
   ret = socket->Connect (destAddr);
   if (ret == -1)
     {
       NS_FATAL_ERROR ("Socket connection failed");
     }
   socket->SetAllowBroadcast (false);
-
   // m_socket->SetConnectCallback (MakeCallback (&TraceApplication::ConnectionSucceeded, this),
   //                               MakeCallback (&TraceApplication::ConnectionFailed, this));
   socket->SetRecvCallback (MakeCallback (&TraceApplication::HandleRead, this));
@@ -143,9 +177,7 @@ TraceApplication::CreateNewRandomSocket ()
 void
 TraceApplication::ScheduleNextFlow (const Time &startTime)
 {
-  NS_LOG_FUNCTION (this);
-
-  Ptr<Socket> socket = CreateNewRandomSocket ();
+  Ptr<Socket> socket = CreateNewSocket ();
 
   uint64_t size = GetNextFlowSize ();
 
@@ -161,7 +193,7 @@ TraceApplication::SendNextPacket (Flow *flow)
   const uint32_t packetSize = std::min (flow->remainBytes, MSS);
   Ptr<Packet> packet = Create<Packet> (packetSize);
   int actual = flow->socket->Send (packet);
-  if (actual == static_cast<int>(packetSize))
+  if (actual == static_cast<int> (packetSize))
     {
       m_totBytes += packetSize;
       // const uint32_t headerSize = m_socket->GetSerializedHeaderSize ();
@@ -240,24 +272,26 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
   NS_LOG_FUNCTION (this << socket);
   Ptr<Packet> packet;
   Address from;
-  Address localAddress;
+  // Address localAddress;
   while ((packet = socket->RecvFrom (from)))
     {
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("TraceApplication: At time " << Simulator::Now ().As (Time::S) << " client received "
-                                  << packet->GetSize () << " bytes from "
-                                  << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port "
-                                  << InetSocketAddress::ConvertFrom (from).GetPort ());
+          NS_LOG_INFO ("TraceApplication: At time "
+                       << Simulator::Now ().As (Time::S) << " client received "
+                       << packet->GetSize () << " bytes from "
+                       << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port "
+                       << InetSocketAddress::ConvertFrom (from).GetPort ());
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("TraceApplication: At time " << Simulator::Now ().As (Time::S) << " client received "
-                                  << packet->GetSize () << " bytes from "
-                                  << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port "
-                                  << Inet6SocketAddress::ConvertFrom (from).GetPort ());
+          NS_LOG_INFO ("TraceApplication: At time "
+                       << Simulator::Now ().As (Time::S) << " client received "
+                       << packet->GetSize () << " bytes from "
+                       << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port "
+                       << Inet6SocketAddress::ConvertFrom (from).GetPort ());
         }
-      socket->GetSockName (localAddress);
+      // socket->GetSockName (localAddress);
       // m_rxTrace (packet);
       // m_rxTraceWithAddresses (packet, from, localAddress);
     }

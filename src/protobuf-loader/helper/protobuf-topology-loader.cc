@@ -315,39 +315,44 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
 
+  // node 0 and node 1 to node 3
   TraceApplicationHelper appHelper (topology);
   appHelper.SetProtocolGroup (TraceApplicationHelper::ProtocolGroup::RAW_UDP);
   appHelper.SetCdf (TraceApplication::TRACE_WEBSEARCH_CDF);
+
+  // UdpEchoServerHelper echoServer (1234); // TODO: dynamic port
+  // DcTopology::HostIterator it = topology->hosts_begin ();
+  // for (it++; it != topology->hosts_end (); it++)
+  //   {
+  //     Ptr<Node> receiver = it->nodePtr;
+  //     ApplicationContainer apps = echoServer.Install (receiver);
+  //     apps.Start (MilliSeconds (1));
+  //     apps.Stop (MilliSeconds (12));
+  //   }
+
+    // node 3 receiver
+  UdpEchoServerHelper echoServer (1234); // TODO: dynamic port
+  Ptr<Node> receiver = topology->GetNode (3).nodePtr;
+  ApplicationContainer apps = echoServer.Install (receiver);
+  apps.Start (MilliSeconds (1));
+  apps.Stop (MilliSeconds (6));
+
+  appHelper.SetDestination (3);
+
+  // node 0 sender
   Ptr<Node> sender = topology->GetNode (0).nodePtr;
-
-  UdpEchoServerHelper echoServer (1234);
-  DcTopology::HostIterator it = topology->hosts_begin ();
-  for (it++; it != topology->hosts_end (); it++)
-    {
-      Ptr<Node> receiver = it->nodePtr;
-      ApplicationContainer apps = echoServer.Install (receiver);
-      apps.Start (MilliSeconds (1));
-      apps.Stop (MilliSeconds (10));
-    }
-
   appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 1.0);
   ApplicationContainer appc = appHelper.Install (sender);
   appc.Start (MilliSeconds (2));
-  appc.Stop (MilliSeconds (10));
+  appc.Stop (MilliSeconds (4));
 
-  // for (DcTopology::HostIterator it = topology->hosts_begin(); it != topology->hosts_end(); it++)
-  //   {
-  //     Ptr<const DcbNetDevice> dev = DynamicCast<DcbNetDevice>((*it)->GetDevice(0));
-  //     appHelper.SetLoad (dev, 1.0);
-  //     ApplicationContainer appc = appHelper.Install (it->nodePtr);
-  //     appc.Start (MilliSeconds(2));
-  //     appc.Stop (MilliSeconds(10));
-
-  //     UdpEchoServerHelper echoServer (9);
-  //     ApplicationContainer apps = echoServer.Install (it->nodePtr);
-  //     apps.Start(MilliSeconds(1));
-  //     apps.Stop(MilliSeconds(10));
-  //   }
+  // node 1 sender
+  sender = topology->GetNode (1).nodePtr;
+  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 1.0);
+  appc = appHelper.Install (sender);
+  appc.Start (MilliSeconds (2));
+  appc.Stop (MilliSeconds (4));
+  
 }
 
 void

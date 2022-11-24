@@ -27,7 +27,7 @@
 namespace ns3 {
 
 TraceApplicationHelper::TraceApplicationHelper (Ptr<DcTopology> topo)
-  : m_topology (topo), m_cdf (nullptr), m_flowMeanInterval(0.)
+    : m_topology (topo), m_cdf (nullptr), m_flowMeanInterval (0.), m_dest (-1)
 {
 }
 
@@ -47,38 +47,49 @@ void
 TraceApplicationHelper::SetLoad (Ptr<const DcbNetDevice> dev, double load)
 {
   NS_ASSERT_MSG (m_cdf, "Must set CDF to TraceApplicationHelper before setting load.");
+  NS_ASSERT_MSG (load >= 0. && load <= 1., "Load shoud be between 0 and 1.");
   double mean = CalculateCdfMeanSize (m_cdf);
   m_flowMeanInterval = mean * 8 / (dev->GetDataRate ().GetBitRate () * load) * 1e6; // us
 }
 
-// void
-// TraceApplicationHelper::SetAttribute (std::string name, const AttributeValue &value)
-// {
-//   m_factory.Set (name, value);
-// }
+void
+TraceApplicationHelper::SetDestination (int32_t dest)
+{
+  m_dest = dest;
+}
 
 ApplicationContainer
 TraceApplicationHelper::Install (Ptr<Node> node) const
 {
   NS_ASSERT_MSG (m_cdf, "[TraceApplicationHelper] CDF not set, please call SetCdf ().");
-  NS_ASSERT_MSG (m_flowMeanInterval > 0, "[TraceApplicationHelper] Load not set, please call SetLoad ().");
+  NS_ASSERT_MSG (m_flowMeanInterval > 0,
+                 "[TraceApplicationHelper] Load not set, please call SetLoad ().");
   return ApplicationContainer (InstallPriv (node));
 }
 
 Ptr<Application>
 TraceApplicationHelper::InstallPriv (Ptr<Node> node) const
 {
-  Ptr<TraceApplication> app = CreateObject<TraceApplication> (m_topology, node->GetId());
+  Ptr<TraceApplication> app;
+  if (m_dest < 0)
+    { // random destination flows application
+      app = CreateObject<TraceApplication> (m_topology, node->GetId ());
+    }
+  else
+    { // fixed destination flows application
+      app = CreateObject<TraceApplication> (m_topology, node->GetId (), m_dest);
+    }
+
   app->SetFlowCdf (*m_cdf);
   app->SetFlowMeanArriveInterval (m_flowMeanInterval);
-  // set socket according to ProtocolGroup
+  // TODO: set socket according to ProtocolGroup
   node->AddApplication (app);
   return app;
 }
 
 // static
 double
-TraceApplicationHelper::CalculateCdfMeanSize (const TraceApplication::TraceCdf * const cdf)
+TraceApplicationHelper::CalculateCdfMeanSize (const TraceApplication::TraceCdf *const cdf)
 {
   double res = 0.;
   auto [ls, lp] = (*cdf)[0];

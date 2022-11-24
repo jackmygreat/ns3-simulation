@@ -23,6 +23,7 @@
 
 #include "ns3/application.h"
 #include "ns3/data-rate.h"
+#include "ns3/inet-socket-address.h"
 #include "ns3/traced-callback.h"
 #include "ns3/seq-ts-size-header.h"
 #include "ns3/random-variable-stream.h"
@@ -43,9 +44,19 @@ public:
    */
   static TypeId GetTypeId (void);
 
+  /**
+   * \brief Create an application in topology node nodeIndex.
+   * The application will randomly choose a node as destination and send flows.
+   */
   TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex);
-  virtual ~TraceApplication ();
 
+  /**
+   * \brief Create an application in topology node nodeIndex destined to destIndex.
+   * The application will send flows from nodeIndex to destIndex.
+   */  
+  TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex, uint32_t destIndex);
+  virtual ~TraceApplication ();
+  
   /**
   * \brief Assign a fixed random variable stream number to the random variables
   * used by this model.
@@ -121,9 +132,15 @@ public:
   };
 
 private:
+
+  /**
+   * \brief Init fields, e.g., RNGs and m_socketLinkRate.
+   */
+  void InitForRngs ();
+  
   // inherited from Application base class.
-  virtual void StartApplication (void); // Called at time specified by Start
-  virtual void StopApplication (void); // Called at time specified by Stop
+  virtual void StartApplication (void) override; // Called at time specified by Start
+  virtual void StopApplication (void) override; // Called at time specified by Stop
 
   /**
    * \brief Schedule the next On period start
@@ -131,9 +148,16 @@ private:
   void ScheduleNextFlow (const Time &startTime);
 
   /**
-   * \breif Create new socket destined to a random host.
+   * \brief Create new socket.
    */
-  Ptr<Socket> CreateNewRandomSocket ();
+  Ptr<Socket> CreateNewSocket ();
+
+  /**
+   * \brief Get destination of one flow.
+   * If m_randomDestination is true, return a random destination.
+   * Else return m_destAddr.
+   */
+  InetSocketAddress GetDestinationAddr () const;
 
   /**
    * \brief Send a dummy packet according to m_remainBytes.
@@ -181,7 +205,8 @@ private:
   // std::set<Flow *> m_flows;
 
   const Ptr<DcTopology>  m_topology;        //!< The topology
-  const uint32_t         m_nodeIndex;       //!< Node index this application belongs to
+  const uint32_t         m_nodeIndex;
+  const bool             m_randomDestination; //!< whether this app choose random destination //!< Node index this application belongs to
   // bool                   m_connected;       //!< True if connected
   DataRate               m_socketLinkRate;  //!< Link rate of the deice
   uint64_t               m_totBytes;        //!< Total bytes sent so far
@@ -189,6 +214,7 @@ private:
   Ptr<EmpiricalRandomVariable>   m_flowSizeRng;       //!< Flow size random generator
   Ptr<ExponentialRandomVariable> m_flowArriveTimeRng; //!< Flow arrive time random generator
   Ptr<UniformRandomVariable>     m_hostIndexRng;      //!< Host index random generator
+  Ipv4Address m_destAddr; //!< if not choosing random destination, store the destined address here
 
   /// traced Callback: transmitted packets.
   TracedCallback<Ptr<const Packet>> m_txTrace;

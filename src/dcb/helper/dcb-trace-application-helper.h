@@ -48,6 +48,7 @@ public:
   void SetProtocolGroup (ProtocolGroup protoGroup);
   void SetCdf (const TraceApplication::TraceCdf& cdf);
   void SetLoad (Ptr<const DcbNetDevice> dev, double load);
+  void SetDestination (int32_t dest);
 
   /**
    * Record an attribute to be set in each Application after it is is created.
@@ -74,6 +75,7 @@ private:
   ProtocolGroup m_protoGroup;
   TraceApplication::TraceCdf* m_cdf;
   double m_flowMeanInterval;
+  int32_t m_dest;
 
 }; // class TraceApplicationHelper
 
