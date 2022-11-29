@@ -32,9 +32,6 @@ main ()
   // topoLoader.RunConfigScript("config/dumbell_topo.py");
   Ptr<DcTopology> topology = topoLoader.LoadTopology();
 
-  // ProtobufFlowsLoader flowsLoader;
-  // flowsLoader.LoadFlowsTo(topology);
-
   LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
   LogComponentEnable ("TraceApplication", LOG_LEVEL_INFO);
   LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
@@ -44,8 +41,9 @@ main ()
   LogComponentEnable ("DcbSwitchStackHelper", LOG_LEVEL_INFO);
   // LogComponentEnable ("Ipv4L3Protocol", LOG_LEVEL_WARN);
   LogComponentEnable ("DcbPfcPort", LOG_LEVEL_DEBUG);
-  // LogComponentEnable ("PausableQueueDisc", LOG_LEVEL_LOGIC);
+  LogComponentEnable ("RoCEv2L4Protocol", LOG_LEVEL_INFO);
 
+  // Simulator::Stop (MilliSeconds(13));
   Simulator::Run ();
   Simulator::Destroy ();
 }

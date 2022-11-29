@@ -317,7 +317,7 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
 
   // node 0 and node 1 to node 3
   TraceApplicationHelper appHelper (topology);
-  appHelper.SetProtocolGroup (TraceApplicationHelper::ProtocolGroup::RAW_UDP);
+  appHelper.SetProtocolGroup (TraceApplicationHelper::ProtocolGroup::RoCEv2);
   appHelper.SetCdf (TraceApplication::TRACE_WEBSEARCH_CDF);
 
   // UdpEchoServerHelper echoServer (1234); // TODO: dynamic port
@@ -330,10 +330,10 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
   //     apps.Stop (MilliSeconds (12));
   //   }
 
-    // node 3 receiver
-  UdpEchoServerHelper echoServer (1234); // TODO: dynamic port
+  // node 3 receiver
   Ptr<Node> receiver = topology->GetNode (3).nodePtr;
-  ApplicationContainer apps = echoServer.Install (receiver);
+  appHelper.SetLoad (DynamicCast<DcbNetDevice> (receiver->GetDevice (0)), 0.);
+  ApplicationContainer apps = appHelper.Install (receiver);
   apps.Start (MilliSeconds (1));
   apps.Stop (MilliSeconds (6));
 
@@ -341,14 +341,14 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
 
   // node 0 sender
   Ptr<Node> sender = topology->GetNode (0).nodePtr;
-  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 1.0);
+  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
   ApplicationContainer appc = appHelper.Install (sender);
   appc.Start (MilliSeconds (2));
   appc.Stop (MilliSeconds (4));
 
   // node 1 sender
   sender = topology->GetNode (1).nodePtr;
-  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 1.0);
+  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
   appc = appHelper.Install (sender);
   appc.Start (MilliSeconds (2));
   appc.Stop (MilliSeconds (4));

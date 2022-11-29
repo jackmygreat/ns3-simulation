@@ -20,14 +20,16 @@
 
 #include "dcb-trace-application-helper.h"
 #include "ns3/dc-topology.h"
+#include "ns3/dcb-trace-application.h"
 #include "ns3/node.h"
 #include "ns3/dcb-net-device.h"
+#include "ns3/rocev2-l4-protocol.h"
 #include "ns3/nstime.h"
 
 namespace ns3 {
 
 TraceApplicationHelper::TraceApplicationHelper (Ptr<DcTopology> topo)
-    : m_topology (topo), m_cdf (nullptr), m_flowMeanInterval (0.), m_dest (-1)
+    : m_topology (topo), m_cdf (nullptr), m_flowMeanInterval (0.), m_dest (-1), m_sendEnabled (true)
 {
 }
 
@@ -49,7 +51,15 @@ TraceApplicationHelper::SetLoad (Ptr<const DcbNetDevice> dev, double load)
   NS_ASSERT_MSG (m_cdf, "Must set CDF to TraceApplicationHelper before setting load.");
   NS_ASSERT_MSG (load >= 0. && load <= 1., "Load shoud be between 0 and 1.");
   double mean = CalculateCdfMeanSize (m_cdf);
-  m_flowMeanInterval = mean * 8 / (dev->GetDataRate ().GetBitRate () * load) * 1e6; // us
+  if (load <= 1e-6)
+    {
+      m_sendEnabled = false;
+    }
+  else
+    {
+      m_sendEnabled = true;
+      m_flowMeanInterval = mean * 8 / (dev->GetDataRate ().GetBitRate () * load) * 1e6; // us
+    }
 }
 
 void
@@ -62,7 +72,7 @@ ApplicationContainer
 TraceApplicationHelper::Install (Ptr<Node> node) const
 {
   NS_ASSERT_MSG (m_cdf, "[TraceApplicationHelper] CDF not set, please call SetCdf ().");
-  NS_ASSERT_MSG (m_flowMeanInterval > 0,
+  NS_ASSERT_MSG (m_flowMeanInterval > 0 || !m_sendEnabled,
                  "[TraceApplicationHelper] Load not set, please call SetLoad ().");
   return ApplicationContainer (InstallPriv (node));
 }
@@ -80,10 +90,32 @@ TraceApplicationHelper::InstallPriv (Ptr<Node> node) const
       app = CreateObject<TraceApplication> (m_topology, node->GetId (), m_dest);
     }
 
-  app->SetFlowCdf (*m_cdf);
-  app->SetFlowMeanArriveInterval (m_flowMeanInterval);
-  // TODO: set socket according to ProtocolGroup
+  if (m_sendEnabled)
+    {
+      app->SetFlowCdf (*m_cdf);
+      app->SetFlowMeanArriveInterval (m_flowMeanInterval);
+    }
+  else
+    {
+      Ptr<TraceApplication> appt = DynamicCast<TraceApplication> (app);
+      if (appt)
+        {
+          appt->SetSendEnabled (false);
+        }
+    }
+
   node->AddApplication (app);
+  
+  switch (m_protoGroup)
+    {
+    case RAW_UDP:
+      break; // do nothing
+    case TCP:
+      break; // TODO: add support of TCP
+    case RoCEv2:
+      // must be called after node->AddApplication () becasue it needs to know the node
+      app->SetInnerUdpProtocol (RoCEv2L4Protocol::GetTypeId ());
+    };
   return app;
 }
 

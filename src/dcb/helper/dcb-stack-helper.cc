@@ -359,6 +359,11 @@ DcbStackHelper::Install (Ptr<Node> node) const
     {
       CreateAndAggregateObjectFromTypeId (node, "ns3::TrafficControlLayer");
       CreateAndAggregateObjectFromTypeId (node, "ns3::UdpL4Protocol");
+      CreateAndAggregateObjectFromTypeId (node, "ns3::UdpBasedSocketFactory");
+      // for (const std::string& tid: m_udpBasedL4Protos)
+      //   {
+      //     CreateAndAggregateObjectFromTypeId (node, tid);
+      //   }
       node->AggregateObject (m_tcpFactory.Create<Object> ());
       Ptr<PacketSocketFactory> factory = CreateObject<PacketSocketFactory> ();
       node->AggregateObject (factory);

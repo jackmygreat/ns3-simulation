@@ -27,8 +27,8 @@
 #include "ns3/traced-callback.h"
 #include "ns3/seq-ts-size-header.h"
 #include "ns3/random-variable-stream.h"
-#include "dcb-socket.h"
 #include "ns3/dc-topology.h"
+#include "udp-based-socket.h"
 #include <set>
 
 namespace ns3 {
@@ -66,6 +66,9 @@ public:
   */
   // int64_t AssignStreams (int64_t stream);
 
+  void SetInnerUdpProtocol (std::string innerTid);
+  void SetInnerUdpProtocol (TypeId innerTid);
+
   struct Flow
   {
     const Time startTime;
@@ -90,6 +93,8 @@ public:
   void SetFlowCdf (const TraceCdf &cdf);
   
   void SetFlowMeanArriveInterval (double interval);
+
+  void SetSendEnabled (bool enabled);
 
   constexpr static inline const uint64_t MSS = 1000; // bytes
 
@@ -204,6 +209,7 @@ private:
   
   // std::set<Flow *> m_flows;
 
+  bool                   m_enableSend;
   const Ptr<DcTopology>  m_topology;        //!< The topology
   const uint32_t         m_nodeIndex;
   const bool             m_randomDestination; //!< whether this app choose random destination //!< Node index this application belongs to
@@ -211,6 +217,8 @@ private:
   DataRate               m_socketLinkRate;  //!< Link rate of the deice
   uint64_t               m_totBytes;        //!< Total bytes sent so far
   TypeId                 m_tid;             //!< Type of the socket used
+  TypeId                 m_innerUdpProtocol; //!< inner-UDP protocol type id
+  uint32_t               m_headerSize;     //!< total header bytes of a packet
   Ptr<EmpiricalRandomVariable>   m_flowSizeRng;       //!< Flow size random generator
   Ptr<ExponentialRandomVariable> m_flowArriveTimeRng; //!< Flow arrive time random generator
   Ptr<UniformRandomVariable>     m_hostIndexRng;      //!< Host index random generator

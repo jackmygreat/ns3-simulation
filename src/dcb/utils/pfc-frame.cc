@@ -22,6 +22,8 @@
 
 namespace ns3 {
 
+NS_OBJECT_ENSURE_REGISTERED(PfcFrame);
+
 // static
 Ptr<Packet>
 PfcFrame::GeneratePauseFrame (uint8_t priority, uint16_t quanta)
@@ -113,21 +115,21 @@ PfcFrame::GetSerializedSize () const
 void
 PfcFrame::Serialize (Buffer::Iterator start) const
 {
-  start.WriteU16 (m_opcode);
-  start.WriteU16 (m_enableVec);
+  start.WriteHtonU16 (m_opcode);
+  start.WriteHtonU16 (m_enableVec);
   start.Write (reinterpret_cast<const uint8_t *> (m_quantaVec), sizeof (m_quantaVec));
   start.Write (reinterpret_cast<const uint8_t *> (m_reserved), sizeof (m_reserved));
-  start.WriteU16 (m_frameCheck);
+  start.WriteHtonU16 (m_frameCheck);
 }
 
 uint32_t
 PfcFrame::Deserialize (Buffer::Iterator start)
 {
-  m_opcode = start.ReadU16 ();
-  m_enableVec = start.ReadU16 ();
+  m_opcode = start.ReadNtohU16 ();
+  m_enableVec = start.ReadNtohU16 ();
   start.Read (reinterpret_cast<uint8_t *> (m_quantaVec), sizeof (m_quantaVec));
   start.Read (reinterpret_cast<uint8_t *> (m_reserved), sizeof (m_reserved));
-  m_frameCheck = start.ReadU16 ();
+  m_frameCheck = start.ReadNtohU16 ();
   return GetSerializedSize ();
 }
 

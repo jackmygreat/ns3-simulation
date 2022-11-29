@@ -76,6 +76,7 @@ private:
   TraceApplication::TraceCdf* m_cdf;
   double m_flowMeanInterval;
   int32_t m_dest;
+  bool m_sendEnabled;
 
 }; // class TraceApplicationHelper
 

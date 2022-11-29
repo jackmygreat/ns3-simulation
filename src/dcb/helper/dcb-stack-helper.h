@@ -73,6 +73,8 @@ public:
    */
   void SetRoutingHelper (const Ipv6RoutingHelper &routing);
 
+  void AddUdpBasedL4Protocol (const std::string tid);
+
   /**
    * Aggregate implementations of the ns3::Ipv4, ns3::Ipv6, ns3::Udp, and ns3::Tcp classes
    * onto the provided node.  This method will assert if called on a node that 

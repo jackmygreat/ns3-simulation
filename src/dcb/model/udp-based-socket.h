@@ -18,14 +18,33 @@
  * Author: Pavinberg <pavin0702@gmail.com>
  */
 
-#ifndef DCB_SOCKET_H
-#define DCB_SOCKET_H
+#ifndef UDP_BASED_SOCKET_H
+#define UDP_BASED_SOCKET_H
 
+#include "ns3/ipv4-end-point.h"
+#include "ns3/socket-factory.h"
 #include "ns3/socket.h"
+#include "ns3/traced-callback.h"
+#include "ns3/udp-l4-protocol.h"
+#include "udp-based-l4-protocol.h"
+#include <queue>
+#include <map>
 
 namespace ns3 {
+  
+class UdpL4Protocol;  
+class UdpBasedL4Protocol;
+class InnerEndPoint;
 
-class DcbSocket : public Socket
+/**
+ * \ingroup dcb
+ * \ingroup socket
+ *
+ * \brief base class of sockets of protocol that based on UDP.
+ *
+ * This is useful for customized protocols that based on UDP, e.g., RoCEv2.
+ */
+class UdpBasedSocket : public Socket
 {
 public:
   /**
@@ -35,9 +54,14 @@ public:
    */
   static TypeId GetTypeId (void);
   
-  DcbSocket ();
-  virtual ~DcbSocket ();
+  UdpBasedSocket ();
+  virtual ~UdpBasedSocket ();
 
+  /**
+   * \brief Set the associated UDP L4 protocol.
+   * \param udp the UDP L4 protocol
+   */
+  void SetUdp (Ptr<UdpBasedL4Protocol> udp);
   /**
    * \brief Get last error number.
    *
@@ -45,17 +69,17 @@ public:
    *         socket. Each socket's errno is initialized to zero
    *         when the socket is created.
    */
-  virtual enum Socket::SocketErrno GetErrno (void) const;
+  virtual enum Socket::SocketErrno GetErrno (void) const override;
 
   /**
     * \return the socket type, analogous to getsockopt (SO_TYPE)
     */
-  virtual enum Socket::SocketType GetSocketType (void) const;
+  virtual enum Socket::SocketType GetSocketType (void) const override;
   /**
    * \brief Return the node this socket is associated with.
    * \returns the node
    */
-  virtual Ptr<Node> GetNode (void) const;
+  virtual Ptr<Node> GetNode (void) const override;
 
   virtual const uint32_t GetSerializedHeaderSize () const;
 
@@ -64,21 +88,21 @@ public:
    * \param address the address to try to allocate
    * \returns 0 on success, -1 on failure.
    */
-  virtual int Bind (const Address &address);
+  virtual int Bind (const Address &address) override;
 
   /** 
    * \brief Allocate a local IPv4 endpoint for this socket.
    *
    * \returns 0 on success, -1 on failure.
    */
-  virtual int Bind ();
+  virtual int Bind () override;
 
   /** 
    * \brief Allocate a local IPv6 endpoint for this socket.
    *
    * \returns 0 on success, -1 on failure.
    */
-  virtual int Bind6 ();
+  virtual int Bind6 () override;
 
   /**
    * \brief Close a socket.
@@ -87,7 +111,7 @@ public:
    * After the Close call, the socket is no longer valid, and cannot
    * safely be used for subsequent operations.
    */
-  virtual int Close (void);
+  virtual int Close (void) override;
 
   /**
    * \returns zero on success, -1 on failure.
@@ -95,7 +119,7 @@ public:
    * Do not allow any further Send calls. This method is typically
    * implemented for Tcp sockets by a half close.
    */
-  virtual int ShutdownSend (void);
+  virtual int ShutdownSend (void) override;
 
   /**
    * \returns zero on success, -1 on failure.
@@ -103,20 +127,20 @@ public:
    * Do not allow any further Recv calls. This method is typically
    * implemented for Tcp sockets by a half close.
    */
-  virtual int ShutdownRecv (void);
+  virtual int ShutdownRecv (void) override;
 
   /**
    * \brief Initiate a connection to a remote host
    * \param address Address of remote.
    * \returns 0 on success, -1 on error (in which case errno is set).
    */
-  virtual int Connect (const Address &address);
+  virtual int Connect (const Address &address) override;
 
   /**
    * \brief Listen for incoming connections.
    * \returns 0 on success, -1 on error (in which case errno is set).
    */
-  virtual int Listen (void);
+  virtual int Listen (void) override;
 
   /**
    * \brief Returns the number of bytes which can be sent in a single call
@@ -130,7 +154,7 @@ public:
    *
    * \returns The number of bytes which can be sent in a single Send call.
    */
-  virtual uint32_t GetTxAvailable (void) const;
+  virtual uint32_t GetTxAvailable (void) const override;
 
     /**
    * \brief Send data (or dummy data) to the remote host
@@ -177,9 +201,7 @@ public:
    *
    * \see SetSendCallback
    */
-  virtual int Send (Ptr<Packet> p, uint32_t flags);
-
-  int Send (Ptr<Packet> p);
+  virtual int Send (Ptr<Packet> p, uint32_t flags) override;
 
   /**
    * \brief Send data to a specified peer.
@@ -195,7 +217,7 @@ public:
    *          internal buffer and accepted for transmission.
    */
   virtual int SendTo (Ptr<Packet> p, uint32_t flags, 
-                      const Address &toAddress);
+                      const Address &toAddress) override;
 
   /**
    * Return number of bytes which can be returned from one or 
@@ -205,7 +227,7 @@ public:
    * \returns the number of bytes which can be returned from one or
    *          multiple Recv calls.
    */
-  virtual uint32_t GetRxAvailable (void) const;
+  virtual uint32_t GetRxAvailable (void) const override;
 
   /**
    * \brief Read data from the socket
@@ -258,7 +280,7 @@ public:
    *
    * \see SetRecvCallback
    */
-  virtual Ptr<Packet> Recv (uint32_t maxSize, uint32_t flags);
+  virtual Ptr<Packet> Recv (uint32_t maxSize, uint32_t flags) override;
 
   /**
    * \brief Read a single packet from the socket and retrieve the sender 
@@ -280,21 +302,21 @@ public:
    * 0 if the socket cannot return a next in-sequence packet.
    */
   virtual Ptr<Packet> RecvFrom (uint32_t maxSize, uint32_t flags,
-                                Address &fromAddress);
+                                Address &fromAddress) override;
 
   /**
    * \brief Get socket address.
    * \param address the address name this socket is associated with.
    * \returns 0 if success, -1 otherwise
    */
-  virtual int GetSockName (Address &address) const; 
+  virtual int GetSockName (Address &address) const override; 
 
   /**
    * \brief Get the peer address of a connected socket.
    * \param address the address this socket is connected to.
    * \returns 0 if success, -1 otherwise
    */
-  virtual int GetPeerName (Address &address) const;
+  virtual int GetPeerName (Address &address) const override;
 
   /**
    * \brief Configure whether broadcast datagram transmissions are allowed
@@ -307,7 +329,7 @@ public:
    * \param allowBroadcast Whether broadcast is allowed
    * \return true if operation succeeds
    */
-  virtual bool SetAllowBroadcast (bool allowBroadcast);
+  virtual bool SetAllowBroadcast (bool allowBroadcast) override;
 
   /**
    * \brief Query whether broadcast datagram transmissions are allowed
@@ -317,12 +339,101 @@ public:
    *
    * \returns true if broadcast is allowed, false otherwise
    */
-  virtual bool GetAllowBroadcast () const;
+  virtual bool GetAllowBroadcast () const override;
 
+  void SetNode (Ptr<Node> node);
 
+  void SetRcvBufSize (uint32_t size);
+  uint32_t GetRcvBufSize () const;
+
+private:
+
+  /**
+   * \brief Called by the L3 protocol when it received a packet to pass on to TCP.
+   *
+   * \param packet the incoming packet
+   * \param header the packet's IPv4 header
+   * \param port the remote port
+   * \param incomingInterface the incoming interface
+   */
+  void ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port, Ptr<Ipv4Interface> incomingInterface);
+
+  /**
+   * \brief Kill this socket by zeroing its attributes (IPv4)
+   *
+   * This is a callback function configured to m_endpoint in
+   * SetupCallback(), invoked when the endpoint is destroyed.
+   */
+  void Destroy (void);
+
+protected:
+
+  /**
+   * \brief Send a packet
+   * \param p packet
+   * \returns 0 on success, -1 on failure
+   */
+  virtual int DoSend (Ptr<Packet> p);
+
+  /**
+   * \brief Send a packet to a specific destination and port INNER_PROTO_NUM (IPv4)
+   * \param p packet
+   * \param daddr destination address
+   * \param tos ToS
+   * \returns 0 on success, -1 on failure
+   */
+  int DoSendTo (Ptr<Packet> p, Ipv4Address daddr, uint8_t tos); 
   
-};
+  Ptr<Node>           m_node;       //!< the associated node
+  Ptr<UdpBasedL4Protocol>  m_innerProto;         //!< the associated UDP L4 protocol
+  InnerEndPoint*       m_endPoint;   //!< the IPv4 endpoint
 
-} // namspace  ns3
+  mutable enum SocketErrno m_errno;  //!< Socket error code
+  TracedCallback<Ptr<const Packet> > m_dropTrace; //!< Trace for dropped packets
+  
+private:
 
-#endif // DCB_SOCKET_H
+  Address             m_defaultAddress; //!< Default address
+  bool                m_shutdownSend;   //!< Send no longer allowed
+  bool                m_shutdownRecv;   //!< Receive no longer allowed
+  bool                m_connected;      //!< Connection established
+  uint32_t            m_rxAvailable;    //!< Number of available bytes to be received
+  std::queue<std::pair<Ptr<Packet>, Address> > m_deliveryQueue; //!< Queue for incoming packets
+  // Socket attributes
+  uint32_t m_rcvBufSize;    //!< Receive buffer size
+}; // class UdpBasedL4Protocol
+
+class UdpBasedSocketFactory : public SocketFactory {
+  
+public:
+  
+  UdpBasedSocketFactory ();
+  virtual ~UdpBasedSocketFactory ();
+
+  static TypeId GetTypeId ();
+
+  /**
+   * Add UDP-based L4 protocol and return the total header size. 
+   */
+  uint32_t AddUdpBasedProtocol (Ptr<Node> node, Ptr<NetDevice> dev, TypeId protoTid);
+
+  void SetNextProtocol (uint16_t port);
+
+  /**
+   * \brief Implements a method to create a Udp-based socket and return
+   * a base class smart pointer to the socket.
+   *
+   * \return smart pointer to Socket
+   */
+  virtual Ptr<Socket> CreateSocket (void) override;
+
+private:
+  
+  std::map<uint16_t, Ptr<UdpBasedL4Protocol>> m_protoMapper; //!< map port number to socket
+  Ptr<UdpBasedL4Protocol> m_nextProto; //!< used by the next call to CreateSocket to create socket for a specific protocol
+  
+}; // class UdpBasedSocketFactory
+
+} // namspace ns3
+
+#endif // UDP_BASED_SOCKET_H

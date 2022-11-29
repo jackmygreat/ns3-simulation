@@ -9,7 +9,6 @@ host1                host3
 '''
 
 from topology_helper import TopologyGenerator
-from flows_helper import FlowsGenerator
 
 globalConfig = {
     "randomSeed": 0
@@ -114,13 +113,3 @@ with TopologyGenerator() as topo:
                             one=switch1, nPorts=[0, 1], **linkConfig1)
     topo.links.connectOne2One(node1=switch0, port1=2,
                               node2=switch1, port2=2, **linkConfig2)
-
-with FlowsGenerator() as flowgen:
-    flowgen.addFlow(srcNode=0, srcPort=0, dstNode=2, dstPort=0,
-                    size=8*1024, arriveTime=10_000, priority=0)
-    flowgen.addFlow(srcNode=0, srcPort=0, dstNode=3, dstPort=0,
-                    size=4*1024, arriveTime=10_010, priority=0)
-    flowgen.addFlow(srcNode=1, srcPort=0, dstNode=2, dstPort=0,
-                    size=2*1024, arriveTime=10_020, priority=0)
-    flowgen.addFlow(srcNode=1, srcPort=0, dstNode=3, dstPort=0,
-                    size=1*1024, arriveTime=10_030, priority=0)

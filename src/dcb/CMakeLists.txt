@@ -13,7 +13,11 @@ build_lib(
 	  model/dcb-trace-application.cc
 	  model/dcb-flow-control-port.cc
 	  model/dcb-pfc-port.cc
+	  model/udp-based-l4-protocol.cc
+	  model/udp-based-socket.cc
+	  model/rocev2-l4-protocol.cc
 	  utils/pfc-frame.cc
+	  utils/rocev2-header.cc
   HEADER_FILES
       helper/dcb-stack-helper.h
 	  helper/dcb-switch-stack-helper.h
@@ -24,10 +28,13 @@ build_lib(
 	  model/dcb-channel.h
 	  model/pausable-queue-disc.h
 	  model/dcb-trace-application.h
-	  model/dcb-socket.h
 	  model/dcb-flow-control-port.h
 	  model/dcb-pfc-port.h
+	  model/udp-based-l4-protocol.h
+	  model/udp-based-socket.h
+	  model/rocev2-l4-protocol.h
 	  utils/pfc-frame.h
+	  utils/rocev2-header.h
   LIBRARIES_TO_LINK
       ${libcore}
 	  ${libnetwork}

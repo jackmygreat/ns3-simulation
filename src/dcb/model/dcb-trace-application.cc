@@ -29,8 +29,12 @@
 #include "ns3/log-macros-enabled.h"
 #include "ns3/node.h"
 #include "ns3/socket.h"
+#include "ns3/type-id.h"
+#include "ns3/udp-l4-protocol.h"
 #include "ns3/udp-socket-factory.h"
 #include "ns3/packet-socket-address.h"
+#include "rocev2-l4-protocol.h"
+#include "udp-based-socket.h"
 #include <cmath>
 
 namespace ns3 {
@@ -43,7 +47,7 @@ TraceApplication::GetTypeId ()
 {
   static TypeId tid = TypeId ("ns3::TraceApplication")
                           .SetParent<Application> ()
-                          .SetGroupName ("DcApp")
+                          .SetGroupName ("Dcb")
                           .AddAttribute ("Protocol",
                                          "The type of protocol to use. This should be "
                                          "a subclass of ns3::SocketFactory",
@@ -55,8 +59,12 @@ TraceApplication::GetTypeId ()
 }
 
 TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex)
-    : m_topology (topology), m_nodeIndex (nodeIndex), m_randomDestination (true), m_totBytes (0)
-
+    : m_enableSend (true),
+      m_topology (topology),
+      m_nodeIndex (nodeIndex),
+      m_randomDestination (true),
+      m_totBytes (0),
+      m_headerSize (8 + 20 + 14)
 {
   NS_LOG_FUNCTION (this);
 
@@ -65,8 +73,14 @@ TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex
   InitForRngs ();
 }
 
-TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex, uint32_t destIndex)
-    : m_topology (topology), m_nodeIndex (nodeIndex), m_randomDestination (false), m_totBytes (0)
+TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex,
+                                    uint32_t destIndex)
+    : m_enableSend (true),
+      m_topology (topology),
+      m_nodeIndex (nodeIndex),
+      m_randomDestination (false),
+      m_totBytes (0),
+      m_headerSize (8 + 20 + 14)
 {
   NS_LOG_FUNCTION (this);
 
@@ -104,6 +118,30 @@ TraceApplication::~TraceApplication ()
 // }
 
 void
+TraceApplication::SetInnerUdpProtocol (std::string innerTid)
+{
+  SetInnerUdpProtocol (TypeId (innerTid));
+}
+
+void
+TraceApplication::SetInnerUdpProtocol (TypeId innerTid)
+{
+  NS_LOG_FUNCTION (this << innerTid);
+  m_tid = UdpBasedSocketFactory::GetTypeId ();
+  Ptr<Node> node = GetNode ();
+  Ptr<UdpBasedSocketFactory> socketFactory = node->GetObject<UdpBasedSocketFactory> ();
+  if (socketFactory)
+    {
+      m_headerSize = socketFactory->AddUdpBasedProtocol (node, node->GetDevice (0), innerTid);
+    }
+  else
+    {
+      NS_FATAL_ERROR ("Application cannot use inner-UDP protocol because UdpBasedL4Protocol and "
+                      "UdpBasedSocketFactory is not bound to node correctly.");
+    }
+}
+
+void
 TraceApplication::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
@@ -111,11 +149,13 @@ TraceApplication::StartApplication (void)
   // If we are not yet connected, there is nothing to do here
   // The ConnectionComplete upcall will start timers at that time
   //if (!m_connected) return;
-
-  for (Time t = Simulator::Now () + GetNextFlowArriveInterval ();
-       t < m_stopTime; t += GetNextFlowArriveInterval ())
+  if (m_enableSend)
     {
-      ScheduleNextFlow (t);
+      for (Time t = Simulator::Now () + GetNextFlowArriveInterval (); t < m_stopTime;
+           t += GetNextFlowArriveInterval ())
+        {
+          ScheduleNextFlow (t);
+        }
     }
 }
 
@@ -137,9 +177,9 @@ TraceApplication::GetDestinationAddr () const
       do
         {
           destNode = m_hostIndexRng->GetInteger ();
-        } while (destNode == m_nodeIndex);
+      } while (destNode == m_nodeIndex);
       Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode (destNode, 1)
-        .GetAddress (); // 0 interface is LoopbackNetDevice
+                                 .GetAddress (); // 0 interface is LoopbackNetDevice
       return InetSocketAddress (ipv4Addr, portNum);
     }
   else
@@ -161,7 +201,7 @@ TraceApplication::CreateNewSocket ()
       NS_FATAL_ERROR ("Failed to bind socket");
     }
 
-  InetSocketAddress destAddr = GetDestinationAddr();
+  InetSocketAddress destAddr = GetDestinationAddr ();
   ret = socket->Connect (destAddr);
   if (ret == -1)
     {
@@ -196,9 +236,7 @@ TraceApplication::SendNextPacket (Flow *flow)
   if (actual == static_cast<int> (packetSize))
     {
       m_totBytes += packetSize;
-      // const uint32_t headerSize = m_socket->GetSerializedHeaderSize ();
-      constexpr const uint32_t headerSize = 8 + 20 + 14;
-      Time txTime = m_socketLinkRate.CalculateBytesTxTime (packetSize + headerSize);
+      Time txTime = m_socketLinkRate.CalculateBytesTxTime (packetSize + m_headerSize);
       if (Simulator::Now () + txTime < m_stopTime)
         {
           if (flow->remainBytes > MSS)
@@ -295,6 +333,12 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
       // m_rxTrace (packet);
       // m_rxTraceWithAddresses (packet, from, localAddress);
     }
+}
+
+void
+TraceApplication::SetSendEnabled (bool enabled)
+{
+  m_enableSend = enabled;
 }
 
 } // namespace ns3
