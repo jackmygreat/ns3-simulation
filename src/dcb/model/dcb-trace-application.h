@@ -18,16 +18,18 @@
  * Author: Pavinberg <pavin0702@gmail.com>
  */
 
-#ifndef WEBSEARCH_APPLICATION_H
-#define WEBSEARCH_APPLICATION_H
+#ifndef DCB_TRACE_APPLICATION_H
+#define DCB_TRACE_APPLICATION_H
 
 #include "ns3/application.h"
 #include "ns3/data-rate.h"
 #include "ns3/inet-socket-address.h"
+#include "ns3/rocev2-header.h"
 #include "ns3/traced-callback.h"
 #include "ns3/seq-ts-size-header.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/dc-topology.h"
+#include "rocev2-socket.h"
 #include "udp-based-socket.h"
 #include <set>
 
@@ -95,6 +97,7 @@ public:
   void SetFlowMeanArriveInterval (double interval);
 
   void SetSendEnabled (bool enabled);
+  void SetReceiveEnabled (bool enabled);
 
   constexpr static inline const uint64_t MSS = 1000; // bytes
 
@@ -205,11 +208,12 @@ private:
    *
    * \param socket the socket the packet was received to.
    */
-  void HandleRead (Ptr<Socket> socket);
+  void HandleRead (Ptr<Socket> socket); 
   
   // std::set<Flow *> m_flows;
 
   bool                   m_enableSend;
+  bool                   m_enableReceive;
   const Ptr<DcTopology>  m_topology;        //!< The topology
   const uint32_t         m_nodeIndex;
   const bool             m_randomDestination; //!< whether this app choose random destination //!< Node index this application belongs to
@@ -237,4 +241,4 @@ private:
 
 } // namespace ns3
 
-#endif // WEBSEARCH_APPLICATION_H
+#endif // DCB_TRACE_APPLICATION_H

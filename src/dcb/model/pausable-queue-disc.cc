@@ -32,6 +32,7 @@
 #include "ns3/queue-item.h"
 #include "ns3/type-id.h"
 #include "ns3/uinteger.h"
+#include "ns3/simulator.h"
 
 namespace ns3 {
 
@@ -93,6 +94,10 @@ PausableQueueDisc::Run ()
           item->AddHeader ();
           m_send (item); // m_send is usually set to NetDevice::Send ()
         }
+      else
+        {
+          RunEnd (); // release if queue is empty
+        }
     }
   // RunEnd () is called by DcbNetDevice::TransmitComplete ()
 }
@@ -141,6 +146,10 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       uint8_t priority = cosTag.GetCoS () & 0x0f;
       NS_ASSERT_MSG (priority < 8, "Priority should be 0~7 but here we have " << priority);
       bool retval = GetQueueDiscClass (priority)->GetQueueDisc ()->Enqueue (item);
+      if (!retval)
+        {
+          NS_FATAL_ERROR("PausableQueueDisc: enqueue failed on node " << Simulator::GetContext ());
+        }
       return retval;
     }
   NS_FATAL_ERROR ("No priority tag set one the item" << item);

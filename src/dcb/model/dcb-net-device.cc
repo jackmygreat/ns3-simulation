@@ -254,7 +254,6 @@ DcbNetDevice::Send (Ptr<Packet> packet, const Address &dest, uint16_t protocolNu
       if (m_txMachineState == READY)
         {
           packet = m_queue->Dequeue ();
-          m_snifferTrace (packet);
           // m_promiscSnifferTrace (packet);
           bool ret = TransmitStart (packet);
           return ret;
@@ -285,6 +284,7 @@ DcbNetDevice::TransmitStart (Ptr<Packet> packet)
   m_txMachineState = BUSY;
   m_currentPkt = packet;
   m_phyTxBeginTrace (m_currentPkt);
+  m_snifferTrace (packet);
 
   Time txTime = m_bps.CalculateBytesTxTime (packet->GetSize ());
   Time txCompleteTime = txTime + m_tInterframeGap;
@@ -314,7 +314,7 @@ DcbNetDevice::TransmitComplete (void)
   NS_ASSERT_MSG (m_txMachineState == BUSY, "Must be BUSY if transmitting");
   m_txMachineState = READY;
 
-  NS_ASSERT_MSG (m_currentPkt != 0, "PointToPointNetDevice::TransmitComplete(): m_currentPkt zero");
+  NS_ASSERT_MSG (m_currentPkt != 0, "DcbNetDevice::TransmitComplete(): m_currentPkt zero");
 
   m_phyTxEndTrace (m_currentPkt);
   m_currentPkt = 0;
@@ -329,7 +329,6 @@ DcbNetDevice::TransmitComplete (void)
       // immedidately.
       if (p)
         {
-          m_snifferTrace (p);
           TransmitStart (p);
         }
       m_queueDisc->RunEnd (); // finish the run
@@ -346,8 +345,6 @@ DcbNetDevice::TransmitComplete (void)
       //
       // Got another packet off of the queue, so start the transmit process again.
       //
-      m_snifferTrace (p);
-      // m_promiscSnifferTrace (p);
       TransmitStart (p);
     }
 }

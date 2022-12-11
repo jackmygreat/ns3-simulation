@@ -22,7 +22,7 @@
 
 namespace ns3 {
 
-NS_OBJECT_ENSURE_REGISTERED(PfcFrame);
+NS_OBJECT_ENSURE_REGISTERED (PfcFrame);
 
 // static
 Ptr<Packet>
@@ -77,7 +77,7 @@ PfcFrame::SetEnableClassField (uint8_t vec)
 uint8_t
 PfcFrame::GetEnableClassField () const
 {
-  return static_cast<uint8_t>(m_enableVec);
+  return static_cast<uint8_t> (m_enableVec);
 }
 
 void
@@ -108,8 +108,9 @@ PfcFrame::GetInstanceTypeId () const
 uint32_t
 PfcFrame::GetSerializedSize () const
 {
-  return sizeof (m_opcode) + sizeof (m_enableVec) + sizeof (m_quantaVec) + sizeof (m_reserved) +
-         sizeof (m_frameCheck);
+  constexpr uint32_t sz = sizeof (m_opcode) + sizeof (m_enableVec) + sizeof (m_quantaVec) +
+                          sizeof (m_reserved) + sizeof (m_frameCheck);
+  return sz;
 }
 
 void

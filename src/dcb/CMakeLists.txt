@@ -1,10 +1,13 @@
 build_lib(
   LIBNAME dcb
   SOURCE_FILES
+      helper/dcb-net-device-helper.cc
       helper/dcb-stack-helper.cc
 	  helper/dcb-switch-stack-helper.cc
 	  helper/dcb-fc-helper.cc
 	  helper/dcb-trace-application-helper.cc
+	  helper/csv-writer.cc
+	  helper/tracer-extension.cc
 	  model/dcb-traffic-control.cc
 	  model/dcb-net-device.cc
 	  model/dcb-channel.cc
@@ -16,13 +19,18 @@ build_lib(
 	  model/udp-based-l4-protocol.cc
 	  model/udp-based-socket.cc
 	  model/rocev2-l4-protocol.cc
+	  model/rocev2-socket.cc
+	  model/dcqcn.cc
 	  utils/pfc-frame.cc
 	  utils/rocev2-header.cc
   HEADER_FILES
+      helper/dcb-net-device-helper.h
       helper/dcb-stack-helper.h
 	  helper/dcb-switch-stack-helper.h
 	  helper/dcb-fc-helper.h
 	  helper/dcb-trace-application-helper.h
+	  helper/csv-writer.h
+	  helper/tracer-extension.h
 	  model/dcb-traffic-control.h
 	  model/dcb-net-device.h
 	  model/dcb-channel.h
@@ -33,6 +41,8 @@ build_lib(
 	  model/udp-based-l4-protocol.h
 	  model/udp-based-socket.h
 	  model/rocev2-l4-protocol.h
+	  model/rocev2-socket.h
+	  model/dcqcn.h
 	  utils/pfc-frame.h
 	  utils/rocev2-header.h
   LIBRARIES_TO_LINK

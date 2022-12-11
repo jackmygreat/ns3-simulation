@@ -60,8 +60,6 @@ public:
 
   void SetEcmpSeed (uint32_t seed);
 
-  void SetNQueues (uint32_t nQueues);
-
 protected:
 
   uint32_t m_seed;

@@ -25,12 +25,15 @@
 
 namespace ns3 {
 
+/**
+ * Infiniband Base Transport Header (BTH)
+ * The header is 12 bytes.
+ */  
 class RoCEv2Header : public Header
 {
 public:
 
   RoCEv2Header ();
-  virtual ~RoCEv2Header ();
 
   static TypeId GetTypeId (void);
   virtual TypeId GetInstanceTypeId (void) const override;
@@ -42,17 +45,26 @@ public:
 
   enum Opcode { // part of the opcodes for now
     RC_SEND_ONLY = 0b000'00100,
+    RC_ACK       = 0b000'10001,
     UD_SEND_ONLY = 0b011'00100,
     CNP          = 0b100'00000
   };
 
-  Opcode GetOpCode () const;
-  void SetOpCode (Opcode opcode);
+  Opcode GetOpcode () const;
+  void SetOpcode (Opcode opcode);
 
   uint32_t GetDestQP () const;
   void SetDestQP (uint32_t destQP);
-  
-  
+
+  uint32_t GetSrcQP () const;
+  void SetSrcQP (uint32_t srcQP);
+
+  uint32_t GetPSN () const;
+  void SetPSN (uint32_t psn);
+
+  bool GetAckQ () const;
+  void SetAckQ (bool ackRequested);
+
 private:
 
   Opcode m_opcode;
@@ -71,7 +83,7 @@ private:
       uint8_t fr: 1; // F/Res1
       uint8_t br: 1;  // B/Res1
       uint8_t reserved: 6; // reserved
-      uint32_t destQP: 24; // Destination QP
+      uint32_t destQP: 24; // Destination 0QP
     } __attribute__((__packed__));
     uint32_t u;
   } m_ub;
@@ -79,12 +91,51 @@ private:
     struct {
       uint8_t ackQ: 1; // Ackknowledge request
       uint8_t reserved: 7; // reserved
-      uint32_t m_psn: 24; // packet sequence number
+      uint32_t psn: 24; // packet sequence number
     } __attribute__((__packed__));
     uint32_t u;
-  } m_uc;
+  } m_uc; 
   
-}; // class RoCEv2Headerq
+}; // class RoCEv2Header
+
+/**
+ * \brief ACK extened transport header
+ */
+class AETHeader : public Header
+{
+public:
+  static TypeId GetTypeId (void);
+  virtual TypeId GetInstanceTypeId (void) const override;
+
+  AETHeader ();
+
+  virtual uint32_t GetSerializedSize (void) const override;
+  virtual void Serialize (Buffer::Iterator start) const override;
+  virtual uint32_t Deserialize (Buffer::Iterator start) override;
+  virtual void Print (std::ostream &os) const override;
+
+  enum SyndromeType {
+    FC_DISABLED = 0b000, // flow control
+    NACK = 0b011
+  };
+
+  SyndromeType GetSyndromeType () const;
+  void SetSyndromeType (SyndromeType t);
+  
+  uint32_t GetMSN () const;
+  void SetMSN (uint32_t msn);
+
+private:
+
+  union {
+    struct {
+      uint8_t syndrome;
+      uint32_t msn : 24;
+    } __attribute__((__packed__));
+    uint32_t u;
+  } m_u;
+
+}; // class AETHeader
 
 } // namespace ns3
 

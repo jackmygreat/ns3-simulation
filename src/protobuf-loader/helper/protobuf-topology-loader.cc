@@ -19,6 +19,7 @@
  */
 
 #include <fstream>
+#include <limits>
 #include <vector>
 #include "ns3/application-container.h"
 #include "ns3/boolean.h"
@@ -184,6 +185,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
       ObjectFactory queueFactory;
       queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId ());
       Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
+      queue->SetMaxSize({QueueSizeUnit::PACKETS, std::numeric_limits<uint32_t>::max ()});
       dev->SetQueue (queue);
     }
 
@@ -206,7 +208,6 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
   const Ptr<DcSwitch> sw = CreateObject<DcSwitch> ();
   // Basic configurations
   sw->SetEcmpSeed (m_ecmpSeed);
-  sw->SetNQueues (queueNum);
 
   // Configure ports
   DcbSwitchStackHelper switchStack;
@@ -347,11 +348,11 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
   appc.Stop (MilliSeconds (4));
 
   // node 1 sender
-  sender = topology->GetNode (1).nodePtr;
-  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
-  appc = appHelper.Install (sender);
-  appc.Start (MilliSeconds (2));
-  appc.Stop (MilliSeconds (4));
+  // sender = topology->GetNode (1).nodePtr;
+  // appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
+  // appc = appHelper.Install (sender);
+  // appc.Start (MilliSeconds (2));
+  // appc.Stop (MilliSeconds (4));
   
 }
 

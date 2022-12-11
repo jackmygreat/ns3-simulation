@@ -147,7 +147,7 @@ private:
   virtual void EnablePcapIpv4Internal (std::string prefix, 
                                        Ptr<Ipv4> ipv4, 
                                        uint32_t interface,
-                                       bool explicitFilename);
+                                       bool explicitFilename) override;
 
   /**
    * @brief Enable ascii trace output on the indicated Ipv4 and interface pair.
@@ -163,7 +163,7 @@ private:
                                         std::string prefix, 
                                         Ptr<Ipv4> ipv4, 
                                         uint32_t interface,
-                                        bool explicitFilename);
+                                        bool explicitFilename) override;
 
   /**
    * @brief Enable pcap output the indicated Ipv6 and interface pair.
@@ -176,7 +176,7 @@ private:
   virtual void EnablePcapIpv6Internal (std::string prefix, 
                                        Ptr<Ipv6> ipv6, 
                                        uint32_t interface,
-                                       bool explicitFilename);
+                                       bool explicitFilename) override;
 
   /**
    * @brief Enable ascii trace output on the indicated Ipv6 and interface pair.
@@ -192,7 +192,7 @@ private:
                                         std::string prefix, 
                                         Ptr<Ipv6> ipv6, 
                                         uint32_t interface,
-                                        bool explicitFilename);
+                                        bool explicitFilename) override;
 
   /**
    * \brief Initialize the helper to its default values

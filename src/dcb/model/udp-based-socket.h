@@ -61,7 +61,7 @@ public:
    * \brief Set the associated UDP L4 protocol.
    * \param udp the UDP L4 protocol
    */
-  void SetUdp (Ptr<UdpBasedL4Protocol> udp);
+  void SetInnerUdpProtocol (Ptr<UdpBasedL4Protocol> udp);
   /**
    * \brief Get last error number.
    *
@@ -346,27 +346,20 @@ public:
   void SetRcvBufSize (uint32_t size);
   uint32_t GetRcvBufSize () const;
 
-private:
+  virtual void FinishSending ();
+
+protected:
 
   /**
-   * \brief Called by the L3 protocol when it received a packet to pass on to TCP.
+   * \brief Called by the UDP-L4-protocol when it received a packet to pass on to inner protocol.
    *
    * \param packet the incoming packet
    * \param header the packet's IPv4 header
    * \param port the remote port
    * \param incomingInterface the incoming interface
    */
-  void ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port, Ptr<Ipv4Interface> incomingInterface);
+  virtual void ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port, Ptr<Ipv4Interface> incomingInterface);
 
-  /**
-   * \brief Kill this socket by zeroing its attributes (IPv4)
-   *
-   * This is a callback function configured to m_endpoint in
-   * SetupCallback(), invoked when the endpoint is destroyed.
-   */
-  void Destroy (void);
-
-protected:
 
   /**
    * \brief Send a packet
@@ -375,14 +368,7 @@ protected:
    */
   virtual int DoSend (Ptr<Packet> p);
 
-  /**
-   * \brief Send a packet to a specific destination and port INNER_PROTO_NUM (IPv4)
-   * \param p packet
-   * \param daddr destination address
-   * \param tos ToS
-   * \returns 0 on success, -1 on failure
-   */
-  int DoSendTo (Ptr<Packet> p, Ipv4Address daddr, uint8_t tos); 
+  virtual void DoSendTo (Ptr<Packet> p, Ipv4Address daddr, Ptr<Ipv4Route> route); 
   
   Ptr<Node>           m_node;       //!< the associated node
   Ptr<UdpBasedL4Protocol>  m_innerProto;         //!< the associated UDP L4 protocol
@@ -392,6 +378,14 @@ protected:
   TracedCallback<Ptr<const Packet> > m_dropTrace; //!< Trace for dropped packets
   
 private:
+
+    /**
+   * \brief Kill this socket by zeroing its attributes (IPv4)
+   *
+   * This is a callback function configured to m_endpoint in
+   * SetupCallback(), invoked when the endpoint is destroyed.
+   */
+  void Destroy (void);
 
   Address             m_defaultAddress; //!< Default address
   bool                m_shutdownSend;   //!< Send no longer allowed

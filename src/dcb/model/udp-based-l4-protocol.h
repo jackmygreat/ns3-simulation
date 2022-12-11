@@ -110,8 +110,8 @@ protected:
    * \brief Logic before sending packet to UDP.
    * For example, adding packet header.
    */
-  virtual void PreSend (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address daddr,
-                        uint32_t sport, uint32_t dport, Ptr<Ipv4Route> route) = 0;
+  // virtual void PreSend (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address daddr,
+  // uint32_t sport, uint32_t dport, Ptr<Ipv4Route> route) = 0;
 
   /**
    * \brief Called by the L3 protocol when it received a packet to pass on to UDP. 
@@ -202,13 +202,13 @@ public:
    */
   bool LookupPortLocal (uint32_t port);
 
-private:
-
   /**
    * \brief Allocate an ephemeral port.
    * \returns the ephemeral port
    */
   uint32_t AllocateEphemeralPort (void);
+
+private:
 
   std::map<uint32_t, InnerEndPoint *> m_endPoints;
 

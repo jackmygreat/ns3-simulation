@@ -61,7 +61,7 @@ UdpBasedL4Protocol::CreateSocket ()
   NS_LOG_FUNCTION (this);
   Ptr<UdpBasedSocket> socket = CreateObject<UdpBasedSocket> ();
   socket->SetNode (m_node);
-  socket->SetUdp (this);
+  socket->SetInnerUdpProtocol (this);
   m_sockets.emplace_back (socket);
   return socket;
 }
@@ -148,11 +148,9 @@ UdpBasedL4Protocol::Send (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address dad
                           uint32_t dport, Ptr<Ipv4Route> route)
 {
   NS_LOG_FUNCTION (this << packet << saddr << daddr << sport << dport << route);
-
-  PreSend (packet, saddr, daddr, sport, dport, route);
   m_udp->Send (packet, saddr, daddr, GetProtocolNumber(), GetProtocolNumber(), route);
 }
-
+ 
 void
 UdpBasedL4Protocol::DeAllocate (InnerEndPoint *endPoint)
 {
@@ -258,6 +256,10 @@ InnerEndPointDemux::Allocate (uint32_t dport)
 InnerEndPoint *
 InnerEndPointDemux::Allocate (uint32_t sport, uint32_t dport)
 {
+  if (m_endPoints.find(sport) != m_endPoints.end())
+    {
+      NS_FATAL_ERROR ("Inner port " << sport << " has already been allocated.");
+    }
   InnerEndPoint *endPoint = new InnerEndPoint (sport, dport);
   m_endPoints.emplace (sport, endPoint);
   NS_LOG_DEBUG ("Now have " << m_endPoints.size () << " endpoints.");

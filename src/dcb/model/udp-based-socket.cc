@@ -73,7 +73,7 @@ UdpBasedSocket::~UdpBasedSocket ()
 }
 
 void
-UdpBasedSocket::SetUdp (Ptr<UdpBasedL4Protocol> udp)
+UdpBasedSocket::SetInnerUdpProtocol (Ptr<UdpBasedL4Protocol> udp)
 {
   NS_LOG_FUNCTION (this << udp);
   m_innerProto = udp;
@@ -257,98 +257,94 @@ UdpBasedSocket::DoSend (Ptr<Packet> p)
     }
   if (Ipv4Address::IsMatchingType (m_defaultAddress))
     {
-      return DoSendTo (p, Ipv4Address::ConvertFrom (m_defaultAddress), GetIpTos ());
+      if (p->GetSize () > GetTxAvailable ())
+        {
+          m_errno = ERROR_MSGSIZE;
+          return -1;
+        }
+      uint8_t tos = GetIpTos ();
+      uint8_t priority = GetPriority ();
+      if (tos)
+        {
+          SocketIpTosTag ipTosTag;
+          ipTosTag.SetTos (tos);
+          // This packet may already have a SocketIpTosTag (see BUG 2440)
+          p->ReplacePacketTag (ipTosTag);
+          priority = IpTos2Priority (tos);
+        }
+
+      if (priority)
+        {
+          SocketPriorityTag priorityTag;
+          priorityTag.SetPriority (priority);
+          p->ReplacePacketTag (priorityTag);
+        }
+      Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4> ();
+      // Not supporting:
+      //   1. multicast
+      //   2. manually set TTL
+      //   3. specifying don't fragment
+      //   4. broadcast
+      if (ipv4->GetRoutingProtocol () != 0)
+        {
+          Ipv4Address daddr = Ipv4Address::ConvertFrom (m_defaultAddress);
+          Ipv4Header header;
+          header.SetDestination (daddr);
+          header.SetProtocol (UdpL4Protocol::PROT_NUMBER);
+          Socket::SocketErrno errno_;
+          Ptr<Ipv4Route> route;
+          Ptr<NetDevice> oif = m_boundnetdevice; //specify non-zero if bound to a specific device
+          // TBD-- we could cache the route and just check its validity
+          route = ipv4->GetRoutingProtocol ()->RouteOutput (p, header, oif, errno_);
+          if (route != 0)
+            {
+              NS_LOG_LOGIC ("Route exists");
+
+              // Here we try to route subnet-directed broadcasts
+              uint32_t outputIfIndex = ipv4->GetInterfaceForDevice (route->GetOutputDevice ());
+              uint32_t ifNAddr = ipv4->GetNAddresses (outputIfIndex);
+              for (uint32_t addrI = 0; addrI < ifNAddr; ++addrI)
+                {
+                  Ipv4InterfaceAddress ifAddr = ipv4->GetAddress (outputIfIndex, addrI);
+                  if (daddr == ifAddr.GetBroadcast ())
+                    {
+                      m_errno = ERROR_OPNOTSUPP;
+                      return -1;
+                    }
+                }
+              DoSendTo (p, daddr, route);
+              NotifyDataSent (p->GetSize ());
+              return p->GetSize ();
+            }
+          else
+            {
+              NS_LOG_LOGIC ("No route to destination");
+              NS_LOG_ERROR (errno_);
+              m_errno = errno_;
+              return -1;
+            }
+        }
+      else
+        {
+          NS_LOG_ERROR ("ERROR_NOROUTETOHOST");
+          m_errno = ERROR_NOROUTETOHOST;
+          return -1;
+        }
+      return 0;
     }
 
   m_errno = ERROR_AFNOSUPPORT;
   return -1;
 }
 
-int
-UdpBasedSocket::DoSendTo (Ptr<Packet> p, Ipv4Address daddr, uint8_t tos)
+void
+UdpBasedSocket::DoSendTo (Ptr<Packet> p, Ipv4Address daddr, Ptr<Ipv4Route> route)
 {
-  NS_LOG_FUNCTION (this << p << daddr << static_cast<uint16_t> (tos));
-  if (m_boundnetdevice)
-    {
-      NS_LOG_LOGIC ("Bound interface number " << m_boundnetdevice->GetIfIndex ());
-    }
-  if (p->GetSize () > GetTxAvailable ())
-    {
-      m_errno = ERROR_MSGSIZE;
-      return -1;
-    }
-  uint8_t priority = GetPriority ();
-  if (tos)
-    {
-      SocketIpTosTag ipTosTag;
-      ipTosTag.SetTos (tos);
-      // This packet may already have a SocketIpTosTag (see BUG 2440)
-      p->ReplacePacketTag (ipTosTag);
-      priority = IpTos2Priority (tos);
-    }
+  NS_LOG_FUNCTION (this << p << daddr);
 
-  if (priority)
-    {
-      SocketPriorityTag priorityTag;
-      priorityTag.SetPriority (priority);
-      p->ReplacePacketTag (priorityTag);
-    }
-
-  Ptr<Ipv4> ipv4 = m_node->GetObject<Ipv4> ();
-  // Not supporting:
-  //   1. multicast
-  //   2. manually set TTL
-  //   3. specifying don't fragment
-  //   4. broadcast
-  if (ipv4->GetRoutingProtocol () != 0)
-    {
-      Ipv4Header header;
-      header.SetDestination (daddr);
-      header.SetProtocol (UdpL4Protocol::PROT_NUMBER);
-      Socket::SocketErrno errno_;
-      Ptr<Ipv4Route> route;
-      Ptr<NetDevice> oif = m_boundnetdevice; //specify non-zero if bound to a specific device
-      // TBD-- we could cache the route and just check its validity
-      route = ipv4->GetRoutingProtocol ()->RouteOutput (p, header, oif, errno_);
-      if (route != 0)
-        {
-          NS_LOG_LOGIC ("Route exists");
-
-          // Here we try to route subnet-directed broadcasts
-          uint32_t outputIfIndex = ipv4->GetInterfaceForDevice (route->GetOutputDevice ());
-          uint32_t ifNAddr = ipv4->GetNAddresses (outputIfIndex);
-          for (uint32_t addrI = 0; addrI < ifNAddr; ++addrI)
-            {
-              Ipv4InterfaceAddress ifAddr = ipv4->GetAddress (outputIfIndex, addrI);
-              if (daddr == ifAddr.GetBroadcast ())
-                {
-                  m_errno = ERROR_OPNOTSUPP;
-                  return -1;
-                }
-            }
-
-          header.SetSource (route->GetSource ());
-          m_innerProto->Send (p->Copy (), header.GetSource (), header.GetDestination (),
-                              m_endPoint->GetLocalPort (), m_endPoint->GetPeerPort (),
-                              route);
-          NotifyDataSent (p->GetSize ());
-          return p->GetSize ();
-        }
-      else
-        {
-          NS_LOG_LOGIC ("No route to destination");
-          NS_LOG_ERROR (errno_);
-          m_errno = errno_;
-          return -1;
-        }
-    }
-  else
-    {
-      NS_LOG_ERROR ("ERROR_NOROUTETOHOST");
-      m_errno = ERROR_NOROUTETOHOST;
-      return -1;
-    }
-  return 0;
+  m_innerProto->Send (p->Copy (), route->GetSource (), daddr,
+                      m_endPoint->GetLocalPort (), m_endPoint->GetPeerPort (),
+                      route);
 }
 
 int
@@ -380,7 +376,7 @@ UdpBasedSocket::Recv (uint32_t maxSize, uint32_t flags)
 Ptr<Packet>
 UdpBasedSocket::RecvFrom (uint32_t maxSize, uint32_t flags, Address &fromAddress)
 {
-  NS_LOG_FUNCTION (this << maxSize << flags);
+  NS_LOG_FUNCTION (this << maxSize << flags << fromAddress);
 
   Ptr<Packet> p = m_deliveryQueue.front ().first;
   fromAddress = m_deliveryQueue.front ().second;
@@ -507,6 +503,12 @@ UdpBasedSocket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
       NS_LOG_WARN ("No receive buffer space available.  Drop.");
       m_dropTrace (packet);
     }
+}
+
+void
+UdpBasedSocket::FinishSending ()
+{
+  NS_LOG_FUNCTION (this);
 }
 
 void

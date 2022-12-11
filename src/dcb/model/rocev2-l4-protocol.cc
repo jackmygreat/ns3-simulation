@@ -18,15 +18,14 @@
  * Author: Pavinberg <pavin0702@gmail.com>
  */
 
+#include "ns3/simulator.h"
 #include "ns3/nstime.h"
 #include "ns3/node.h"
 #include "ns3/type-id.h"
+#include "ns3/log.h"
 #include "ns3/ipv4-end-point.h"
 #include "ns3/rocev2-header.h"
-#include "ns3/simulator.h"
-#include "ns3/log.h"
-#include "udp-based-l4-protocol.h"
-#include "udp-based-socket.h"
+#include "rocev2-socket.h"
 #include "rocev2-l4-protocol.h"
 
 namespace ns3 {
@@ -47,10 +46,12 @@ RoCEv2L4Protocol::GetTypeId (void)
 
 RoCEv2L4Protocol::RoCEv2L4Protocol ()
 {
-  NS_LOG_FUNCTION (this);
-  m_innerEndPoints = new InnerEndPointDemux (0x100, 0xfffff);
-  InnerEndPoint *endPoint =  m_innerEndPoints->Allocate (GetDefaultServicePort(), 0); // as a receive service
-  endPoint->SetRxCallback (MakeCallback (&RoCEv2L4Protocol::ServerReceive, this));
+  NS_LOG_FUNCTION (this);  
+  m_innerEndPoints = new InnerEndPointDemux (0x100, 0x7fffff);
+  
+  // InnerEndPoint *endPoint =
+  //     m_innerEndPoints->Allocate (GetDefaultServicePort (), 0); // as a receive service
+  // endPoint->SetRxCallback (MakeCallback (&RoCEv2L4Protocol::ServerReceive, this));
 }
 
 RoCEv2L4Protocol::~RoCEv2L4Protocol ()
@@ -62,9 +63,9 @@ Ptr<Socket>
 RoCEv2L4Protocol::CreateSocket ()
 {
   NS_LOG_FUNCTION (this);
-  Ptr<UdpBasedSocket> socket = CreateObject<UdpBasedSocket> ();
+  Ptr<RoCEv2Socket> socket = CreateObject<RoCEv2Socket> ();
   socket->SetNode (m_node);
-  socket->SetUdp (this);
+  socket->SetInnerUdpProtocol (this);
   m_sockets.emplace_back (socket);
   return socket;
 }
@@ -83,18 +84,6 @@ RoCEv2L4Protocol::FinishSetup (Ipv4EndPoint *const udpEndPoint)
     {
       NS_FATAL_ERROR ("No UDP endpoint allocated to me.");
     }
-}
-
-void
-RoCEv2L4Protocol::PreSend (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address daddr, uint32_t srcQP,
-                           uint32_t destQP, Ptr<Ipv4Route> route)
-{
-  NS_LOG_FUNCTION (this << packet << saddr << daddr << srcQP << destQP);
-
-  RoCEv2Header rocev2Header;
-  rocev2Header.SetOpCode (RoCEv2Header::Opcode::UD_SEND_ONLY);
-  rocev2Header.SetDestQP (destQP);
-  packet->AddHeader (rocev2Header);
 }
 
 uint16_t
@@ -128,10 +117,31 @@ RoCEv2L4Protocol::GetDefaultServicePort () const
   return DEFAULT_DST_QP;
 }
 
+uint32_t
+RoCEv2L4Protocol::DefaultServicePort ()
+{
+  return DEFAULT_DST_QP;
+}
+
+// InnerEndPoint *
+// RoCEv2L4Protocol::Allocate ()
+// {
+//   uint32_t sport = m_innerEndPoints->AllocateEphemeralPort();
+//   uint32_t dport = sport + ;
+// }
+
 InnerEndPoint *
 RoCEv2L4Protocol::Allocate (uint32_t dstPort)
 {
+  NS_LOG_FUNCTION (this << dstPort);
   return m_innerEndPoints->Allocate (dstPort);
+}
+
+InnerEndPoint *
+RoCEv2L4Protocol::Allocate (uint32_t srcPort, uint32_t dstPort)
+{
+  NS_LOG_FUNCTION (this << srcPort << dstPort);
+  return m_innerEndPoints->Allocate (srcPort, dstPort);
 }
 
 uint32_t
@@ -141,28 +151,85 @@ RoCEv2L4Protocol::ParseInnerPort (Ptr<Packet> packet, Ipv4Header header, uint16_
   NS_LOG_FUNCTION (this << packet);
   RoCEv2Header rocev2Header;
   packet->PeekHeader (rocev2Header);
-  return rocev2Header.GetDestQP ();
+  uint32_t dport = rocev2Header.GetDestQP ();
+  // store QP in mapper for later use
+  if (m_qpMapper.find(dport) == m_qpMapper.end())
+    {
+      uint32_t sport = rocev2Header.GetSrcQP ();
+      m_qpMapper.emplace (dport, sport);
+    }
+  return dport;
 }
 
-void
-RoCEv2L4Protocol::ServerReceive (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
-                                 Ptr<Ipv4Interface> incommingInterface)
-{
-  NS_LOG_FUNCTION (this << packet);
+// void
+// RoCEv2L4Protocol::ServerReceive (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
+//                                  Ptr<Ipv4Interface> incommingInterface)
+// {
+//   NS_LOG_FUNCTION (this << packet);
 
-  RoCEv2Header rocev2Header;
-  packet->RemoveHeader (rocev2Header);
-  RoCEv2Header::Opcode opcode = rocev2Header.GetOpCode ();
-  switch (opcode)
-    {
-    case RoCEv2Header::Opcode::RC_SEND_ONLY:
-      [[fallthrough]];
-    case RoCEv2Header::Opcode::UD_SEND_ONLY:
-      NS_LOG_INFO ("At time " << Simulator::Now ().As (Time::S) << " RoCEv2 server received " << packet->GetSize () << " bytes from " << header.GetSource());
-      break;
-    case RoCEv2Header::Opcode::CNP:
-      break;
-    }
+//   RoCEv2Header rocev2Header;
+//   packet->RemoveHeader (rocev2Header);
+//   RoCEv2Header::Opcode opcode = rocev2Header.GetOpcode ();
+//   switch (opcode)
+//     {
+//     case RoCEv2Header::Opcode::RC_SEND_ONLY:
+//       [[fallthrough]];
+//     case RoCEv2Header::Opcode::UD_SEND_ONLY:
+//       NS_LOG_INFO ("At time " << Simulator::Now ().As (Time::S) << " RoCEv2 server "
+//                               << header.GetDestination () << " received " << packet->GetSize ()
+//                               << " bytes from " << header.GetSource () << " with a "
+//                               << rocev2Header);
+//       break;
+//     case RoCEv2Header::Opcode::CNP:
+//       break;
+//     }
+// }
+
+// static
+Ptr<Packet>
+RoCEv2L4Protocol::GenerateCNP (uint32_t srcQP, uint32_t dstQP)
+{
+  RoCEv2Header header{};
+  header.SetOpcode (RoCEv2Header::Opcode::CNP);
+  header.SetDestQP (dstQP);
+  header.SetSrcQP (srcQP);
+  Ptr<Packet> packet = Create<Packet> (16); // 16 bytes reserved
+  packet->AddHeader (header);
+  return packet;
+}
+
+// static
+Ptr<Packet>
+RoCEv2L4Protocol::GenerateACK (uint32_t srcQP, uint32_t dstQP, uint32_t expectedPSN)
+{
+  RoCEv2Header rocev2Header{};
+  rocev2Header.SetOpcode (RoCEv2Header::Opcode::RC_ACK);
+  rocev2Header.SetDestQP(dstQP);
+  rocev2Header.SetSrcQP(srcQP);
+  rocev2Header.SetPSN (expectedPSN);
+  AETHeader aeth;
+  aeth.SetSyndromeType (AETHeader::SyndromeType::FC_DISABLED); // TODO: support flow control
+  Ptr<Packet> packet = Create<Packet> (12);
+  packet->AddHeader (aeth);
+  packet->AddHeader(rocev2Header);
+  return packet;
+}
+
+// statis  
+Ptr<Packet>
+RoCEv2L4Protocol::GenerateNACK (uint32_t srcQP, uint32_t dstQP, uint32_t expectedPSN)
+{
+  RoCEv2Header rocev2Header{};
+  rocev2Header.SetOpcode (RoCEv2Header::Opcode::RC_ACK);
+  rocev2Header.SetDestQP(dstQP);
+  rocev2Header.SetSrcQP(srcQP);
+  rocev2Header.SetPSN (expectedPSN);
+  AETHeader aeth;
+  aeth.SetSyndromeType (AETHeader::SyndromeType::NACK);
+  Ptr<Packet> packet = Create<Packet> (12);
+  packet->AddHeader (aeth);
+  packet->AddHeader(rocev2Header);
+  return packet;
 }
 
 } // namespace ns3

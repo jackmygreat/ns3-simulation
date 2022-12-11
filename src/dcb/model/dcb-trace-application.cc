@@ -19,6 +19,8 @@
  */
 
 #include "dcb-net-device.h"
+#include "rocev2-l4-protocol.h"
+#include "rocev2-socket.h"
 #include "ns3/integer.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/ptr.h"
@@ -31,10 +33,10 @@
 #include "ns3/socket.h"
 #include "ns3/type-id.h"
 #include "ns3/udp-l4-protocol.h"
+#include "udp-based-socket.h"
 #include "ns3/udp-socket-factory.h"
 #include "ns3/packet-socket-address.h"
-#include "rocev2-l4-protocol.h"
-#include "udp-based-socket.h"
+#include "ns3/tracer-extension.h"
 #include <cmath>
 
 namespace ns3 {
@@ -60,6 +62,7 @@ TraceApplication::GetTypeId ()
 
 TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex)
     : m_enableSend (true),
+      m_enableReceive (true),
       m_topology (topology),
       m_nodeIndex (nodeIndex),
       m_randomDestination (true),
@@ -146,9 +149,16 @@ TraceApplication::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
 
-  // If we are not yet connected, there is nothing to do here
-  // The ConnectionComplete upcall will start timers at that time
-  //if (!m_connected) return;
+  if (m_enableReceive)
+    { // crate a special socket to act as the receiver
+      Ptr<RoCEv2Socket> socket =
+          DynamicCast<RoCEv2Socket> (Socket::CreateSocket (GetNode (), UdpBasedSocketFactory::GetTypeId ()));
+      socket->BindToNetDevice (GetNode ()->GetDevice (0));
+      socket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
+      socket->ShutdownSend ();
+      socket->SetStopTime (m_stopTime);
+    }
+
   if (m_enableSend)
     {
       for (Time t = Simulator::Now () + GetNextFlowArriveInterval (); t < m_stopTime;
@@ -196,6 +206,7 @@ TraceApplication::CreateNewSocket ()
   Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_tid);
   socket->BindToNetDevice (GetNode ()->GetDevice (0));
   int ret = socket->Bind ();
+  TracerExtension::RegisterTraceFCT (socket);
   if (ret == -1)
     {
       NS_FATAL_ERROR ("Failed to bind socket");
@@ -218,7 +229,6 @@ void
 TraceApplication::ScheduleNextFlow (const Time &startTime)
 {
   Ptr<Socket> socket = CreateNewSocket ();
-
   uint64_t size = GetNextFlowSize ();
 
   Flow *flow = new Flow (size, startTime, socket);
@@ -247,15 +257,20 @@ TraceApplication::SendNextPacket (Flow *flow)
             }
           else
             {
-              // flow completes
+              // flow sending completes
+              Ptr<UdpBasedSocket> udpSock = DynamicCast<UdpBasedSocket> (flow->socket);
+              if (udpSock)
+                {
+                  udpSock->FinishSending ();
+                }
               // TODO: do some trace here
               // ...
             }
         }
       // m_flows.erase (flow);
-      flow->Dispose ();
+      // flow->Dispose ();
       // Dispose will delete the struct leading to flow a dangling pointer.
-      flow = nullptr;
+      // flow = nullptr;
     }
   else
     {
@@ -339,6 +354,12 @@ void
 TraceApplication::SetSendEnabled (bool enabled)
 {
   m_enableSend = enabled;
+}
+
+void
+TraceApplication::SetReceiveEnabled (bool enabled)
+{
+  m_enableReceive = enabled;
 }
 
 } // namespace ns3

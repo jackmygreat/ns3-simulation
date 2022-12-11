@@ -22,6 +22,7 @@
 #define ROCEV2_L4_PROTOCOL_H
 
 #include "udp-based-l4-protocol.h"
+#include <map>
 
 namespace ns3 {
 
@@ -41,7 +42,10 @@ public:
   RoCEv2L4Protocol ();
   virtual ~RoCEv2L4Protocol ();
 
+  // virtual InnerEndPoint *Allocate () override;
+  using UdpBasedL4Protocol::Allocate;
   virtual InnerEndPoint *Allocate (uint32_t dstPort) override;
+  InnerEndPoint *Allocate (uint32_t srcPort, uint32_t dstPort);
 
   virtual uint16_t GetProtocolNumber (void) const override;
 
@@ -50,21 +54,29 @@ public:
   virtual uint32_t GetHeaderSize () const override;
 
   virtual uint32_t GetDefaultServicePort () const override;
+  static uint32_t DefaultServicePort ();
 
   virtual Ptr<Socket> CreateSocket () override;
 
-protected:
-  void ServerReceive (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
-                      Ptr<Ipv4Interface> incommingInterface);
+  static Ptr<Packet> GenerateCNP (uint32_t srcQP, uint32_t dstQP);
+  static Ptr<Packet> GenerateACK (uint32_t srcQP, uint32_t dstQP, uint32_t expectedPSN);
+  static Ptr<Packet> GenerateNACK (uint32_t srcQP, uint32_t dstQP, uint32_t expectedPSN);
+
+  // protected:
+  // void ServerReceive (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
+  //                     Ptr<Ipv4Interface> incommingInterface);
 
 private:
+
   virtual void FinishSetup (Ipv4EndPoint *const udpEndPoint) override;
 
-  virtual void PreSend (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address daddr, uint32_t srcQP,
-                        uint32_t destQP, Ptr<Ipv4Route> route) override;
+  // virtual void PreSend (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address daddr, uint32_t srcQP,
+  //                       uint32_t destQP, Ptr<Ipv4Route> route) override;
 
   virtual uint32_t ParseInnerPort (Ptr<Packet> packet, Ipv4Header header, uint16_t port,
                                    Ptr<Ipv4Interface> incomingIntf) override;
+
+  std::map<uint32_t, uint32_t> m_qpMapper; //!< map destQP to stcQP
 
 }; // class RoCEv2L4Protocol
 

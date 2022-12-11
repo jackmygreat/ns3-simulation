@@ -69,11 +69,4 @@ DcSwitch::SetEcmpSeed (uint32_t seed)
   m_seed = seed;
 }
 
-void
-DcSwitch::SetNQueues (uint32_t nQueues)
-{
-  NS_LOG_FUNCTION (nQueues);
-  m_nQueues = nQueues;
-}
-
 } // namespace ns3
