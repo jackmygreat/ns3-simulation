@@ -11,7 +11,7 @@ host1                host3
 from topology_helper import TopologyGenerator
 
 globalConfig = {
-    "randomSeed": 0
+    "randomSeed": 0, 
 }
 
 hostPortConfig = {
@@ -55,7 +55,6 @@ switchPortQueueConfig2 = {
 # Configuration of the switch port that connects to host
 switchPortConfig1 = {
     "pfcEnabled": False,
-    "pfcPassThrough": False,
     "ecnEnabled": True,
     "queues": [switchPortQueueConfig1] * 2
 }
@@ -63,7 +62,6 @@ switchPortConfig1 = {
 # Configuration of the switch port that connects to switch
 switchPortConfig2 = {
     "pfcEnabled": True,
-    "pfcPassThrough": False,
     "ecnEnabled": True,
     "queues": [switchPortQueueConfig2] * 2
 }
@@ -87,6 +85,24 @@ linkConfig1 = {
 linkConfig2 = {
     "rate": "100 Gbps",
     "delay": "6 us",
+}
+
+senderConfig = {
+    "nodeIndices": [0],
+    "protocolGroup": "RoCEv2",
+    "cdf": "WebSearch",
+    "load": 1.0,
+    "startTime": 2000,
+    "stopTime": 4000,
+}
+
+receiverConfig = {
+    "nodeIndices": [3],
+    "protocolGroup": "RoCEv2",
+    "cdf": "WebSearch",
+    "load": 0.0,
+    "startTime": 1000,
+    "stopTime": 6000,
 }
 
 with TopologyGenerator() as topo:
@@ -113,3 +129,7 @@ with TopologyGenerator() as topo:
                             one=switch1, nPorts=[0, 1], **linkConfig1)
     topo.links.connectOne2One(node1=switch0, port1=2,
                               node2=switch1, port2=2, **linkConfig2)
+
+    topo.applications.installApplication(senderConfig)
+    topo.applications.installApplication(receiverConfig)
+    

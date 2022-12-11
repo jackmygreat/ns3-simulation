@@ -107,6 +107,18 @@ DcTopology::GetInterfaceOfNode (const uint32_t nodei, uint32_t intfi) const
   return std::move (ipv4->GetAddress (intfi, 0)); // TODO: just return the first address for now
 }
 
+bool
+DcTopology::IsHost (const uint32_t index) const
+{
+  return GetNode (index).type == TopoNode::NodeType::HOST;
+}
+
+bool
+DcTopology::IsSwitch (const uint32_t index) const
+{
+  return GetNode (index).type == TopoNode::NodeType::SWITCH;
+}
+
 const Ptr<UniformRandomVariable>
 DcTopology::CreateRamdomHostChooser () const
 {

@@ -78,6 +78,9 @@ public:
 
   const Ipv4InterfaceAddress GetInterfaceOfNode(const uint32_t nodei, uint32_t intfi) const;
 
+  bool IsHost (const uint32_t index) const;
+  bool IsSwitch (const uint32_t index) const;
+
   /**
    * \brief Create a configured host index random number generator.
    * Used by applications to find a random destination.

@@ -44,7 +44,6 @@
 #include "ns3/dcb-pfc-port.h"
 #include "ns3/dcb-switch-stack-helper.h"
 #include "ns3/dcb-trace-application.h"
-#include "ns3/dcb-trace-application-helper.h"
 #include "ns3/dcb-fc-helper.h"
 
 /**
@@ -94,7 +93,7 @@ ProtobufTopologyLoader::LoadTopology ()
   LoadLinks (topoConfig.links (), topology);
   InitGlobalRouting ();
 
-  InstallApplications (topology);
+  InstallApplications (topoConfig.applications (), topology);
 
   return topology;
 }
@@ -185,7 +184,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
       ObjectFactory queueFactory;
       queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId ());
       Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
-      queue->SetMaxSize({QueueSizeUnit::PACKETS, std::numeric_limits<uint32_t>::max ()});
+      queue->SetMaxSize ({QueueSizeUnit::PACKETS, std::numeric_limits<uint32_t>::max ()});
       dev->SetQueue (queue);
     }
 
@@ -311,15 +310,61 @@ ProtobufTopologyLoader::InitGlobalRouting ()
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 }
 
+std::map<std::string, TraceApplicationHelper::ProtocolGroup>
+    ProtobufTopologyLoader::protocolGroupMapper = {
+        {"RAW_UDP", TraceApplicationHelper::ProtocolGroup::RAW_UDP},
+        {"TCP", TraceApplicationHelper::ProtocolGroup::TCP},
+        {"RoCEv2", TraceApplicationHelper::ProtocolGroup::RoCEv2},
+};
+
+std::map<std::string, TraceApplication::TraceCdf* > ProtobufTopologyLoader::appCdfMapper = {
+  {"WebSearch", &TraceApplication::TRACE_WEBSEARCH_CDF},
+  {"FdHadoop", &TraceApplication::TRACE_FDHADOOP_CDF}
+};
+
 void
-ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
+ProtobufTopologyLoader::InstallApplications (
+    const google::protobuf::RepeatedPtrField<ns3_proto::Application> &appsConfig,
+    Ptr<DcTopology> topology)
 {
   NS_LOG_FUNCTION (this);
 
-  // node 0 and node 1 to node 3
   TraceApplicationHelper appHelper (topology);
-  appHelper.SetProtocolGroup (TraceApplicationHelper::ProtocolGroup::RoCEv2);
-  appHelper.SetCdf (TraceApplication::TRACE_WEBSEARCH_CDF);
+  for (const auto& appConfig: appsConfig)
+    {
+      { // set protocol group
+        auto p = protocolGroupMapper.find (appConfig.protocolgroup());
+        if (p == protocolGroupMapper.end ())
+          {
+            NS_FATAL_ERROR ("Cannot recognize protocol group \"" << appConfig.protocolgroup () << "\"");
+          }
+        appHelper.SetProtocolGroup (p->second);
+      }
+      
+      { // set CDF
+        auto p = appCdfMapper.find (appConfig.cdf ());
+        if (p == appCdfMapper.end ())
+          {
+            NS_FATAL_ERROR ("Cannot recognize CDF \"" << appConfig.cdf () << "\".");
+          }
+        appHelper.SetCdf(*(p->second));
+      }
+      
+      for (const auto& nodeI: appConfig.nodeindices())
+        {
+          if (!topology->IsHost (nodeI))
+            {
+              NS_FATAL_ERROR ("Node " << nodeI << " is not a host and thus could not install an application.");
+            }
+          Ptr<Node> node = topology->GetNode (nodeI).nodePtr;
+          appHelper.SetLoad (DynamicCast<DcbNetDevice> (node->GetDevice (0)), appConfig.load ());
+          ApplicationContainer app = appHelper.Install (node);
+          app.Start (MicroSeconds (appConfig.starttime()));
+          app.Stop (MicroSeconds (appConfig.stoptime ()));
+        }
+    }
+
+  // node 0 and node 1 to node 3
 
   // UdpEchoServerHelper echoServer (1234); // TODO: dynamic port
   // DcTopology::HostIterator it = topology->hosts_begin ();
@@ -332,20 +377,20 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
   //   }
 
   // node 3 receiver
-  Ptr<Node> receiver = topology->GetNode (3).nodePtr;
-  appHelper.SetLoad (DynamicCast<DcbNetDevice> (receiver->GetDevice (0)), 0.);
-  ApplicationContainer apps = appHelper.Install (receiver);
-  apps.Start (MilliSeconds (1));
-  apps.Stop (MilliSeconds (6));
+  // Ptr<Node> receiver = topology->GetNode (3).nodePtr;
+  // appHelper.SetLoad (DynamicCast<DcbNetDevice> (receiver->GetDevice (0)), 0.);
+  // ApplicationContainer apps = appHelper.Install (receiver);
+  // apps.Start (MilliSeconds (1));
+  // apps.Stop (MilliSeconds (6));
 
-  appHelper.SetDestination (3);
+  // appHelper.SetDestination (3);
 
   // node 0 sender
-  Ptr<Node> sender = topology->GetNode (0).nodePtr;
-  appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
-  ApplicationContainer appc = appHelper.Install (sender);
-  appc.Start (MilliSeconds (2));
-  appc.Stop (MilliSeconds (4));
+  // Ptr<Node> sender = topology->GetNode (0).nodePtr;
+  // appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
+  // ApplicationContainer appc = appHelper.Install (sender);
+  // appc.Start (MilliSeconds (2));
+  // appc.Stop (MilliSeconds (4));
 
   // node 1 sender
   // sender = topology->GetNode (1).nodePtr;
@@ -353,7 +398,6 @@ ProtobufTopologyLoader::InstallApplications (Ptr<DcTopology> topology)
   // appc = appHelper.Install (sender);
   // appc.Start (MilliSeconds (2));
   // appc.Stop (MilliSeconds (4));
-  
 }
 
 void

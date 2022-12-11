@@ -48,6 +48,9 @@ namespace ns3_proto {
 class AllNodes;
 struct AllNodesDefaultTypeInternal;
 extern AllNodesDefaultTypeInternal _AllNodes_default_instance_;
+class Application;
+struct ApplicationDefaultTypeInternal;
+extern ApplicationDefaultTypeInternal _Application_default_instance_;
 class GlobalConfig;
 struct GlobalConfigDefaultTypeInternal;
 extern GlobalConfigDefaultTypeInternal _GlobalConfig_default_instance_;
@@ -66,9 +69,6 @@ extern PortQueueConfigDefaultTypeInternal _PortQueueConfig_default_instance_;
 class SwitchGroup;
 struct SwitchGroupDefaultTypeInternal;
 extern SwitchGroupDefaultTypeInternal _SwitchGroup_default_instance_;
-class SwitchMmuConfig;
-struct SwitchMmuConfigDefaultTypeInternal;
-extern SwitchMmuConfigDefaultTypeInternal _SwitchMmuConfig_default_instance_;
 class SwitchPortConfig;
 struct SwitchPortConfigDefaultTypeInternal;
 extern SwitchPortConfigDefaultTypeInternal _SwitchPortConfig_default_instance_;
@@ -78,13 +78,13 @@ extern TopologyDefaultTypeInternal _Topology_default_instance_;
 }  // namespace ns3_proto
 PROTOBUF_NAMESPACE_OPEN
 template<> ::ns3_proto::AllNodes* Arena::CreateMaybeMessage<::ns3_proto::AllNodes>(Arena*);
+template<> ::ns3_proto::Application* Arena::CreateMaybeMessage<::ns3_proto::Application>(Arena*);
 template<> ::ns3_proto::GlobalConfig* Arena::CreateMaybeMessage<::ns3_proto::GlobalConfig>(Arena*);
 template<> ::ns3_proto::HostGroup* Arena::CreateMaybeMessage<::ns3_proto::HostGroup>(Arena*);
 template<> ::ns3_proto::HostPortConfig* Arena::CreateMaybeMessage<::ns3_proto::HostPortConfig>(Arena*);
 template<> ::ns3_proto::Link* Arena::CreateMaybeMessage<::ns3_proto::Link>(Arena*);
 template<> ::ns3_proto::PortQueueConfig* Arena::CreateMaybeMessage<::ns3_proto::PortQueueConfig>(Arena*);
 template<> ::ns3_proto::SwitchGroup* Arena::CreateMaybeMessage<::ns3_proto::SwitchGroup>(Arena*);
-template<> ::ns3_proto::SwitchMmuConfig* Arena::CreateMaybeMessage<::ns3_proto::SwitchMmuConfig>(Arena*);
 template<> ::ns3_proto::SwitchPortConfig* Arena::CreateMaybeMessage<::ns3_proto::SwitchPortConfig>(Arena*);
 template<> ::ns3_proto::Topology* Arena::CreateMaybeMessage<::ns3_proto::Topology>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -926,12 +926,11 @@ class SwitchPortConfig final :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kQueuesFieldNumber = 4,
+    kQueuesFieldNumber = 3,
     kPfcEnabledFieldNumber = 1,
-    kPfcPassThroughFieldNumber = 2,
-    kEcnEnabledFieldNumber = 3,
+    kEcnEnabledFieldNumber = 2,
   };
-  // repeated .ns3_proto.PortQueueConfig queues = 4;
+  // repeated .ns3_proto.PortQueueConfig queues = 3;
   int queues_size() const;
   private:
   int _internal_queues_size() const;
@@ -958,20 +957,7 @@ class SwitchPortConfig final :
   void _internal_set_pfcenabled(bool value);
   public:
 
-  // optional bool pfcPassThrough = 2;
-  bool has_pfcpassthrough() const;
-  private:
-  bool _internal_has_pfcpassthrough() const;
-  public:
-  void clear_pfcpassthrough();
-  bool pfcpassthrough() const;
-  void set_pfcpassthrough(bool value);
-  private:
-  bool _internal_pfcpassthrough() const;
-  void _internal_set_pfcpassthrough(bool value);
-  public:
-
-  // bool ecnEnabled = 3;
+  // bool ecnEnabled = 2;
   void clear_ecnenabled();
   bool ecnenabled() const;
   void set_ecnenabled(bool value);
@@ -988,181 +974,10 @@ class SwitchPortConfig final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueConfig > queues_;
     bool pfcenabled_;
-    bool pfcpassthrough_;
     bool ecnenabled_;
-  };
-  union { Impl_ _impl_; };
-  friend struct ::TableStruct_topology_2eproto;
-};
-// -------------------------------------------------------------------
-
-class SwitchMmuConfig final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.SwitchMmuConfig) */ {
- public:
-  inline SwitchMmuConfig() : SwitchMmuConfig(nullptr) {}
-  ~SwitchMmuConfig() override;
-  explicit PROTOBUF_CONSTEXPR SwitchMmuConfig(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
-
-  SwitchMmuConfig(const SwitchMmuConfig& from);
-  SwitchMmuConfig(SwitchMmuConfig&& from) noexcept
-    : SwitchMmuConfig() {
-    *this = ::std::move(from);
-  }
-
-  inline SwitchMmuConfig& operator=(const SwitchMmuConfig& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline SwitchMmuConfig& operator=(SwitchMmuConfig&& from) noexcept {
-    if (this == &from) return *this;
-    if (GetOwningArena() == from.GetOwningArena()
-  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
-        && GetOwningArena() != nullptr
-  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
-    ) {
-      InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return default_instance().GetMetadata().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return default_instance().GetMetadata().reflection;
-  }
-  static const SwitchMmuConfig& default_instance() {
-    return *internal_default_instance();
-  }
-  static inline const SwitchMmuConfig* internal_default_instance() {
-    return reinterpret_cast<const SwitchMmuConfig*>(
-               &_SwitchMmuConfig_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    5;
-
-  friend void swap(SwitchMmuConfig& a, SwitchMmuConfig& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(SwitchMmuConfig* other) {
-    if (other == this) return;
-  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() != nullptr &&
-        GetOwningArena() == other->GetOwningArena()) {
-   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
-    if (GetOwningArena() == other->GetOwningArena()) {
-  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
-      InternalSwap(other);
-    } else {
-      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(SwitchMmuConfig* other) {
-    if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  SwitchMmuConfig* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<SwitchMmuConfig>(arena);
-  }
-  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
-  void CopyFrom(const SwitchMmuConfig& from);
-  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom( const SwitchMmuConfig& from) {
-    SwitchMmuConfig::MergeImpl(*this, from);
-  }
-  private:
-  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
-  public:
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
-
-  private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
-  void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(SwitchMmuConfig* other);
-
-  private:
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "ns3_proto.SwitchMmuConfig";
-  }
-  protected:
-  explicit SwitchMmuConfig(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
-  public:
-
-  static const ClassData _class_data_;
-  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kBufferSizeFieldNumber = 1,
-    kPfcDynamicShiftFieldNumber = 2,
-  };
-  // string bufferSize = 1;
-  void clear_buffersize();
-  const std::string& buffersize() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_buffersize(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_buffersize();
-  PROTOBUF_NODISCARD std::string* release_buffersize();
-  void set_allocated_buffersize(std::string* buffersize);
-  private:
-  const std::string& _internal_buffersize() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_buffersize(const std::string& value);
-  std::string* _internal_mutable_buffersize();
-  public:
-
-  // optional uint32 pfcDynamicShift = 2;
-  bool has_pfcdynamicshift() const;
-  private:
-  bool _internal_has_pfcdynamicshift() const;
-  public:
-  void clear_pfcdynamicshift();
-  uint32_t pfcdynamicshift() const;
-  void set_pfcdynamicshift(uint32_t value);
-  private:
-  uint32_t _internal_pfcdynamicshift() const;
-  void _internal_set_pfcdynamicshift(uint32_t value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:ns3_proto.SwitchMmuConfig)
- private:
-  class _Internal;
-
-  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-  struct Impl_ {
-    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr buffersize_;
-    uint32_t pfcdynamicshift_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_topology_2eproto;
@@ -1217,7 +1032,7 @@ class SwitchGroup final :
                &_SwitchGroup_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    5;
 
   friend void swap(SwitchGroup& a, SwitchGroup& b) {
     a.Swap(&b);
@@ -1291,7 +1106,7 @@ class SwitchGroup final :
 
   enum : int {
     kPortsFieldNumber = 5,
-    kMmuFieldNumber = 3,
+    kBufferSizeFieldNumber = 3,
     kNodesNumFieldNumber = 1,
     kBaseIndexFieldNumber = 2,
     kQueueNumFieldNumber = 4,
@@ -1314,23 +1129,19 @@ class SwitchGroup final :
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::SwitchPortConfig >&
       ports() const;
 
-  // .ns3_proto.SwitchMmuConfig mmu = 3;
-  bool has_mmu() const;
+  // string bufferSize = 3;
+  void clear_buffersize();
+  const std::string& buffersize() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_buffersize(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_buffersize();
+  PROTOBUF_NODISCARD std::string* release_buffersize();
+  void set_allocated_buffersize(std::string* buffersize);
   private:
-  bool _internal_has_mmu() const;
+  const std::string& _internal_buffersize() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_buffersize(const std::string& value);
+  std::string* _internal_mutable_buffersize();
   public:
-  void clear_mmu();
-  const ::ns3_proto::SwitchMmuConfig& mmu() const;
-  PROTOBUF_NODISCARD ::ns3_proto::SwitchMmuConfig* release_mmu();
-  ::ns3_proto::SwitchMmuConfig* mutable_mmu();
-  void set_allocated_mmu(::ns3_proto::SwitchMmuConfig* mmu);
-  private:
-  const ::ns3_proto::SwitchMmuConfig& _internal_mmu() const;
-  ::ns3_proto::SwitchMmuConfig* _internal_mutable_mmu();
-  public:
-  void unsafe_arena_set_allocated_mmu(
-      ::ns3_proto::SwitchMmuConfig* mmu);
-  ::ns3_proto::SwitchMmuConfig* unsafe_arena_release_mmu();
 
   // uint32 nodesNum = 1;
   void clear_nodesnum();
@@ -1368,7 +1179,7 @@ class SwitchGroup final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::SwitchPortConfig > ports_;
-    ::ns3_proto::SwitchMmuConfig* mmu_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr buffersize_;
     uint32_t nodesnum_;
     uint32_t baseindex_;
     uint32_t queuenum_;
@@ -1427,7 +1238,7 @@ class AllNodes final :
                &_AllNodes_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    6;
 
   friend void swap(AllNodes& a, AllNodes& b) {
     a.Swap(&b);
@@ -1615,7 +1426,7 @@ class Link final :
                &_Link_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    7;
 
   friend void swap(Link& a, Link& b) {
     a.Swap(&b);
@@ -1780,6 +1591,233 @@ class Link final :
 };
 // -------------------------------------------------------------------
 
+class Application final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.Application) */ {
+ public:
+  inline Application() : Application(nullptr) {}
+  ~Application() override;
+  explicit PROTOBUF_CONSTEXPR Application(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+
+  Application(const Application& from);
+  Application(Application&& from) noexcept
+    : Application() {
+    *this = ::std::move(from);
+  }
+
+  inline Application& operator=(const Application& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline Application& operator=(Application&& from) noexcept {
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()
+  #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
+        && GetOwningArena() != nullptr
+  #endif  // !PROTOBUF_FORCE_COPY_IN_MOVE
+    ) {
+      InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return default_instance().GetMetadata().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return default_instance().GetMetadata().reflection;
+  }
+  static const Application& default_instance() {
+    return *internal_default_instance();
+  }
+  static inline const Application* internal_default_instance() {
+    return reinterpret_cast<const Application*>(
+               &_Application_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    8;
+
+  friend void swap(Application& a, Application& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(Application* other) {
+    if (other == this) return;
+  #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() != nullptr &&
+        GetOwningArena() == other->GetOwningArena()) {
+   #else  // PROTOBUF_FORCE_COPY_IN_SWAP
+    if (GetOwningArena() == other->GetOwningArena()) {
+  #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Application* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  Application* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<Application>(arena);
+  }
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
+  void CopyFrom(const Application& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
+  void MergeFrom( const Application& from) {
+    Application::MergeImpl(*this, from);
+  }
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
+  public:
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  uint8_t* _InternalSerialize(
+      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
+
+  private:
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(Application* other);
+
+  private:
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "ns3_proto.Application";
+  }
+  protected:
+  explicit Application(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
+  public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kNodeIndicesFieldNumber = 1,
+    kProtocolGroupFieldNumber = 2,
+    kCdfFieldNumber = 3,
+    kLoadFieldNumber = 4,
+    kStartTimeFieldNumber = 5,
+    kStopTimeFieldNumber = 6,
+  };
+  // repeated uint32 nodeIndices = 1;
+  int nodeindices_size() const;
+  private:
+  int _internal_nodeindices_size() const;
+  public:
+  void clear_nodeindices();
+  private:
+  uint32_t _internal_nodeindices(int index) const;
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      _internal_nodeindices() const;
+  void _internal_add_nodeindices(uint32_t value);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      _internal_mutable_nodeindices();
+  public:
+  uint32_t nodeindices(int index) const;
+  void set_nodeindices(int index, uint32_t value);
+  void add_nodeindices(uint32_t value);
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+      nodeindices() const;
+  ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+      mutable_nodeindices();
+
+  // string protocolGroup = 2;
+  void clear_protocolgroup();
+  const std::string& protocolgroup() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_protocolgroup(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_protocolgroup();
+  PROTOBUF_NODISCARD std::string* release_protocolgroup();
+  void set_allocated_protocolgroup(std::string* protocolgroup);
+  private:
+  const std::string& _internal_protocolgroup() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_protocolgroup(const std::string& value);
+  std::string* _internal_mutable_protocolgroup();
+  public:
+
+  // string cdf = 3;
+  void clear_cdf();
+  const std::string& cdf() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_cdf(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_cdf();
+  PROTOBUF_NODISCARD std::string* release_cdf();
+  void set_allocated_cdf(std::string* cdf);
+  private:
+  const std::string& _internal_cdf() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_cdf(const std::string& value);
+  std::string* _internal_mutable_cdf();
+  public:
+
+  // double load = 4;
+  void clear_load();
+  double load() const;
+  void set_load(double value);
+  private:
+  double _internal_load() const;
+  void _internal_set_load(double value);
+  public:
+
+  // uint32 startTime = 5;
+  void clear_starttime();
+  uint32_t starttime() const;
+  void set_starttime(uint32_t value);
+  private:
+  uint32_t _internal_starttime() const;
+  void _internal_set_starttime(uint32_t value);
+  public:
+
+  // uint32 stopTime = 6;
+  void clear_stoptime();
+  uint32_t stoptime() const;
+  void set_stoptime(uint32_t value);
+  private:
+  uint32_t _internal_stoptime() const;
+  void _internal_set_stoptime(uint32_t value);
+  public:
+
+  // @@protoc_insertion_point(class_scope:ns3_proto.Application)
+ private:
+  class _Internal;
+
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > nodeindices_;
+    mutable std::atomic<int> _nodeindices_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr protocolgroup_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr cdf_;
+    double load_;
+    uint32_t starttime_;
+    uint32_t stoptime_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  };
+  union { Impl_ _impl_; };
+  friend struct ::TableStruct_topology_2eproto;
+};
+// -------------------------------------------------------------------
+
 class Topology final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:ns3_proto.Topology) */ {
  public:
@@ -1902,6 +1940,7 @@ class Topology final :
 
   enum : int {
     kLinksFieldNumber = 3,
+    kApplicationsFieldNumber = 4,
     kGlobalConfigFieldNumber = 1,
     kNodesFieldNumber = 2,
   };
@@ -1922,6 +1961,24 @@ class Topology final :
   ::ns3_proto::Link* add_links();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Link >&
       links() const;
+
+  // repeated .ns3_proto.Application applications = 4;
+  int applications_size() const;
+  private:
+  int _internal_applications_size() const;
+  public:
+  void clear_applications();
+  ::ns3_proto::Application* mutable_applications(int index);
+  ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Application >*
+      mutable_applications();
+  private:
+  const ::ns3_proto::Application& _internal_applications(int index) const;
+  ::ns3_proto::Application* _internal_add_applications();
+  public:
+  const ::ns3_proto::Application& applications(int index) const;
+  ::ns3_proto::Application* add_applications();
+  const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Application >&
+      applications() const;
 
   // .ns3_proto.GlobalConfig globalConfig = 1;
   bool has_globalconfig() const;
@@ -1968,6 +2025,7 @@ class Topology final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Link > links_;
+    ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Application > applications_;
     ::ns3_proto::GlobalConfig* globalconfig_;
     ::ns3_proto::AllNodes* nodes_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -2450,35 +2508,7 @@ inline void SwitchPortConfig::set_pfcenabled(bool value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.pfcEnabled)
 }
 
-// optional bool pfcPassThrough = 2;
-inline bool SwitchPortConfig::_internal_has_pfcpassthrough() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  return value;
-}
-inline bool SwitchPortConfig::has_pfcpassthrough() const {
-  return _internal_has_pfcpassthrough();
-}
-inline void SwitchPortConfig::clear_pfcpassthrough() {
-  _impl_.pfcpassthrough_ = false;
-  _impl_._has_bits_[0] &= ~0x00000001u;
-}
-inline bool SwitchPortConfig::_internal_pfcpassthrough() const {
-  return _impl_.pfcpassthrough_;
-}
-inline bool SwitchPortConfig::pfcpassthrough() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchPortConfig.pfcPassThrough)
-  return _internal_pfcpassthrough();
-}
-inline void SwitchPortConfig::_internal_set_pfcpassthrough(bool value) {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.pfcpassthrough_ = value;
-}
-inline void SwitchPortConfig::set_pfcpassthrough(bool value) {
-  _internal_set_pfcpassthrough(value);
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.pfcPassThrough)
-}
-
-// bool ecnEnabled = 3;
+// bool ecnEnabled = 2;
 inline void SwitchPortConfig::clear_ecnenabled() {
   _impl_.ecnenabled_ = false;
 }
@@ -2498,7 +2528,7 @@ inline void SwitchPortConfig::set_ecnenabled(bool value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchPortConfig.ecnEnabled)
 }
 
-// repeated .ns3_proto.PortQueueConfig queues = 4;
+// repeated .ns3_proto.PortQueueConfig queues = 3;
 inline int SwitchPortConfig::_internal_queues_size() const {
   return _impl_.queues_.size();
 }
@@ -2536,88 +2566,6 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::PortQueueCo
 SwitchPortConfig::queues() const {
   // @@protoc_insertion_point(field_list:ns3_proto.SwitchPortConfig.queues)
   return _impl_.queues_;
-}
-
-// -------------------------------------------------------------------
-
-// SwitchMmuConfig
-
-// string bufferSize = 1;
-inline void SwitchMmuConfig::clear_buffersize() {
-  _impl_.buffersize_.ClearToEmpty();
-}
-inline const std::string& SwitchMmuConfig::buffersize() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchMmuConfig.bufferSize)
-  return _internal_buffersize();
-}
-template <typename ArgT0, typename... ArgT>
-inline PROTOBUF_ALWAYS_INLINE
-void SwitchMmuConfig::set_buffersize(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.buffersize_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchMmuConfig.bufferSize)
-}
-inline std::string* SwitchMmuConfig::mutable_buffersize() {
-  std::string* _s = _internal_mutable_buffersize();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchMmuConfig.bufferSize)
-  return _s;
-}
-inline const std::string& SwitchMmuConfig::_internal_buffersize() const {
-  return _impl_.buffersize_.Get();
-}
-inline void SwitchMmuConfig::_internal_set_buffersize(const std::string& value) {
-  
-  _impl_.buffersize_.Set(value, GetArenaForAllocation());
-}
-inline std::string* SwitchMmuConfig::_internal_mutable_buffersize() {
-  
-  return _impl_.buffersize_.Mutable(GetArenaForAllocation());
-}
-inline std::string* SwitchMmuConfig::release_buffersize() {
-  // @@protoc_insertion_point(field_release:ns3_proto.SwitchMmuConfig.bufferSize)
-  return _impl_.buffersize_.Release();
-}
-inline void SwitchMmuConfig::set_allocated_buffersize(std::string* buffersize) {
-  if (buffersize != nullptr) {
-    
-  } else {
-    
-  }
-  _impl_.buffersize_.SetAllocated(buffersize, GetArenaForAllocation());
-#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.buffersize_.IsDefault()) {
-    _impl_.buffersize_.Set("", GetArenaForAllocation());
-  }
-#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchMmuConfig.bufferSize)
-}
-
-// optional uint32 pfcDynamicShift = 2;
-inline bool SwitchMmuConfig::_internal_has_pfcdynamicshift() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
-  return value;
-}
-inline bool SwitchMmuConfig::has_pfcdynamicshift() const {
-  return _internal_has_pfcdynamicshift();
-}
-inline void SwitchMmuConfig::clear_pfcdynamicshift() {
-  _impl_.pfcdynamicshift_ = 0u;
-  _impl_._has_bits_[0] &= ~0x00000001u;
-}
-inline uint32_t SwitchMmuConfig::_internal_pfcdynamicshift() const {
-  return _impl_.pfcdynamicshift_;
-}
-inline uint32_t SwitchMmuConfig::pfcdynamicshift() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchMmuConfig.pfcDynamicShift)
-  return _internal_pfcdynamicshift();
-}
-inline void SwitchMmuConfig::_internal_set_pfcdynamicshift(uint32_t value) {
-  _impl_._has_bits_[0] |= 0x00000001u;
-  _impl_.pfcdynamicshift_ = value;
-}
-inline void SwitchMmuConfig::set_pfcdynamicshift(uint32_t value) {
-  _internal_set_pfcdynamicshift(value);
-  // @@protoc_insertion_point(field_set:ns3_proto.SwitchMmuConfig.pfcDynamicShift)
 }
 
 // -------------------------------------------------------------------
@@ -2664,94 +2612,54 @@ inline void SwitchGroup::set_baseindex(uint32_t value) {
   // @@protoc_insertion_point(field_set:ns3_proto.SwitchGroup.baseIndex)
 }
 
-// .ns3_proto.SwitchMmuConfig mmu = 3;
-inline bool SwitchGroup::_internal_has_mmu() const {
-  return this != internal_default_instance() && _impl_.mmu_ != nullptr;
+// string bufferSize = 3;
+inline void SwitchGroup::clear_buffersize() {
+  _impl_.buffersize_.ClearToEmpty();
 }
-inline bool SwitchGroup::has_mmu() const {
-  return _internal_has_mmu();
+inline const std::string& SwitchGroup::buffersize() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.SwitchGroup.bufferSize)
+  return _internal_buffersize();
 }
-inline void SwitchGroup::clear_mmu() {
-  if (GetArenaForAllocation() == nullptr && _impl_.mmu_ != nullptr) {
-    delete _impl_.mmu_;
-  }
-  _impl_.mmu_ = nullptr;
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void SwitchGroup::set_buffersize(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.buffersize_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.SwitchGroup.bufferSize)
 }
-inline const ::ns3_proto::SwitchMmuConfig& SwitchGroup::_internal_mmu() const {
-  const ::ns3_proto::SwitchMmuConfig* p = _impl_.mmu_;
-  return p != nullptr ? *p : reinterpret_cast<const ::ns3_proto::SwitchMmuConfig&>(
-      ::ns3_proto::_SwitchMmuConfig_default_instance_);
+inline std::string* SwitchGroup::mutable_buffersize() {
+  std::string* _s = _internal_mutable_buffersize();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchGroup.bufferSize)
+  return _s;
 }
-inline const ::ns3_proto::SwitchMmuConfig& SwitchGroup::mmu() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.SwitchGroup.mmu)
-  return _internal_mmu();
+inline const std::string& SwitchGroup::_internal_buffersize() const {
+  return _impl_.buffersize_.Get();
 }
-inline void SwitchGroup::unsafe_arena_set_allocated_mmu(
-    ::ns3_proto::SwitchMmuConfig* mmu) {
-  if (GetArenaForAllocation() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.mmu_);
-  }
-  _impl_.mmu_ = mmu;
-  if (mmu) {
+inline void SwitchGroup::_internal_set_buffersize(const std::string& value) {
+  
+  _impl_.buffersize_.Set(value, GetArenaForAllocation());
+}
+inline std::string* SwitchGroup::_internal_mutable_buffersize() {
+  
+  return _impl_.buffersize_.Mutable(GetArenaForAllocation());
+}
+inline std::string* SwitchGroup::release_buffersize() {
+  // @@protoc_insertion_point(field_release:ns3_proto.SwitchGroup.bufferSize)
+  return _impl_.buffersize_.Release();
+}
+inline void SwitchGroup::set_allocated_buffersize(std::string* buffersize) {
+  if (buffersize != nullptr) {
     
   } else {
     
   }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:ns3_proto.SwitchGroup.mmu)
-}
-inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::release_mmu() {
-  
-  ::ns3_proto::SwitchMmuConfig* temp = _impl_.mmu_;
-  _impl_.mmu_ = nullptr;
-#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
-  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
-  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  if (GetArenaForAllocation() == nullptr) { delete old; }
-#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
-  if (GetArenaForAllocation() != nullptr) {
-    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  _impl_.buffersize_.SetAllocated(buffersize, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.buffersize_.IsDefault()) {
+    _impl_.buffersize_.Set("", GetArenaForAllocation());
   }
-#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
-  return temp;
-}
-inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::unsafe_arena_release_mmu() {
-  // @@protoc_insertion_point(field_release:ns3_proto.SwitchGroup.mmu)
-  
-  ::ns3_proto::SwitchMmuConfig* temp = _impl_.mmu_;
-  _impl_.mmu_ = nullptr;
-  return temp;
-}
-inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::_internal_mutable_mmu() {
-  
-  if (_impl_.mmu_ == nullptr) {
-    auto* p = CreateMaybeMessage<::ns3_proto::SwitchMmuConfig>(GetArenaForAllocation());
-    _impl_.mmu_ = p;
-  }
-  return _impl_.mmu_;
-}
-inline ::ns3_proto::SwitchMmuConfig* SwitchGroup::mutable_mmu() {
-  ::ns3_proto::SwitchMmuConfig* _msg = _internal_mutable_mmu();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.SwitchGroup.mmu)
-  return _msg;
-}
-inline void SwitchGroup::set_allocated_mmu(::ns3_proto::SwitchMmuConfig* mmu) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
-  if (message_arena == nullptr) {
-    delete _impl_.mmu_;
-  }
-  if (mmu) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(mmu);
-    if (message_arena != submessage_arena) {
-      mmu = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, mmu, submessage_arena);
-    }
-    
-  } else {
-    
-  }
-  _impl_.mmu_ = mmu;
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchGroup.mmu)
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.SwitchGroup.bufferSize)
 }
 
 // uint32 queueNum = 4;
@@ -3104,6 +3012,217 @@ inline void Link::set_allocated_delay(std::string* delay) {
 
 // -------------------------------------------------------------------
 
+// Application
+
+// repeated uint32 nodeIndices = 1;
+inline int Application::_internal_nodeindices_size() const {
+  return _impl_.nodeindices_.size();
+}
+inline int Application::nodeindices_size() const {
+  return _internal_nodeindices_size();
+}
+inline void Application::clear_nodeindices() {
+  _impl_.nodeindices_.Clear();
+}
+inline uint32_t Application::_internal_nodeindices(int index) const {
+  return _impl_.nodeindices_.Get(index);
+}
+inline uint32_t Application::nodeindices(int index) const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.nodeIndices)
+  return _internal_nodeindices(index);
+}
+inline void Application::set_nodeindices(int index, uint32_t value) {
+  _impl_.nodeindices_.Set(index, value);
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.nodeIndices)
+}
+inline void Application::_internal_add_nodeindices(uint32_t value) {
+  _impl_.nodeindices_.Add(value);
+}
+inline void Application::add_nodeindices(uint32_t value) {
+  _internal_add_nodeindices(value);
+  // @@protoc_insertion_point(field_add:ns3_proto.Application.nodeIndices)
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+Application::_internal_nodeindices() const {
+  return _impl_.nodeindices_;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >&
+Application::nodeindices() const {
+  // @@protoc_insertion_point(field_list:ns3_proto.Application.nodeIndices)
+  return _internal_nodeindices();
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+Application::_internal_mutable_nodeindices() {
+  return &_impl_.nodeindices_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
+Application::mutable_nodeindices() {
+  // @@protoc_insertion_point(field_mutable_list:ns3_proto.Application.nodeIndices)
+  return _internal_mutable_nodeindices();
+}
+
+// string protocolGroup = 2;
+inline void Application::clear_protocolgroup() {
+  _impl_.protocolgroup_.ClearToEmpty();
+}
+inline const std::string& Application::protocolgroup() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.protocolGroup)
+  return _internal_protocolgroup();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Application::set_protocolgroup(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.protocolgroup_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.protocolGroup)
+}
+inline std::string* Application::mutable_protocolgroup() {
+  std::string* _s = _internal_mutable_protocolgroup();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.protocolGroup)
+  return _s;
+}
+inline const std::string& Application::_internal_protocolgroup() const {
+  return _impl_.protocolgroup_.Get();
+}
+inline void Application::_internal_set_protocolgroup(const std::string& value) {
+  
+  _impl_.protocolgroup_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Application::_internal_mutable_protocolgroup() {
+  
+  return _impl_.protocolgroup_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Application::release_protocolgroup() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Application.protocolGroup)
+  return _impl_.protocolgroup_.Release();
+}
+inline void Application::set_allocated_protocolgroup(std::string* protocolgroup) {
+  if (protocolgroup != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.protocolgroup_.SetAllocated(protocolgroup, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.protocolgroup_.IsDefault()) {
+    _impl_.protocolgroup_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.protocolGroup)
+}
+
+// string cdf = 3;
+inline void Application::clear_cdf() {
+  _impl_.cdf_.ClearToEmpty();
+}
+inline const std::string& Application::cdf() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.cdf)
+  return _internal_cdf();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Application::set_cdf(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.cdf_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.cdf)
+}
+inline std::string* Application::mutable_cdf() {
+  std::string* _s = _internal_mutable_cdf();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.cdf)
+  return _s;
+}
+inline const std::string& Application::_internal_cdf() const {
+  return _impl_.cdf_.Get();
+}
+inline void Application::_internal_set_cdf(const std::string& value) {
+  
+  _impl_.cdf_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Application::_internal_mutable_cdf() {
+  
+  return _impl_.cdf_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Application::release_cdf() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Application.cdf)
+  return _impl_.cdf_.Release();
+}
+inline void Application::set_allocated_cdf(std::string* cdf) {
+  if (cdf != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.cdf_.SetAllocated(cdf, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.cdf_.IsDefault()) {
+    _impl_.cdf_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.cdf)
+}
+
+// double load = 4;
+inline void Application::clear_load() {
+  _impl_.load_ = 0;
+}
+inline double Application::_internal_load() const {
+  return _impl_.load_;
+}
+inline double Application::load() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.load)
+  return _internal_load();
+}
+inline void Application::_internal_set_load(double value) {
+  
+  _impl_.load_ = value;
+}
+inline void Application::set_load(double value) {
+  _internal_set_load(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.load)
+}
+
+// uint32 startTime = 5;
+inline void Application::clear_starttime() {
+  _impl_.starttime_ = 0u;
+}
+inline uint32_t Application::_internal_starttime() const {
+  return _impl_.starttime_;
+}
+inline uint32_t Application::starttime() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.startTime)
+  return _internal_starttime();
+}
+inline void Application::_internal_set_starttime(uint32_t value) {
+  
+  _impl_.starttime_ = value;
+}
+inline void Application::set_starttime(uint32_t value) {
+  _internal_set_starttime(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.startTime)
+}
+
+// uint32 stopTime = 6;
+inline void Application::clear_stoptime() {
+  _impl_.stoptime_ = 0u;
+}
+inline uint32_t Application::_internal_stoptime() const {
+  return _impl_.stoptime_;
+}
+inline uint32_t Application::stoptime() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.stopTime)
+  return _internal_stoptime();
+}
+inline void Application::_internal_set_stoptime(uint32_t value) {
+  
+  _impl_.stoptime_ = value;
+}
+inline void Application::set_stoptime(uint32_t value) {
+  _internal_set_stoptime(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.stopTime)
+}
+
+// -------------------------------------------------------------------
+
 // Topology
 
 // .ns3_proto.GlobalConfig globalConfig = 1;
@@ -3324,6 +3443,46 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Link >&
 Topology::links() const {
   // @@protoc_insertion_point(field_list:ns3_proto.Topology.links)
   return _impl_.links_;
+}
+
+// repeated .ns3_proto.Application applications = 4;
+inline int Topology::_internal_applications_size() const {
+  return _impl_.applications_.size();
+}
+inline int Topology::applications_size() const {
+  return _internal_applications_size();
+}
+inline void Topology::clear_applications() {
+  _impl_.applications_.Clear();
+}
+inline ::ns3_proto::Application* Topology::mutable_applications(int index) {
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Topology.applications)
+  return _impl_.applications_.Mutable(index);
+}
+inline ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Application >*
+Topology::mutable_applications() {
+  // @@protoc_insertion_point(field_mutable_list:ns3_proto.Topology.applications)
+  return &_impl_.applications_;
+}
+inline const ::ns3_proto::Application& Topology::_internal_applications(int index) const {
+  return _impl_.applications_.Get(index);
+}
+inline const ::ns3_proto::Application& Topology::applications(int index) const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Topology.applications)
+  return _internal_applications(index);
+}
+inline ::ns3_proto::Application* Topology::_internal_add_applications() {
+  return _impl_.applications_.Add();
+}
+inline ::ns3_proto::Application* Topology::add_applications() {
+  ::ns3_proto::Application* _add = _internal_add_applications();
+  // @@protoc_insertion_point(field_add:ns3_proto.Topology.applications)
+  return _add;
+}
+inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::ns3_proto::Application >&
+Topology::applications() const {
+  // @@protoc_insertion_point(field_list:ns3_proto.Topology.applications)
+  return _impl_.applications_;
 }
 
 #ifdef __GNUC__

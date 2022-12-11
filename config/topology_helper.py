@@ -1,5 +1,5 @@
 from topology_pb2 import GlobalConfig, HostPortConfig, HostGroup, PortQueueConfig, \
-    SwitchPortConfig, SwitchGroup, AllNodes, Link, Topology
+    SwitchPortConfig, SwitchGroup, AllNodes, Link, Topology, Application
 from collections.abc import Iterable
 from typing import List, Tuple
 import re
@@ -18,58 +18,6 @@ class Utils:
         with open(fname, 'rb') as fp:
             return obj.ParseFromString(fp.read())
 
-
-class Units:
-
-    @staticmethod
-    def parsePattern(numberPattern, unitPattern, string) -> Tuple[float, str]:
-        """Parse a string in format '{number} {unit}'
-
-        :param numberPattern: the number pattern (e.g. r"\d+(\.\d+)?")
-        :param unitParttern: the unit pattern
-        :param string: the string to be parsed 
-        :returns Tuple[float, str]: parsed result in tuple (number, unit) 
-
-        """
-        string = string.strip() # strip whitespaces
-        
-        pattern = f"{numberPattern}\\s*{unitPattern}"
-        if not re.match(pattern, string):
-            raise ValueError(f"'{string}' cannot be parsed")
-
-        number = re.search(numberPattern, string) # must be not None
-        unit = re.search(unitPattern, string) # must be not None
-
-        if number is None or unit is None :
-            raise ValueError("Unknown error when parsing the string")
-        
-        number = float(number.group()) 
-        unit = unit.group()
-        
-        return number, unit
-
-    @staticmethod
-    def parseBytes(size) -> int:
-        '''Parse a string of size in units of:
-            (B, KB, MB, GB, TB) to bytes
-        '''
-        digitsPattern = r"\d+(\.\d+)?"
-        unitPattern = r"[KMGT]?B"
-        number, unit = Units.parsePattern(digitsPattern, unitPattern, size)
-        
-        unitMapper = { 
-            "B": 1,
-            "KB": 1000,
-            "MB": 1000**2,
-            "GB": 1000**3,
-            "TB": 1000**4,
-            "KiB": 1024,
-            "MiB": 1024**2,
-            "GiB": 1024**3,
-            "TiB": 1024**4
-        }
-        
-        return int(number * unitMapper[unit])
 
 def _setValuesToMessage(messgaeType, valuesDict):
     '''This is an auxilary function that automatically assign values in dict `valuesDict` to a
@@ -92,7 +40,7 @@ def globalConfigGenerate(**kwargs):
 
 
 def switchPortGenerate(queueNum: int,
-                       pfcEnabled=True, pfcPassThrough=False,
+                       pfcEnabled=True,
                        ecnEnabled=True,
                        queues: List[dict]=[]):
     if not isinstance(queues, list):
@@ -102,7 +50,6 @@ def switchPortGenerate(queueNum: int,
                          f"Expecting {queueNum} queues, given {len(queues)} queues configurations")
     portConfig = SwitchPortConfig()
     portConfig.pfcEnabled = pfcEnabled
-    portConfig.pfcPassThrough = pfcPassThrough
     portConfig.ecnEnabled = ecnEnabled
     portConfig.queues.extend(
         [_setValuesToMessage(PortQueueConfig, conf) for conf in queues]
@@ -124,10 +71,16 @@ class GlobalConfigGenerator:
 
 class NodesGenerator:
 
+    class State:
+        BEGIN = 0
+        ADDING_HOST = 1
+        ADDING_SWITCH = 2
+
     def __init__(self):
         self.index = 0
         self.hostGroups: List[HostGroup] = []
         self.switchGroups: List[SwitchGroup] = []
+        self.state = self.State.BEGIN
 
     def addToGroup(self, groupsList, group, nodesNum):
         """Set the BaseIndex and NodesNum and add group to the groupList.
@@ -144,6 +97,9 @@ class NodesGenerator:
         return range(group.baseIndex, group.baseIndex + nodesNum)
         
     def addHostGroup(self, num, ports: List[dict]):
+        if self.state > self.State.ADDING_HOST:
+            raise ValueError("all hosts should be added before switches")
+        self.state = self.State.ADDING_HOST
         group = HostGroup()
         group.ports.extend([_setValuesToMessage(HostPortConfig, port) for port in ports])
         return self.addToGroup(self.hostGroups, group, num)
@@ -153,11 +109,11 @@ class NodesGenerator:
                        queueNum: int, ports: List[dict]):
         if not isinstance(ports, list):
             raise TypeError("parameter `ports` should be a list")
-        
+        self.state = self.State.ADDING_SWITCH
         group = SwitchGroup()
-        if pfcDynamic:
-            group.mmu.pfcDynamicShift = 2
-        group.mmu.bufferSize = bufferSize.replace(" ", "") # Units.parseBytes(bufferSize)
+        # if pfcDynamic:
+        #     group.pfcDynamicShift = 2
+        group.bufferSize = bufferSize.replace(" ", "")
         group.queueNum = queueNum
         group.ports.extend([switchPortGenerate(queueNum, **port) for port in ports])
         return self.addToGroup(self.switchGroups, group, num)
@@ -280,6 +236,17 @@ class LinksGenerator:
     def getAllLinks(self):
         return self.links
 
+class ApplicationsGenerator:
+    
+    def __init__(self):
+        self.apps = []
+
+    def installApplication (self, conf):
+        self.apps.append(_setValuesToMessage(Application, conf))
+
+    def getApplications(self):
+        return self.apps
+        
 
 class TopologyGenerator:
 
@@ -292,6 +259,7 @@ class TopologyGenerator:
         self.globalConfig = GlobalConfigGenerator()
         self.nodes = NodesGenerator()
         self.links = LinksGenerator()
+        self.applications = ApplicationsGenerator()
         self.outputFile = output
 
     def __enter__(self):
@@ -305,6 +273,7 @@ class TopologyGenerator:
         topo.globalConfig.CopyFrom(self.globalConfig.getGlobalConfig())
         topo.nodes.CopyFrom(self.nodes.getAllNodes())
         topo.links.extend(self.links.getAllLinks())
+        topo.applications.extend(self.applications.getApplications())
         return topo
 
     def serializeTo(self, fname: str):
@@ -322,3 +291,56 @@ class TopologyGenerator:
 
     def __str__(self):
         return f"{self.nodes.getAllNodes()}\n{self.links.getAllLinks()}"
+
+
+class Units:
+
+    @staticmethod
+    def parsePattern(numberPattern, unitPattern, string) -> Tuple[float, str]:
+        """Parse a string in format '{number} {unit}'
+
+        :param numberPattern: the number pattern (e.g. r"\d+(\.\d+)?")
+        :param unitParttern: the unit pattern
+        :param string: the string to be parsed 
+        :returns Tuple[float, str]: parsed result in tuple (number, unit) 
+
+        """
+        string = string.strip() # strip whitespaces
+        
+        pattern = f"{numberPattern}\\s*{unitPattern}"
+        if not re.match(pattern, string):
+            raise ValueError(f"'{string}' cannot be parsed")
+
+        number = re.search(numberPattern, string) # must be not None
+        unit = re.search(unitPattern, string) # must be not None
+
+        if number is None or unit is None :
+            raise ValueError("Unknown error when parsing the string")
+        
+        number = float(number.group()) 
+        unit = unit.group()
+        
+        return number, unit
+
+    @staticmethod
+    def parseBytes(size) -> int:
+        '''Parse a string of size in units of:
+            (B, KB, MB, GB, TB) to bytes
+        '''
+        digitsPattern = r"\d+(\.\d+)?"
+        unitPattern = r"[KMGT]?B"
+        number, unit = Units.parsePattern(digitsPattern, unitPattern, size)
+        
+        unitMapper = { 
+            "B": 1,
+            "KB": 1000,
+            "MB": 1000**2,
+            "GB": 1000**3,
+            "TB": 1000**4,
+            "KiB": 1024,
+            "MiB": 1024**2,
+            "GiB": 1024**3,
+            "TiB": 1024**4
+        }
+        
+        return int(number * unitMapper[unit])

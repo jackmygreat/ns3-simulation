@@ -26,6 +26,7 @@
 #include "ns3/dc-switch.h"
 #include "ns3/dc-host.h"
 #include "ns3/dcb-net-device.h"
+#include "ns3/dcb-trace-application-helper.h"
 #include "ns3/topology.pb.h"
 
 /**
@@ -75,7 +76,8 @@ protected:
   /**
    * Add one port to the switch `sw` according to portConfig
    */
-  Ptr<DcbNetDevice> AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig, const Ptr<DcSwitch> sw);
+  Ptr<DcbNetDevice> AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
+                                     const Ptr<DcSwitch> sw);
 
   void AssignAddress (const Ptr<Node> node, const Ptr<NetDevice> device);
 
@@ -83,7 +85,9 @@ protected:
 
   void InitGlobalRouting ();
 
-  void InstallApplications (Ptr<DcTopology> topology);
+  void
+  InstallApplications (const google::protobuf::RepeatedPtrField<ns3_proto::Application> &appsConfig,
+                       Ptr<DcTopology> topology);
 
 private:
   // Notice: this variable should be consistent with `TopologyGenerator.outputFile`
@@ -92,9 +96,12 @@ private:
 
   uint32_t m_ecmpSeed = 0;
 
-  void LogIpAddress (const Ptr<const DcTopology>topology) const; // for debug
-  void LogAllRoutes (const Ptr<const DcTopology>topology) const; // for debug
-  void LogGlobalRouting (const Ptr<DcTopology>topology) const; // for debug
+  static std::map<std::string, TraceApplicationHelper::ProtocolGroup> protocolGroupMapper;
+  static std::map<std::string, TraceApplication::TraceCdf *> appCdfMapper;
+
+  void LogIpAddress (const Ptr<const DcTopology> topology) const; // for debug
+  void LogAllRoutes (const Ptr<const DcTopology> topology) const; // for debug
+  void LogGlobalRouting (const Ptr<DcTopology> topology) const; // for debug
 };
 
 } // namespace ns3
