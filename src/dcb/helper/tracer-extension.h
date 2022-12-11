@@ -24,6 +24,7 @@
 #include <fstream>
 #include "ns3/rocev2-header.h"
 #include "ns3/rocev2-socket.h"
+#include "ns3/dcb-trace-application.h"
 
 namespace ns3 {
 
@@ -34,7 +35,7 @@ class TracerExtension
 public:
   TracerExtension ();
 
-  typedef void (*FlowTracedCallback) (Ptr<RoCEv2Socket> socket, const RoCEv2Header &roce);
+  typedef void (*FlowTracedCallback) (uint32_t, uint32_t, uint32_t, Time, Time);
 
   enum Protocol {
     None,
@@ -45,7 +46,7 @@ public:
 
   static void ConfigTraceFCT (Protocol protocol, std::string fileName);
 
-  static void RegisterTraceFCT (Ptr<Socket> socket);
+  static void RegisterTraceFCT (Ptr<TraceApplication> app);
 
   /**
    * Capture packet at device and output the pcap file with prefix fileNamePrefix.
@@ -67,7 +68,7 @@ private:
     static Protocol protocol; // TODO: not supporting multiple protocols
     static std::ofstream fctFileStream;
 
-    static void RoCEv2FlowCompletionTracer (Ptr<RoCEv2Socket> socket, const RoCEv2Header &roce);
+    static void FlowCompletionTracer (uint32_t srcPort, uint32_t dstPort, uint32_t flowSize, Time startTime, Time finishTime);
   };
 
 }; // class TracerExtension

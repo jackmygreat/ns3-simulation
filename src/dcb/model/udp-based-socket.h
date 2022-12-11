@@ -27,12 +27,13 @@
 #include "ns3/traced-callback.h"
 #include "ns3/udp-l4-protocol.h"
 #include "udp-based-l4-protocol.h"
+#include <_types/_uint32_t.h>
 #include <queue>
 #include <map>
 
 namespace ns3 {
-  
-class UdpL4Protocol;  
+
+class UdpL4Protocol;
 class UdpBasedL4Protocol;
 class InnerEndPoint;
 
@@ -53,7 +54,7 @@ public:
    * \return the object TypeId
    */
   static TypeId GetTypeId (void);
-  
+
   UdpBasedSocket ();
   virtual ~UdpBasedSocket ();
 
@@ -156,7 +157,7 @@ public:
    */
   virtual uint32_t GetTxAvailable (void) const override;
 
-    /**
+  /**
    * \brief Send data (or dummy data) to the remote host
    *
    * This function matches closely in semantics to the send() function
@@ -216,8 +217,7 @@ public:
    * \returns -1 in case of error or the number of bytes copied in the 
    *          internal buffer and accepted for transmission.
    */
-  virtual int SendTo (Ptr<Packet> p, uint32_t flags, 
-                      const Address &toAddress) override;
+  virtual int SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress) override;
 
   /**
    * Return number of bytes which can be returned from one or 
@@ -301,15 +301,14 @@ public:
    * \returns Ptr<Packet> of the next in-sequence packet.  Returns
    * 0 if the socket cannot return a next in-sequence packet.
    */
-  virtual Ptr<Packet> RecvFrom (uint32_t maxSize, uint32_t flags,
-                                Address &fromAddress) override;
+  virtual Ptr<Packet> RecvFrom (uint32_t maxSize, uint32_t flags, Address &fromAddress) override;
 
   /**
    * \brief Get socket address.
    * \param address the address name this socket is associated with.
    * \returns 0 if success, -1 otherwise
    */
-  virtual int GetSockName (Address &address) const override; 
+  virtual int GetSockName (Address &address) const override;
 
   /**
    * \brief Get the peer address of a connected socket.
@@ -348,8 +347,13 @@ public:
 
   virtual void FinishSending ();
 
-protected:
+  virtual uint32_t GetSrcPort () const;
+  virtual uint32_t GetDstPort () const;
 
+  virtual void SetFlowCompleteCallback (
+      Callback<void, Ptr<UdpBasedSocket>> cb); // call an application function when flow completes
+
+protected:
   /**
    * \brief Called by the UDP-L4-protocol when it received a packet to pass on to inner protocol.
    *
@@ -358,8 +362,8 @@ protected:
    * \param port the remote port
    * \param incomingInterface the incoming interface
    */
-  virtual void ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port, Ptr<Ipv4Interface> incomingInterface);
-
+  virtual void ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
+                          Ptr<Ipv4Interface> incomingInterface);
 
   /**
    * \brief Send a packet
@@ -368,18 +372,19 @@ protected:
    */
   virtual int DoSend (Ptr<Packet> p);
 
-  virtual void DoSendTo (Ptr<Packet> p, Ipv4Address daddr, Ptr<Ipv4Route> route); 
-  
-  Ptr<Node>           m_node;       //!< the associated node
-  Ptr<UdpBasedL4Protocol>  m_innerProto;         //!< the associated UDP L4 protocol
-  InnerEndPoint*       m_endPoint;   //!< the IPv4 endpoint
+  virtual void DoSendTo (Ptr<Packet> p, Ipv4Address daddr, Ptr<Ipv4Route> route);
 
-  mutable enum SocketErrno m_errno;  //!< Socket error code
-  TracedCallback<Ptr<const Packet> > m_dropTrace; //!< Trace for dropped packets
-  
+  virtual void NotifyFlowCompletes ();
+
+  Ptr<Node> m_node; //!< the associated node
+  Ptr<UdpBasedL4Protocol> m_innerProto; //!< the associated UDP L4 protocol
+  InnerEndPoint *m_endPoint; //!< the IPv4 endpoint
+
+  mutable enum SocketErrno m_errno; //!< Socket error code
+  TracedCallback<Ptr<const Packet>> m_dropTrace; //!< Trace for dropped packets
+
 private:
-
-    /**
+  /**
    * \brief Kill this socket by zeroing its attributes (IPv4)
    *
    * This is a callback function configured to m_endpoint in
@@ -387,20 +392,21 @@ private:
    */
   void Destroy (void);
 
-  Address             m_defaultAddress; //!< Default address
-  bool                m_shutdownSend;   //!< Send no longer allowed
-  bool                m_shutdownRecv;   //!< Receive no longer allowed
-  bool                m_connected;      //!< Connection established
-  uint32_t            m_rxAvailable;    //!< Number of available bytes to be received
-  std::queue<std::pair<Ptr<Packet>, Address> > m_deliveryQueue; //!< Queue for incoming packets
+  Address m_defaultAddress; //!< Default address
+  bool m_shutdownSend; //!< Send no longer allowed
+  bool m_shutdownRecv; //!< Receive no longer allowed
+  bool m_connected; //!< Connection established
+  uint32_t m_rxAvailable; //!< Number of available bytes to be received
+  std::queue<std::pair<Ptr<Packet>, Address>> m_deliveryQueue; //!< Queue for incoming packets
+  Callback<void, Ptr<UdpBasedSocket>> m_flowCompleteCallback;
   // Socket attributes
-  uint32_t m_rcvBufSize;    //!< Receive buffer size
+  uint32_t m_rcvBufSize; //!< Receive buffer size
 }; // class UdpBasedL4Protocol
 
-class UdpBasedSocketFactory : public SocketFactory {
-  
+class UdpBasedSocketFactory : public SocketFactory
+{
+
 public:
-  
   UdpBasedSocketFactory ();
   virtual ~UdpBasedSocketFactory ();
 
@@ -422,12 +428,12 @@ public:
   virtual Ptr<Socket> CreateSocket (void) override;
 
 private:
-  
   std::map<uint16_t, Ptr<UdpBasedL4Protocol>> m_protoMapper; //!< map port number to socket
-  Ptr<UdpBasedL4Protocol> m_nextProto; //!< used by the next call to CreateSocket to create socket for a specific protocol
-  
+  Ptr<UdpBasedL4Protocol>
+      m_nextProto; //!< used by the next call to CreateSocket to create socket for a specific protocol
+
 }; // class UdpBasedSocketFactory
 
-} // namspace ns3
+} // namespace ns3
 
 #endif // UDP_BASED_SOCKET_H

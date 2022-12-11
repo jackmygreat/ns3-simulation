@@ -80,6 +80,6 @@ private:
 
 }; // class TraceApplicationHelper
 
-#endif
-
 } // namespace ns3
+
+#endif

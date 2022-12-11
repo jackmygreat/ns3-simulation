@@ -61,7 +61,8 @@ UdpBasedSocket::UdpBasedSocket ()
       m_shutdownSend (false),
       m_shutdownRecv (false),
       m_connected (false),
-      m_rxAvailable (0)
+      m_rxAvailable (0),
+      m_rcvBufSize(2048)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -347,6 +348,17 @@ UdpBasedSocket::DoSendTo (Ptr<Packet> p, Ipv4Address daddr, Ptr<Ipv4Route> route
                       route);
 }
 
+void
+UdpBasedSocket::NotifyFlowCompletes ()
+{
+  NS_LOG_FUNCTION (this);
+
+  if (!m_flowCompleteCallback.IsNull())
+    {
+      m_flowCompleteCallback (this);
+    }
+}
+
 int
 UdpBasedSocket::SendTo (Ptr<Packet> p, uint32_t flags, const Address &toAddress)
 {
@@ -509,6 +521,27 @@ void
 UdpBasedSocket::FinishSending ()
 {
   NS_LOG_FUNCTION (this);
+}
+
+void
+UdpBasedSocket::SetFlowCompleteCallback (Callback<void, Ptr<UdpBasedSocket>> cb)
+{
+  NS_LOG_FUNCTION (this);
+  m_flowCompleteCallback = cb;
+}
+
+uint32_t
+UdpBasedSocket::GetSrcPort () const
+{
+  NS_LOG_FUNCTION (this);
+  return m_endPoint->GetLocalPort();
+}
+
+uint32_t
+UdpBasedSocket::GetDstPort () const
+{
+  NS_LOG_FUNCTION (this);
+  return m_endPoint->GetPeerPort();  
 }
 
 void

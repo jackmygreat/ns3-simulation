@@ -59,13 +59,13 @@ TE::ConfigTraceFCT (Protocol protocol, std::string fileName)
 
 // static
 void
-TE::RegisterTraceFCT (Ptr<Socket> socket)
+TE::RegisterTraceFCT (Ptr<TraceApplication> app)
 {
   switch (TraceFCTConfig::protocol)
     {
     case Protocol::RoCEv2:
-      socket->TraceConnectWithoutContext (
-          "FlowComplete", MakeCallback (&TraceFCTConfig::RoCEv2FlowCompletionTracer));
+      app->TraceConnectWithoutContext ("FlowComplete",
+                                       MakeCallback (&TraceFCTConfig::FlowCompletionTracer));
       break;
     default: // do nothing
         ;
@@ -86,15 +86,15 @@ TE::EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix)
 {
   Ptr<Ipv4> ipv4 = sw->GetObject<Ipv4> ();
   if (!ipv4)
-	{
-	  NS_FATAL_ERROR ("Ipv4 is not bound to the switch " << sw);
-	}
+    {
+      NS_FATAL_ERROR ("Ipv4 is not bound to the switch " << sw);
+    }
   const int nintf = ipv4->GetNInterfaces ();
   DcbSwitchStackHelper switchStack;
   for (uint32_t i = 1; i < nintf; i++) // interface 0 is loopback so we skip it.
-	{
-	  switchStack.EnablePcapIpv4(GetRealFileName(fileNamePrefix), ipv4, i, false);
-	}
+    {
+      switchStack.EnablePcapIpv4 (GetRealFileName (fileNamePrefix), ipv4, i, false);
+    }
 }
 
 // static
@@ -106,16 +106,15 @@ TE::GetRealFileName (std::string fileName)
 
 // static
 void
-TE::TraceFCTConfig::RoCEv2FlowCompletionTracer (Ptr<RoCEv2Socket> socket, const RoCEv2Header &roce)
+TE::TraceFCTConfig::FlowCompletionTracer (uint32_t srcPort, uint32_t dstPort, uint32_t flowSize,
+                                          Time startTime, Time finishTime)
 {
   // TODO: add mutex lock for concurrency
-  Time startTime = socket->GetFlowStartTime ();
-  Time finishTime = Simulator::Now ();
   Time fct = finishTime - startTime;
   CsvWriter writer (&TE::TraceFCTConfig::fctFileStream, 6);
   writer.WriteNextValue (Simulator::GetContext ());
-  writer.WriteNextValue (roce.GetDestQP ());
-  writer.WriteNextValue (roce.GetSrcQP ());
+  writer.WriteNextValue (srcPort);
+  writer.WriteNextValue (dstPort);
   writer.WriteNextValue (startTime.GetNanoSeconds ());
   writer.WriteNextValue (finishTime.GetNanoSeconds ());
   writer.WriteNextValue (fct.GetNanoSeconds ());

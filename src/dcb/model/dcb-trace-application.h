@@ -31,7 +31,7 @@
 #include "ns3/dc-topology.h"
 #include "rocev2-socket.h"
 #include "udp-based-socket.h"
-#include <set>
+#include <map>
 
 namespace ns3 {
 
@@ -98,6 +98,8 @@ public:
 
   void SetSendEnabled (bool enabled);
   void SetReceiveEnabled (bool enabled);
+
+  void FlowCompletes (Ptr<UdpBasedSocket> socket);
 
   constexpr static inline const uint64_t MSS = 1000; // bytes
 
@@ -210,7 +212,7 @@ private:
    */
   void HandleRead (Ptr<Socket> socket); 
   
-  // std::set<Flow *> m_flows;
+  std::map<Ptr<Socket>, Flow *> m_flows;
 
   bool                   m_enableSend;
   bool                   m_enableReceive;
@@ -237,6 +239,8 @@ private:
   /// Callback for tracing the packet Tx events, includes source, destination, the packet sent, and header
   TracedCallback<Ptr<const Packet>, const Address &, const Address &, const SeqTsSizeHeader &>
       m_txTraceWithSeqTsSize;
+
+  TracedCallback<uint32_t, uint32_t, uint32_t, Time, Time> m_flowCompleteTrace;
 };
 
 } // namespace ns3

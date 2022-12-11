@@ -19,6 +19,7 @@
  */
 
 #include "dcb-net-device.h"
+#include "ns3/fatal-error.h"
 #include "rocev2-l4-protocol.h"
 #include "rocev2-socket.h"
 #include "ns3/integer.h"
@@ -47,16 +48,20 @@ NS_OBJECT_ENSURE_REGISTERED (TraceApplication);
 TypeId
 TraceApplication::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::TraceApplication")
-                          .SetParent<Application> ()
-                          .SetGroupName ("Dcb")
-                          .AddAttribute ("Protocol",
-                                         "The type of protocol to use. This should be "
-                                         "a subclass of ns3::SocketFactory",
-                                         TypeIdValue (UdpSocketFactory::GetTypeId ()),
-                                         MakeTypeIdAccessor (&TraceApplication::m_tid),
-                                         // This should check for SocketFactory as a parent
-                                         MakeTypeIdChecker ());
+  static TypeId tid =
+      TypeId ("ns3::TraceApplication")
+          .SetParent<Application> ()
+          .SetGroupName ("Dcb")
+          .AddAttribute ("Protocol",
+                         "The type of protocol to use. This should be "
+                         "a subclass of ns3::SocketFactory",
+                         TypeIdValue (UdpSocketFactory::GetTypeId ()),
+                         MakeTypeIdAccessor (&TraceApplication::m_tid),
+                         // This should check for SocketFactory as a parent
+                         MakeTypeIdChecker ())
+          .AddTraceSource ("FlowComplete", "Trace when a flow completes.",
+                           MakeTraceSourceAccessor (&TraceApplication::m_flowCompleteTrace),
+                           "ns3::TracerExtension::FlowTracedCallback");
   return tid;
 }
 
@@ -151,8 +156,8 @@ TraceApplication::StartApplication (void)
 
   if (m_enableReceive)
     { // crate a special socket to act as the receiver
-      Ptr<RoCEv2Socket> socket =
-          DynamicCast<RoCEv2Socket> (Socket::CreateSocket (GetNode (), UdpBasedSocketFactory::GetTypeId ()));
+      Ptr<RoCEv2Socket> socket = DynamicCast<RoCEv2Socket> (
+          Socket::CreateSocket (GetNode (), UdpBasedSocketFactory::GetTypeId ()));
       socket->BindToNetDevice (GetNode ()->GetDevice (0));
       socket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
       socket->ShutdownSend ();
@@ -166,6 +171,7 @@ TraceApplication::StartApplication (void)
         {
           ScheduleNextFlow (t);
         }
+      TracerExtension::RegisterTraceFCT (this);
     }
 }
 
@@ -205,8 +211,13 @@ TraceApplication::CreateNewSocket ()
 
   Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_tid);
   socket->BindToNetDevice (GetNode ()->GetDevice (0));
+  Ptr<UdpBasedSocket> udpBasedSocket = DynamicCast<UdpBasedSocket> (socket);
+  if (udpBasedSocket)
+    {
+      udpBasedSocket->SetFlowCompleteCallback (
+          MakeCallback (&TraceApplication::FlowCompletes, this));
+    }
   int ret = socket->Bind ();
-  TracerExtension::RegisterTraceFCT (socket);
   if (ret == -1)
     {
       NS_FATAL_ERROR ("Failed to bind socket");
@@ -232,7 +243,7 @@ TraceApplication::ScheduleNextFlow (const Time &startTime)
   uint64_t size = GetNextFlowSize ();
 
   Flow *flow = new Flow (size, startTime, socket);
-  // m_flows.emplace (flow);
+  m_flows.emplace (socket, flow); // used when flow completes
   Simulator::Schedule (startTime - Simulator::Now (), &TraceApplication::SendNextPacket, this,
                        flow);
 }
@@ -348,6 +359,20 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
       // m_rxTrace (packet);
       // m_rxTraceWithAddresses (packet, from, localAddress);
     }
+}
+
+void
+TraceApplication::FlowCompletes (Ptr<UdpBasedSocket> socket)
+{
+  auto p = m_flows.find (socket);
+  if (p == m_flows.end ())
+    {
+      NS_FATAL_ERROR ("Cannot find socket in this application on node "
+                      << Simulator::GetContext ());
+    }
+  Flow *flow = p->second;
+  m_flowCompleteTrace (socket->GetSrcPort (), socket->GetDstPort (), flow->totalBytes,
+                       flow->startTime, Simulator::Now ());
 }
 
 void

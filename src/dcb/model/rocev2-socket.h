@@ -166,8 +166,6 @@ private:
 
   Time m_flowStartTime;
 
-  TracedCallback<Ptr<RoCEv2Socket>, const RoCEv2Header& > m_flowCompleteTrace;
-
 }; // class RoCEv2Socket
 
 } // namespace ns3

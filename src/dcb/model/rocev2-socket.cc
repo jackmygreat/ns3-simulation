@@ -47,10 +47,7 @@ RoCEv2Socket::GetTypeId ()
       TypeId ("ns3::RoCEv2Socket")
           .SetParent<UdpBasedSocket> ()
           .SetGroupName ("Dcb")
-          .AddConstructor<RoCEv2Socket> ()
-          .AddTraceSource ("FlowComplete", "Trace when a flow completes.",
-                           MakeTraceSourceAccessor (&RoCEv2Socket::m_flowCompleteTrace),
-                           "ns3::TracerExtension::FlowTracedCallback");
+          .AddConstructor<RoCEv2Socket> ();
   return tid;
 }
 
@@ -154,7 +151,7 @@ RoCEv2Socket::HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce)
         if (psn + 1 == m_psnEnd)
           { // last ACk received, flow finshed
             // TODO: do some trae here, record FCT
-            m_flowCompleteTrace (this, roce);
+            NotifyFlowCompletes ();
             // NS_LOG_INFO ("At time " << Simulator::Now () << " node " << Simulator::GetContext ()
             //                         << " received last ack packet");
 
