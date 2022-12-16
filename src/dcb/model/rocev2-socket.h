@@ -160,8 +160,15 @@ private:
   DataRate m_deviceRate;
   bool m_isSending;
 
+  struct FlowInfo
+  {
+    uint32_t nextPSN;
+    Time lastCNPTime;
+    FlowInfo (uint32_t psn, Time t) : nextPSN (psn), lastCNPTime (t) {}
+  };
+
   uint32_t m_senderNextPSN;
-  std::map<uint32_t, uint32_t> m_receiverNextPSNMapper;
+  std::map<uint32_t, FlowInfo> m_receiverFlowInfo;
   uint32_t m_psnEnd; //!< the last PSN + 1, used to check if flow completes
 
   Time m_flowStartTime;

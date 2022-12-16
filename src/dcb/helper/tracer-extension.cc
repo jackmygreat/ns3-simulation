@@ -111,10 +111,11 @@ TE::TraceFCTConfig::FlowCompletionTracer (uint32_t srcPort, uint32_t dstPort, ui
 {
   // TODO: add mutex lock for concurrency
   Time fct = finishTime - startTime;
-  CsvWriter writer (&TE::TraceFCTConfig::fctFileStream, 6);
+  CsvWriter writer (&TE::TraceFCTConfig::fctFileStream, 7);
   writer.WriteNextValue (Simulator::GetContext ());
   writer.WriteNextValue (srcPort);
   writer.WriteNextValue (dstPort);
+  writer.WriteNextValue (flowSize);
   writer.WriteNextValue (startTime.GetNanoSeconds ());
   writer.WriteNextValue (finishTime.GetNanoSeconds ());
   writer.WriteNextValue (fct.GetNanoSeconds ());

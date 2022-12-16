@@ -43,11 +43,10 @@ NS_OBJECT_ENSURE_REGISTERED (RoCEv2Socket);
 TypeId
 RoCEv2Socket::GetTypeId ()
 {
-  static TypeId tid =
-      TypeId ("ns3::RoCEv2Socket")
-          .SetParent<UdpBasedSocket> ()
-          .SetGroupName ("Dcb")
-          .AddConstructor<RoCEv2Socket> ();
+  static TypeId tid = TypeId ("ns3::RoCEv2Socket")
+                          .SetParent<UdpBasedSocket> ()
+                          .SetGroupName ("Dcb")
+                          .AddConstructor<RoCEv2Socket> ();
   return tid;
 }
 
@@ -176,27 +175,33 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   NS_LOG_FUNCTION (this << packet);
 
   const uint32_t srcQP = roce.GetSrcQP (), dstQP = roce.GetDestQP ();
+  Time lastCNPTime (0);
+  uint32_t expectedPSN = 0;
+  std::map<uint32_t, FlowInfo>::iterator flowInfoIter = m_receiverFlowInfo.find (srcQP);
+  if (flowInfoIter != m_receiverFlowInfo.end ())
+    {
+      lastCNPTime = flowInfoIter->second.lastCNPTime;
+      expectedPSN = flowInfoIter->second.nextPSN;
+    }
+  else
+    {
+      auto pp = m_receiverFlowInfo.emplace (srcQP, FlowInfo {0, Time (0)});
+      flowInfoIter = std::move (pp.first);
+    }
 
   // Check ECN
   if (header.GetEcn () == Ipv4Header::EcnType::ECN_CE) // ECN congestion encountered
     {
-      // send Congestion Notification Packet (CNP) to sender
-      Ptr<Packet> cnp = RoCEv2L4Protocol::GenerateCNP (dstQP, srcQP);
-      m_innerProto->Send (cnp, header.GetDestination (), header.GetSource (), dstQP, srcQP, 0);
+      if (Simulator::Now () - lastCNPTime >= MicroSeconds (50))
+        {
+          // send Congestion Notification Packet (CNP) to sender
+          Ptr<Packet> cnp = RoCEv2L4Protocol::GenerateCNP (dstQP, srcQP);
+          m_innerProto->Send (cnp, header.GetDestination (), header.GetSource (), dstQP, srcQP, 0);
+          flowInfoIter->second.lastCNPTime = Simulator::Now ();
+        }
     }
 
   // Check PSN
-  uint32_t expectedPSN = 0;
-  std::map<uint32_t, uint32_t>::iterator p = m_receiverNextPSNMapper.find (srcQP);
-  if (p != m_receiverNextPSNMapper.end ())
-    {
-      expectedPSN = p->second;
-    }
-  else
-    {
-      auto pp = m_receiverNextPSNMapper.emplace (srcQP, 0);
-      p = std::move (pp.first);
-    }
   const uint32_t psn = roce.GetPSN ();
   if (psn > expectedPSN)
     { // packet out-of-order, send NACK
@@ -205,7 +210,7 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
     }
   else if (psn == expectedPSN)
     {
-      p->second = (expectedPSN + 1) & 0xffffff;
+      flowInfoIter->second.nextPSN = (expectedPSN + 1) & 0xffffff;
       if (roce.GetAckQ ())
         { // send ACK
           Ptr<Packet> ack = RoCEv2L4Protocol::GenerateACK (dstQP, srcQP, psn);

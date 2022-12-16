@@ -172,7 +172,7 @@ DcTopology::TopoNode
 ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
 {
   NS_LOG_FUNCTION (this);
-  const Ptr<DcHost> host = CreateObject<DcHost> ();
+  const Ptr<Node> host = CreateObject<Node> ();
 
   for (auto port : hostGroup.ports ())
     {
@@ -204,9 +204,9 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
                                          const ns3_proto::SwitchGroup &switchGroup)
 {
   NS_LOG_FUNCTION (this);
-  const Ptr<DcSwitch> sw = CreateObject<DcSwitch> ();
+  const Ptr<Node> sw = CreateObject<Node> ();
   // Basic configurations
-  sw->SetEcmpSeed (m_ecmpSeed);
+  // sw->SetEcmpSeed (m_ecmpSeed);
 
   // Configure ports
   DcbSwitchStackHelper switchStack;
@@ -240,7 +240,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
 
 Ptr<DcbNetDevice>
 ProtobufTopologyLoader::AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
-                                         const Ptr<DcSwitch> sw)
+                                         const Ptr<Node> sw)
 {
   NS_LOG_FUNCTION (this);
   // Create a net device for this port

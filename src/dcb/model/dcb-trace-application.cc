@@ -77,6 +77,7 @@ TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex
   NS_LOG_FUNCTION (this);
 
   m_hostIndexRng = topology->CreateRamdomHostChooser ();
+  // Time::SetResolution (Time::Unit::PS); // improve resolution
 
   InitForRngs ();
 }
