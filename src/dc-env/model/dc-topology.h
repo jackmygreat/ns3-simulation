@@ -25,7 +25,6 @@
 #include "ns3/net-device.h"
 #include "ns3/network-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/point-to-point-net-device.h"
 #include "ns3/topology.pb.h"
 #include <vector>
 #include <iterator>
