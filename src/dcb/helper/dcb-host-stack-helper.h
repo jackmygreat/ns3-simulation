@@ -18,8 +18,8 @@
  * Author: Pavinberg <pavin0702@gmail.com>
  */
 
-#ifndef DCB_STACK_HELPER_H
-#define DCB_STACK_HELPER_H
+#ifndef DCB_HOST_STACK_HELPER_H
+#define DCB_HOST_STACK_HELPER_H
 
 #include "ns3/node-container.h"
 #include "ns3/net-device-container.h"
@@ -41,13 +41,13 @@ namespace ns3 {
  * \ingroup dcb
  * \brief subclass of InternetStackHelper where user can customize TrafficControlLayer
  */
-class DcbStackHelper : public PcapHelperForIpv4, public PcapHelperForIpv6, 
+class DcbHostStackHelper : public PcapHelperForIpv4, public PcapHelperForIpv6, 
                        public AsciiTraceHelperForIpv4, public AsciiTraceHelperForIpv6
 {
 public:
-  DcbStackHelper ();
+  DcbHostStackHelper ();
 
-  virtual ~DcbStackHelper ();
+  virtual ~DcbHostStackHelper ();
 
   /**
    * Return helper internal state to that of a newly constructed one
@@ -298,4 +298,4 @@ private:
 
 } // namespace ns3
 
-#endif /* DCB_STACK_HELPER_H */
+#endif // DCB_HOST_STACK_HELPER_H

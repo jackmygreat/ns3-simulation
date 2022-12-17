@@ -2,7 +2,7 @@ build_lib(
   LIBNAME dcb
   SOURCE_FILES
       helper/dcb-net-device-helper.cc
-      helper/dcb-stack-helper.cc
+      helper/dcb-host-stack-helper.cc
 	  helper/dcb-switch-stack-helper.cc
 	  helper/dcb-fc-helper.cc
 	  helper/dcb-trace-application-helper.cc
@@ -25,7 +25,7 @@ build_lib(
 	  utils/rocev2-header.cc
   HEADER_FILES
       helper/dcb-net-device-helper.h
-      helper/dcb-stack-helper.h
+      helper/dcb-host-stack-helper.h
 	  helper/dcb-switch-stack-helper.h
 	  helper/dcb-fc-helper.h
 	  helper/dcb-trace-application-helper.h

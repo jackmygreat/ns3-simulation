@@ -40,8 +40,8 @@
 #include "protobuf-topology-loader.h"
 #include "ns3/dcb-net-device.h"
 #include "ns3/dcb-channel.h"
-#include "ns3/dcb-stack-helper.h"
 #include "ns3/dcb-pfc-port.h"
+#include "ns3/dcb-host-stack-helper.h"
 #include "ns3/dcb-switch-stack-helper.h"
 #include "ns3/dcb-trace-application.h"
 #include "ns3/dcb-fc-helper.h"
@@ -188,7 +188,7 @@ ProtobufTopologyLoader::CreateOneHost (const ns3_proto::HostGroup &hostGroup)
       dev->SetQueue (queue);
     }
 
-  DcbStackHelper hostStack;
+  DcbHostStackHelper hostStack;
   hostStack.Install (host);
 
   for (int i = 0; i < hostGroup.ports_size (); i++)
