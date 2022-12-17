@@ -146,26 +146,34 @@ protected:
                           Ptr<Ipv4Interface> incomingInterface) override;
 
 private:
+  struct FlowInfo // for receiver
+  {
+    uint32_t dstQP;
+    uint32_t nextPSN;
+    bool receivedECN;
+    EventId lastCNPEvent;
+    FlowInfo (uint32_t dst)
+        : dstQP (dst), nextPSN (0), receivedECN (false)
+    {
+    }
+  };
+
   RoCEv2Header CreateNextProtocolHeader ();
   void HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce);
   void HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
                          Ptr<Ipv4Interface> incomingInterface, const RoCEv2Header &roce);
   void GoBackN (uint32_t lostPSN) const;
+  void ScheduleNextCNP (std::map<uint32_t, FlowInfo>::iterator flowInfoIter, Ipv4Header header);
 
   // Time CalcTxTime (uint32_t bytes);
+
+  Time m_CNPInterval;
 
   Ptr<DcqcnCongestionOps> m_ccOps; //!< DCQCN congestion control
   Ptr<RoCEv2SocketState> m_sockState; //!< DCQCN socket state
   DcbTxBuffer m_buffer;
   DataRate m_deviceRate;
   bool m_isSending;
-
-  struct FlowInfo
-  {
-    uint32_t nextPSN;
-    Time lastCNPTime;
-    FlowInfo (uint32_t psn, Time t) : nextPSN (psn), lastCNPTime (t) {}
-  };
 
   uint32_t m_senderNextPSN;
   std::map<uint32_t, FlowInfo> m_receiverFlowInfo;
