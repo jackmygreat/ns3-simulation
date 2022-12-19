@@ -65,37 +65,24 @@ TraceApplication::GetTypeId ()
   return tid;
 }
 
-TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex)
+TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex,
+                                    int32_t destIndex /* = -1 */)
     : m_enableSend (true),
       m_enableReceive (true),
       m_topology (topology),
       m_nodeIndex (nodeIndex),
-      m_randomDestination (true),
+      m_ecnEnabled (true),
       m_totBytes (0),
-      m_headerSize (8 + 20 + 14)
+      m_headerSize (8 + 20 + 14),
+      m_destNode (destIndex)
 {
   NS_LOG_FUNCTION (this);
 
-  m_hostIndexRng = topology->CreateRamdomHostChooser ();
+  if (destIndex < 0)
+    {
+      m_hostIndexRng = topology->CreateRamdomHostChooser ();
+    }
   // Time::SetResolution (Time::Unit::PS); // improve resolution
-
-  InitForRngs ();
-}
-
-TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex,
-                                    uint32_t destIndex)
-    : m_enableSend (true),
-      m_topology (topology),
-      m_nodeIndex (nodeIndex),
-      m_randomDestination (false),
-      m_totBytes (0),
-      m_headerSize (8 + 20 + 14)
-{
-  NS_LOG_FUNCTION (this);
-
-  // 0 interface is LoopbackNetDevice
-  m_destAddr = topology->GetInterfaceOfNode (destIndex, 1).GetAddress ();
-
   InitForRngs ();
 }
 
@@ -163,6 +150,7 @@ TraceApplication::StartApplication (void)
       socket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
       socket->ShutdownSend ();
       socket->SetStopTime (m_stopTime);
+      socket->SetRecvCallback (MakeCallback (&TraceApplication::HandleRead, this));
     }
 
   if (m_enableSend)
@@ -182,36 +170,46 @@ TraceApplication::StopApplication (void)
   NS_LOG_FUNCTION (this);
 }
 
-InetSocketAddress
-TraceApplication::GetDestinationAddr () const
+uint32_t
+TraceApplication::GetDestinationNode () const
 {
   NS_LOG_FUNCTION (this);
 
-  uint32_t portNum = 1234; // TODO: dynamic port
-  if (m_randomDestination)
+  if (m_destNode < 0)
     { // randomly send to a host
       uint32_t destNode;
       do
         {
           destNode = m_hostIndexRng->GetInteger ();
       } while (destNode == m_nodeIndex);
-      Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode (destNode, 1)
-                                 .GetAddress (); // 0 interface is LoopbackNetDevice
-      return InetSocketAddress (ipv4Addr, portNum);
+      return destNode;
     }
   else
     {
-      return InetSocketAddress (m_destAddr, portNum);
+      return m_destNode;
     }
 }
 
+InetSocketAddress
+TraceApplication::NodeIndexToAddr (uint32_t destNode) const
+{
+  NS_LOG_FUNCTION (this);
+
+  uint32_t portNum = RoCEv2L4Protocol::DefaultServicePort (); // FIXME: dynamic port
+
+  // 0 interface is LoopbackNetDevice
+  Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode (destNode, 1).GetAddress ();
+  return InetSocketAddress (ipv4Addr, portNum);
+}
+
 Ptr<Socket>
-TraceApplication::CreateNewSocket ()
+TraceApplication::CreateNewSocket (uint32_t destNode)
 {
   NS_LOG_FUNCTION (this);
 
   Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_tid);
   socket->BindToNetDevice (GetNode ()->GetDevice (0));
+  SetSocketTos (socket);
   Ptr<UdpBasedSocket> udpBasedSocket = DynamicCast<UdpBasedSocket> (socket);
   if (udpBasedSocket)
     {
@@ -223,8 +221,8 @@ TraceApplication::CreateNewSocket ()
     {
       NS_FATAL_ERROR ("Failed to bind socket");
     }
-
-  InetSocketAddress destAddr = GetDestinationAddr ();
+  
+  InetSocketAddress destAddr = NodeIndexToAddr (destNode);
   ret = socket->Connect (destAddr);
   if (ret == -1)
     {
@@ -240,10 +238,11 @@ TraceApplication::CreateNewSocket ()
 void
 TraceApplication::ScheduleNextFlow (const Time &startTime)
 {
-  Ptr<Socket> socket = CreateNewSocket ();
+  uint32_t destNode = GetDestinationNode ();
+  Ptr<Socket> socket = CreateNewSocket (destNode);
   uint64_t size = GetNextFlowSize ();
 
-  Flow *flow = new Flow (size, startTime, socket);
+  Flow *flow = new Flow (size, startTime, destNode, socket);
   m_flows.emplace (socket, flow); // used when flow completes
   Simulator::Schedule (startTime - Simulator::Now (), &TraceApplication::SendNextPacket, this,
                        flow);
@@ -320,6 +319,24 @@ TraceApplication::GetNextFlowSize () const
 }
 
 void
+TraceApplication::SetEcnEnabled (bool enabled)
+{
+  NS_LOG_FUNCTION(this << enabled);
+  m_ecnEnabled = enabled;
+}
+
+void
+TraceApplication::SetSocketTos (Ptr<Socket> socket) const
+{
+  uint8_t tos = 0;
+  if (m_ecnEnabled)
+    {
+      tos |= Ipv4Header::EcnType::ECN_ECT1;
+      socket->SetIpTos (tos);
+    }
+}
+
+void
 TraceApplication::ConnectionSucceeded (Ptr<Socket> socket)
 {
   NS_LOG_FUNCTION (this << socket);
@@ -342,7 +359,7 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
     {
       if (InetSocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("TraceApplication: At time "
+          NS_LOG_LOGIC ("TraceApplication: At time "
                        << Simulator::Now ().As (Time::S) << " client received "
                        << packet->GetSize () << " bytes from "
                        << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port "
@@ -350,7 +367,7 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
-          NS_LOG_INFO ("TraceApplication: At time "
+          NS_LOG_LOGIC ("TraceApplication: At time "
                        << Simulator::Now ().As (Time::S) << " client received "
                        << packet->GetSize () << " bytes from "
                        << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port "
@@ -372,7 +389,7 @@ TraceApplication::FlowCompletes (Ptr<UdpBasedSocket> socket)
                       << Simulator::GetContext ());
     }
   Flow *flow = p->second;
-  m_flowCompleteTrace (socket->GetSrcPort (), socket->GetDstPort (), flow->totalBytes,
+  m_flowCompleteTrace (flow->destNode, socket->GetSrcPort (), socket->GetDstPort (), flow->totalBytes,
                        flow->startTime, Simulator::Now ());
 }
 

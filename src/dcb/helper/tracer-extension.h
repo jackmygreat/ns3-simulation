@@ -35,7 +35,7 @@ class TracerExtension
 public:
   TracerExtension ();
 
-  typedef void (*FlowTracedCallback) (uint32_t, uint32_t, uint32_t, Time, Time);
+  typedef void (*FlowTracedCallback) (uint32_t, uint32_t, uint32_t, uint32_t, Time, Time);
 
   enum Protocol {
     None,
@@ -68,7 +68,8 @@ private:
     static Protocol protocol; // TODO: not supporting multiple protocols
     static std::ofstream fctFileStream;
 
-    static void FlowCompletionTracer (uint32_t srcPort, uint32_t dstPort, uint32_t flowSize, Time startTime, Time finishTime);
+    static void FlowCompletionTracer (uint32_t destNode, uint32_t srcPort, uint32_t dstPort,
+                                      uint32_t flowSize, Time startTime, Time finishTime);
   };
 
 }; // class TracerExtension

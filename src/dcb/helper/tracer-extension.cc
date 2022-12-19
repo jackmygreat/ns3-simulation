@@ -106,15 +106,16 @@ TE::GetRealFileName (std::string fileName)
 
 // static
 void
-TE::TraceFCTConfig::FlowCompletionTracer (uint32_t srcPort, uint32_t dstPort, uint32_t flowSize,
-                                          Time startTime, Time finishTime)
+TE::TraceFCTConfig::FlowCompletionTracer (uint32_t destNode, uint32_t srcPort, uint32_t dstPort,
+                                          uint32_t flowSize, Time startTime, Time finishTime)
 {
   // TODO: add mutex lock for concurrency
   Time fct = finishTime - startTime;
-  CsvWriter writer (&TE::TraceFCTConfig::fctFileStream, 7);
-  writer.WriteNextValue (Simulator::GetContext ());
-  writer.WriteNextValue (srcPort);
-  writer.WriteNextValue (dstPort);
+  CsvWriter writer (&TE::TraceFCTConfig::fctFileStream, 8);
+  writer.WriteNextValue (Simulator::GetContext ()); // src node
+  writer.WriteNextValue (destNode); // dest node
+  writer.WriteNextValue (srcPort); // src port/qp
+  writer.WriteNextValue (dstPort); // dest port/qp
   writer.WriteNextValue (flowSize);
   writer.WriteNextValue (startTime.GetNanoSeconds ());
   writer.WriteNextValue (finishTime.GetNanoSeconds ());

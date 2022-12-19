@@ -50,13 +50,14 @@ public:
    * \brief Create an application in topology node nodeIndex.
    * The application will randomly choose a node as destination and send flows.
    */
-  TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex);
+  // TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex);
 
   /**
    * \brief Create an application in topology node nodeIndex destined to destIndex.
    * The application will send flows from nodeIndex to destIndex.
+   * * If the destIndex is negative, the application will randomly choose a node as the destination.
    */  
-  TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex, uint32_t destIndex);
+  TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex, int32_t destIndex = -1);
   virtual ~TraceApplication ();
   
   /**
@@ -77,9 +78,10 @@ public:
     Time finishTime;
     const uint64_t totalBytes;
     uint64_t remainBytes;
+    uint32_t destNode;
     const Ptr<Socket> socket;
-    Flow (uint64_t s, Time t, Ptr<Socket> sock)
-      : startTime (t), totalBytes (s), remainBytes (s), socket (sock)
+    Flow (uint64_t s, Time t, uint32_t dest, Ptr<Socket> sock)
+      : startTime (t), totalBytes (s), remainBytes (s), destNode (dest), socket (sock)
     {
     }
     void Dispose () // to provide a similar API as ns-3
@@ -95,6 +97,8 @@ public:
   void SetFlowCdf (const TraceCdf &cdf);
   
   void SetFlowMeanArriveInterval (double interval);
+
+  void SetEcnEnabled (bool enabled);
 
   void SetSendEnabled (bool enabled);
   void SetReceiveEnabled (bool enabled);
@@ -160,14 +164,18 @@ private:
   /**
    * \brief Create new socket.
    */
-  Ptr<Socket> CreateNewSocket ();
+  Ptr<Socket> CreateNewSocket (uint32_t destNode);
 
   /**
-   * \brief Get destination of one flow.
-   * If m_randomDestination is true, return a random destination.
-   * Else return m_destAddr.
+   * \brief Get destination node index of one flow.
+   * If m_destNode is negative, return a random destination.
+   * Else return m_destNode.
    */
-  InetSocketAddress GetDestinationAddr () const;
+  uint32_t GetDestinationNode () const;
+  /**
+   * \brief Get the InetSocketAddress of the destNode. 
+   */
+  InetSocketAddress NodeIndexToAddr (uint32_t destNode) const;
 
   /**
    * \brief Send a dummy packet according to m_remainBytes.
@@ -185,6 +193,8 @@ private:
    * \brief Get next random flow size in bytes.
    */
   uint32_t GetNextFlowSize () const;
+
+  void SetSocketTos (Ptr<Socket> socket) const;
 
   //helpers
   /**
@@ -218,7 +228,7 @@ private:
   bool                   m_enableReceive;
   const Ptr<DcTopology>  m_topology;        //!< The topology
   const uint32_t         m_nodeIndex;
-  const bool             m_randomDestination; //!< whether this app choose random destination //!< Node index this application belongs to
+  bool                   m_ecnEnabled;
   // bool                   m_connected;       //!< True if connected
   DataRate               m_socketLinkRate;  //!< Link rate of the deice
   uint64_t               m_totBytes;        //!< Total bytes sent so far
@@ -228,7 +238,7 @@ private:
   Ptr<EmpiricalRandomVariable>   m_flowSizeRng;       //!< Flow size random generator
   Ptr<ExponentialRandomVariable> m_flowArriveTimeRng; //!< Flow arrive time random generator
   Ptr<UniformRandomVariable>     m_hostIndexRng;      //!< Host index random generator
-  Ipv4Address m_destAddr; //!< if not choosing random destination, store the destined address here
+  int32_t m_destNode; //!< if not choosing random destination, store the destined address here
 
   /// traced Callback: transmitted packets.
   TracedCallback<Ptr<const Packet>> m_txTrace;
@@ -240,7 +250,7 @@ private:
   TracedCallback<Ptr<const Packet>, const Address &, const Address &, const SeqTsSizeHeader &>
       m_txTraceWithSeqTsSize;
 
-  TracedCallback<uint32_t, uint32_t, uint32_t, Time, Time> m_flowCompleteTrace;
+  TracedCallback<uint32_t, uint32_t, uint32_t, uint32_t, Time, Time> m_flowCompleteTrace;
 };
 
 } // namespace ns3
