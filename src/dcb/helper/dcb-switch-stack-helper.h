@@ -32,6 +32,8 @@
 #include "ns3/internet-trace-helper.h"
 #include "ns3/ipv4-routing-helper.h"
 #include "ns3/ipv6-routing-helper.h"
+#include "ns3/pausable-queue-disc.h"
+#include "ns3/fifo-queue-disc-ecn.h"
 
 
 namespace ns3 {
@@ -108,6 +110,8 @@ public:
 
   void SetFCEnabled (bool enable);
 
+  void AddEcnConfig (EcnConfig config);
+
   /**
    * \brief Enable/disable IPv6 stack install.
    * \param enable enable state
@@ -134,6 +138,8 @@ public:
   int64_t AssignStreams (NodeContainer c, int64_t stream);
 
 private:
+
+  std::vector<EcnConfig> m_ecnConfigs;
   
 private:
   /**

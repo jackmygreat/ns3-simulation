@@ -32,27 +32,31 @@ main ()
   ProtobufTopologyLoader topoLoader;
   // topoLoader.RunConfigScript("config/dumbell_topo.py");
   Ptr<DcTopology> topology = topoLoader.LoadTopology();
-
-  LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+  
   LogComponentEnable ("TraceApplication", LOG_LEVEL_INFO);
-  LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-
   LogComponentEnable ("ProtobufTopologyLoader", LOG_LEVEL_DEBUG);
   LogComponentEnable ("DcbTrafficControl", LOG_LEVEL_INFO);
   LogComponentEnable ("DcbSwitchStackHelper", LOG_LEVEL_INFO);
-  LogComponentEnable ("DcbStackHelper", LOG_LEVEL_INFO);
+  LogComponentEnable ("DcbHostStackHelper", LOG_LEVEL_INFO);
   LogComponentEnable ("DcbPfcPort", LOG_LEVEL_DEBUG);
   LogComponentEnable ("RoCEv2L4Protocol", LOG_LEVEL_INFO);
   LogComponentEnable ("RoCEv2Socket", LOG_LEVEL_INFO);
+  LogComponentEnable ("FifoQueueDiscEcn", LOG_LEVEL_INFO);
+  LogComponentEnableAll (LOG_PREFIX_LEVEL);
+  LogComponentEnableAll(LOG_PREFIX_NODE);
 
   TracerExtension::ConfigOutputDirectory("data");
   TracerExtension::ConfigTraceFCT (TracerExtension::Protocol::RoCEv2, "fct.csv");
 
-  // capture packet at host-0
-  // Ptr<NetDevice> dev = topology->GetNode (0)->GetDevice (0);
+  // // capture packet at host-0
+  // Ptr<NetDevice> dev = topology->GetNetDeviceOfNode(0, 0);
   // TracerExtension::EnableDevicePcap(dev, "host");
 
-  // capture packet at all switches
+  // // capture packet at host-2
+  // dev = topology->GetNetDeviceOfNode(2, 0);
+  // TracerExtension::EnableDevicePcap(dev, "host");
+
+  // // capture packet at all switches
   // for (auto sw = topology->switches_begin(); sw != topology->switches_end(); sw++)
   //   {
   //     TracerExtension::EnableSwitchIpv4Pcap(sw->nodePtr, "switch");

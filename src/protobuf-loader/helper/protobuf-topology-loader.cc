@@ -25,6 +25,7 @@
 #include "ns3/boolean.h"
 #include "ns3/data-rate.h"
 #include "ns3/dc-topology.h"
+#include "ns3/dcb-net-device.h"
 #include "ns3/global-router-interface.h"
 #include "ns3/ipv4-address-generator.h"
 #include "ns3/ipv4-l3-protocol.h"
@@ -33,18 +34,13 @@
 #include "ns3/net-device.h"
 #include "ns3/nstime.h"
 #include "ns3/object-factory.h"
+#include "ns3/queue-disc.h"
 #include "ns3/queue-size.h"
 #include "ns3/topology.pb.h"
 #include "ns3/traced-value.h"
-#include "ns3/udp-echo-helper.h"
 #include "protobuf-topology-loader.h"
-#include "ns3/dcb-net-device.h"
-#include "ns3/dcb-channel.h"
-#include "ns3/dcb-pfc-port.h"
-#include "ns3/dcb-host-stack-helper.h"
-#include "ns3/dcb-switch-stack-helper.h"
-#include "ns3/dcb-trace-application.h"
 #include "ns3/dcb-fc-helper.h"
+#include "ns3/dcb-pfc-port.h"
 
 /**
  * \file
@@ -92,6 +88,8 @@ ProtobufTopologyLoader::LoadTopology ()
   LoadSwitches (topoConfig.nodes ().switchgroups (), topology);
   LoadLinks (topoConfig.links (), topology);
   InitGlobalRouting ();
+  
+  LogAllRoutes (topology); // TODO: remove me
 
   InstallApplications (topoConfig.applications (), topology);
 
@@ -212,14 +210,19 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
   DcbSwitchStackHelper switchStack;
   for (const auto &portConfig : switchGroup.ports ())
     {
-      AddPortToSwitch (portConfig, sw);
+      AddPortToSwitch (portConfig, sw, switchStack);
     }
   switchStack.Install (sw);
 
-  // Configure flow control
   for (int i = 0; i < switchGroup.ports_size (); i++)
     {
       const ns3_proto::SwitchPortConfig &portConfig = switchGroup.ports (i);
+      
+      if (portConfig.queues_size () != 0 && portConfig.queues_size () != 8)
+        {
+          NS_FATAL_ERROR ("The port configuration should have 8 queues or 0 queue, not " << portConfig.queues_size());
+        }
+
       if (portConfig.pfcenabled ()) // Configure PFC
         {
           DcbPfcPortConfig pfcConfig;
@@ -233,6 +236,30 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
           DcbFcHelper::InstallPFCtoNodePort (sw, i, pfcConfig);
         }
       AssignAddress (sw, sw->GetDevice (i));
+
+      if (portConfig.ecnenabled()) // Configure ECN
+        {
+          ObjectFactory factory;
+          factory.SetTypeId ("ns3::FifoQueueDiscEcn");
+          Ptr<QueueDisc> dev = DynamicCast<DcbNetDevice> (sw->GetDevice (i))->GetQueueDisc ();
+      
+          for (int qi = 0; qi < portConfig.queues_size (); qi++)
+            {
+              const ns3_proto::PortQueueConfig &queueConfig = portConfig.queues (qi);
+              uint32_t ecnKMin = QueueSize (queueConfig.ecnkmin ()).GetValue ();
+              uint32_t ecnKMax = QueueSize (queueConfig.ecnkmax ()).GetValue ();
+              double ecnPMax = queueConfig.ecnpmax ();
+              // ecnConfig.AddQueueConfig (qi, ecnKMin, ecnKMax, ecnPMax);
+
+              Ptr<FifoQueueDiscEcn> qd = factory.Create<FifoQueueDiscEcn> ();
+              qd->Initialize ();
+              qd->ConfigECN (ecnKMin, ecnKMax, ecnPMax);
+              Ptr<PausableQueueDiscClass> c = CreateObject<PausableQueueDiscClass> ();
+              c->SetQueueDisc (qd);
+              dev->AddQueueDiscClass (c);
+              // switchStack.AddEcnConfig (std::move (ecnConfig));
+            }
+        }
     }
 
   return {.type = DcTopology::TopoNode::NodeType::SWITCH, .nodePtr = sw};
@@ -240,18 +267,19 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
 
 Ptr<DcbNetDevice>
 ProtobufTopologyLoader::AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
-                                         const Ptr<Node> sw)
+                                         const Ptr<Node> sw, DcbSwitchStackHelper &switchStack)
 {
   NS_LOG_FUNCTION (this);
   // Create a net device for this port
   Ptr<DcbNetDevice> dev = CreateObject<DcbNetDevice> ();
-  sw->AddDevice (dev);
   dev->SetAddress (Mac48Address::Allocate ());
 
   ObjectFactory queueFactory;
   queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId ());
   Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
   dev->SetQueue (queue);
+
+  sw->AddDevice (dev);
 
   return dev;
 }
@@ -317,10 +345,9 @@ std::map<std::string, TraceApplicationHelper::ProtocolGroup>
         {"RoCEv2", TraceApplicationHelper::ProtocolGroup::RoCEv2},
 };
 
-std::map<std::string, TraceApplication::TraceCdf* > ProtobufTopologyLoader::appCdfMapper = {
-  {"WebSearch", &TraceApplication::TRACE_WEBSEARCH_CDF},
-  {"FdHadoop", &TraceApplication::TRACE_FDHADOOP_CDF}
-};
+std::map<std::string, TraceApplication::TraceCdf *> ProtobufTopologyLoader::appCdfMapper = {
+    {"WebSearch", &TraceApplication::TRACE_WEBSEARCH_CDF},
+    {"FdHadoop", &TraceApplication::TRACE_FDHADOOP_CDF}};
 
 void
 ProtobufTopologyLoader::InstallApplications (
@@ -330,36 +357,38 @@ ProtobufTopologyLoader::InstallApplications (
   NS_LOG_FUNCTION (this);
 
   TraceApplicationHelper appHelper (topology);
-  for (const auto& appConfig: appsConfig)
+  for (const auto &appConfig : appsConfig)
     {
       { // set protocol group
-        auto p = protocolGroupMapper.find (appConfig.protocolgroup());
+        auto p = protocolGroupMapper.find (appConfig.protocolgroup ());
         if (p == protocolGroupMapper.end ())
           {
-            NS_FATAL_ERROR ("Cannot recognize protocol group \"" << appConfig.protocolgroup () << "\"");
+            NS_FATAL_ERROR ("Cannot recognize protocol group \"" << appConfig.protocolgroup ()
+                                                                 << "\"");
           }
         appHelper.SetProtocolGroup (p->second);
       }
-      
+
       { // set CDF
         auto p = appCdfMapper.find (appConfig.cdf ());
         if (p == appCdfMapper.end ())
           {
             NS_FATAL_ERROR ("Cannot recognize CDF \"" << appConfig.cdf () << "\".");
           }
-        appHelper.SetCdf(*(p->second));
+        appHelper.SetCdf (*(p->second));
       }
-      
-      for (const auto& nodeI: appConfig.nodeindices())
+
+      for (const auto &nodeI : appConfig.nodeindices ())
         {
           if (!topology->IsHost (nodeI))
             {
-              NS_FATAL_ERROR ("Node " << nodeI << " is not a host and thus could not install an application.");
+              NS_FATAL_ERROR (
+                  "Node " << nodeI << " is not a host and thus could not install an application.");
             }
           Ptr<Node> node = topology->GetNode (nodeI).nodePtr;
           appHelper.SetLoad (DynamicCast<DcbNetDevice> (node->GetDevice (0)), appConfig.load ());
           ApplicationContainer app = appHelper.Install (node);
-          app.Start (MicroSeconds (appConfig.starttime()));
+          app.Start (MicroSeconds (appConfig.starttime ()));
           app.Stop (MicroSeconds (appConfig.stoptime ()));
         }
     }

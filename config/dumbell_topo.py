@@ -56,14 +56,14 @@ switchPortQueueConfig2 = {
 switchPortConfig1 = {
     "pfcEnabled": False,
     "ecnEnabled": True,
-    "queues": [switchPortQueueConfig1] * 2
+    "queues": [switchPortQueueConfig1] * 8
 }
 
 # Configuration of the switch port that connects to switch
 switchPortConfig2 = {
     "pfcEnabled": True,
     "ecnEnabled": True,
-    "queues": [switchPortQueueConfig2] * 2
+    "queues": [switchPortQueueConfig2] * 8
 }
 
 # Configuration of a group of switches. In this example, only one group is needed 
@@ -71,7 +71,7 @@ switchGroupConfig = {
     "num": 2,                         # number of switches in this group
     "pfcDynamic": False,              # whether enabling PFC dynamic threshold
     "bufferSize": "13180 KB",         # buffer size of the switch
-    "queueNum": 2,
+    "queueNum": 8,
     "ports": [switchPortConfig1] * 2 + [switchPortConfig2],  # a list of ports
 }
 
@@ -88,16 +88,16 @@ linkConfig2 = {
 }
 
 senderConfig = {
-    "nodeIndices": [0],
+    "nodeIndices": [0, 1],
     "protocolGroup": "RoCEv2",
     "cdf": "WebSearch",
-    "load": 1.0,
+    "load": 0.9,
     "startTime": 2000,
     "stopTime": 4000,
 }
 
 receiverConfig = {
-    "nodeIndices": [3],
+    "nodeIndices": [2, 3],
     "protocolGroup": "RoCEv2",
     "cdf": "WebSearch",
     "load": 0.0,

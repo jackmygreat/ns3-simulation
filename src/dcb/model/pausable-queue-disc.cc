@@ -20,6 +20,7 @@
 
 #include "pausable-queue-disc.h"
 #include "dcb-traffic-control.h"
+#include "fifo-queue-disc-ecn.h"
 #include "ns3/assert.h"
 #include "ns3/boolean.h"
 #include "ns3/fatal-error.h"
@@ -30,6 +31,7 @@
 #include "ns3/object-factory.h"
 #include "ns3/queue-disc.h"
 #include "ns3/queue-item.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/type-id.h"
 #include "ns3/uinteger.h"
 #include "ns3/simulator.h"
@@ -130,6 +132,17 @@ PausableQueueDisc::RegisterTrafficControlCallback (TCEgressCallback cb)
   m_tcEgress = cb;
 }
 
+void
+PausableQueueDisc::ConfigECN (const EcnConfig& config)
+{
+  // CheckConfig ();
+  // for (const EcnConfig::QueueConfig& qConfig: config.queues)
+  // {
+      // uint32_t i = qConfig.priority;
+      // DynamicCast<FifoQueueDiscEcn>(GetQueueDiscClass(i)->GetQueueDisc())->ConfigECN (qConfig);
+  // }
+}
+
 bool
 PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
 {
@@ -145,9 +158,11 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
     {
       uint8_t priority = cosTag.GetCoS () & 0x0f;
       NS_ASSERT_MSG (priority < 8, "Priority should be 0~7 but here we have " << priority);
-      bool retval = GetQueueDiscClass (priority)->GetQueueDisc ()->Enqueue (item);
+      Ptr<PausableQueueDiscClass> qdiscClass = GetQueueDiscClass (priority);
+      bool retval = qdiscClass->GetQueueDisc()->Enqueue (item);
       if (!retval)
         {
+          qdiscClass->GetQueueDisc()->Enqueue (item); // TODO: reove this line
           NS_FATAL_ERROR("PausableQueueDisc: enqueue failed on node " << Simulator::GetContext ());
         }
       return retval;
@@ -216,7 +231,7 @@ PausableQueueDisc::CheckConfig (void)
     {
       // create 8 fifo queue discs
       ObjectFactory factory;
-      factory.SetTypeId ("ns3::FifoQueueDisc");
+      factory.SetTypeId ("ns3::FifoQueueDiscEcn");
       for (uint8_t i = 0; i < 8; i++)
         {
           Ptr<QueueDisc> qd = factory.Create<QueueDisc> ();
@@ -234,7 +249,7 @@ PausableQueueDisc::InitializeParams (void)
 {
   NS_LOG_FUNCTION (this);
 }
-
+  
 TypeId
 PausableQueueDiscClass::GetTypeId ()
 {

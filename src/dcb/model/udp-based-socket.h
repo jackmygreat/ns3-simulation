@@ -396,7 +396,7 @@ private:
   bool m_shutdownSend; //!< Send no longer allowed
   bool m_shutdownRecv; //!< Receive no longer allowed
   bool m_connected; //!< Connection established
-  uint32_t m_rxAvailable; //!< Number of available bytes to be received
+  uint32_t m_rxUsed; //!< Number of available bytes to be received
   std::queue<std::pair<Ptr<Packet>, Address>> m_deliveryQueue; //!< Queue for incoming packets
   Callback<void, Ptr<UdpBasedSocket>> m_flowCompleteCallback;
   // Socket attributes

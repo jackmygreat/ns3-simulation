@@ -23,23 +23,14 @@
 #include "ns3/dcb-pfc-port.h"
 #include "ns3/dcb-net-device.h"
 #include "ns3/dcb-traffic-control.h"
-#include "ns3/pausable-queue-disc.h"
-#include "ns3/assert.h"
-#include "ns3/boolean.h"
-#include "ns3/log.h"
-#include "ns3/object.h"
-#include "ns3/names.h"
 #include "ns3/ipv4.h"
 #include "ns3/ipv6.h"
 #include "ns3/packet-socket-factory.h"
-#include "ns3/config.h"
-#include "ns3/ptr.h"
 #include "ns3/simulator.h"
+#include "ns3/names.h"
+#include "ns3/config.h"
 #include "ns3/string.h"
 #include "ns3/net-device.h"
-#include "ns3/callback.h"
-#include "ns3/node.h"
-#include "ns3/node-list.h"
 #include "ns3/core-config.h"
 #include "ns3/arp-l3-protocol.h"
 #include "ns3/ipv4-global-routing.h"
@@ -350,8 +341,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
           Ptr<PausableQueueDisc> qDisc = CreateObject<PausableQueueDisc> (i);
           qDisc->RegisterTrafficControlCallback (tcCallback);
           qDisc->SetPortIndex (i);
-          dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);
-
+          dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);      
           dcbDev->SetFcEnabled (true); // all NetDevices should support FC
         }
     }
@@ -373,6 +363,12 @@ DcbSwitchStackHelper::Install (std::string nodeName) const
 {
   Ptr<Node> node = Names::Find<Node> (nodeName);
   Install (node);
+}
+
+void
+DcbSwitchStackHelper::AddEcnConfig (EcnConfig config)
+{
+  m_ecnConfigs.push_back (std::move (config));
 }
 
 /**

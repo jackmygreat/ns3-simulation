@@ -12,6 +12,7 @@ build_lib(
 	  model/dcb-net-device.cc
 	  model/dcb-channel.cc
 	  model/pausable-queue-disc.cc
+	  model/fifo-queue-disc-ecn.cc
 	  model/dcb-traffic-control.cc
 	  model/dcb-trace-application.cc
 	  model/dcb-flow-control-port.cc
@@ -35,6 +36,7 @@ build_lib(
 	  model/dcb-net-device.h
 	  model/dcb-channel.h
 	  model/pausable-queue-disc.h
+	  model/fifo-queue-disc-ecn.h
 	  model/dcb-trace-application.h
 	  model/dcb-flow-control-port.h
 	  model/dcb-pfc-port.h

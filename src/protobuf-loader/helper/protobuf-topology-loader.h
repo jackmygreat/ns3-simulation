@@ -24,7 +24,10 @@
 #include "google/protobuf/repeated_field.h"
 #include "ns3/dc-topology.h"
 #include "ns3/dcb-net-device.h"
+#include "ns3/dcb-channel.h"
 #include "ns3/dcb-trace-application-helper.h"
+#include "ns3/dcb-host-stack-helper.h"
+#include "ns3/dcb-switch-stack-helper.h"
 #include "ns3/topology.pb.h"
 
 /**
@@ -75,7 +78,7 @@ protected:
    * Add one port to the switch `sw` according to portConfig
    */
   Ptr<DcbNetDevice> AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
-                                     const Ptr<Node> sw);
+                                     const Ptr<Node> sw, DcbSwitchStackHelper& switchStack);
 
   void AssignAddress (const Ptr<Node> node, const Ptr<NetDevice> device);
 

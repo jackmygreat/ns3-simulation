@@ -158,12 +158,14 @@ private:
     }
   };
 
+  typedef std::pair<Ipv4Address, uint32_t> FlowIdentifier;  
+
   RoCEv2Header CreateNextProtocolHeader ();
   void HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce);
   void HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
                          Ptr<Ipv4Interface> incomingInterface, const RoCEv2Header &roce);
   void GoBackN (uint32_t lostPSN) const;
-  void ScheduleNextCNP (std::map<uint32_t, FlowInfo>::iterator flowInfoIter, Ipv4Header header);
+  void ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flowInfoIter, Ipv4Header header);
 
   // Time CalcTxTime (uint32_t bytes);
 
@@ -176,7 +178,7 @@ private:
   bool m_isSending;
 
   uint32_t m_senderNextPSN;
-  std::map<uint32_t, FlowInfo> m_receiverFlowInfo;
+  std::map<FlowIdentifier, FlowInfo> m_receiverFlowInfo;
   uint32_t m_psnEnd; //!< the last PSN + 1, used to check if flow completes
 
   Time m_flowStartTime;

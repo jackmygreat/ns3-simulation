@@ -27,6 +27,8 @@
 
 namespace ns3 {
 
+struct EcnConfig;
+
 class PausableQueueDiscClass : public QueueDiscClass
 {
 public:
@@ -40,7 +42,7 @@ public:
   void SetPaused (bool paused);
 
 private:
-  bool m_isPaused;
+  bool m_isPaused;  
 }; // PausableQueueDiscClass
 
 class PausableQueueDisc : public QueueDisc
@@ -71,6 +73,8 @@ public:
   typedef Callback<void, uint32_t, uint8_t, Ptr<Packet>> TCEgressCallback;
 
   void RegisterTrafficControlCallback (TCEgressCallback cb);
+
+  void ConfigECN (const EcnConfig& config);
 
 private:
   virtual bool DoEnqueue (Ptr<QueueDiscItem> item) override;

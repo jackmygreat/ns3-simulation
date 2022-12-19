@@ -28,6 +28,7 @@
 #include "ns3/ipv4-routing-protocol.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
+#include "ns3/simulator.h"
 #include "ns3/object-base.h"
 
 namespace ns3 {
@@ -61,8 +62,8 @@ UdpBasedSocket::UdpBasedSocket ()
       m_shutdownSend (false),
       m_shutdownRecv (false),
       m_connected (false),
-      m_rxAvailable (0),
-      m_rcvBufSize(2048)
+      m_rxUsed (0),
+      m_rcvBufSize(8192)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -372,7 +373,7 @@ UdpBasedSocket::GetRxAvailable (void) const
   NS_LOG_FUNCTION (this);
   // We separately maintain this state to avoid walking the queue
   // every time this might be called
-  return m_rxAvailable;
+  return m_rxUsed;
 }
 
 Ptr<Packet>
@@ -390,13 +391,17 @@ UdpBasedSocket::RecvFrom (uint32_t maxSize, uint32_t flags, Address &fromAddress
 {
   NS_LOG_FUNCTION (this << maxSize << flags << fromAddress);
 
+  if (m_deliveryQueue.empty ())
+    {
+      return 0;
+    }
   Ptr<Packet> p = m_deliveryQueue.front ().first;
   fromAddress = m_deliveryQueue.front ().second;
 
   if (p->GetSize () <= maxSize)
     {
       m_deliveryQueue.pop ();
-      m_rxAvailable -= p->GetSize ();
+      m_rxUsed -= p->GetSize ();
     }
   else
     {
@@ -498,11 +503,11 @@ UdpBasedSocket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
   SocketPriorityTag priorityTag;
   packet->RemovePacketTag (priorityTag);
 
-  if ((m_rxAvailable + packet->GetSize ()) <= m_rcvBufSize)
+  if ((m_rxUsed + packet->GetSize ()) <= m_rcvBufSize)
     {
       Address address = InetSocketAddress (header.GetSource (), port);
       m_deliveryQueue.push (std::make_pair (packet, address));
-      m_rxAvailable += packet->GetSize ();
+      m_rxUsed += packet->GetSize ();
       NotifyDataRecv ();
     }
   else
@@ -512,7 +517,7 @@ UdpBasedSocket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
       // in comparison to the arrival rate
       //
       // drop and trace packet
-      NS_LOG_WARN ("No receive buffer space available.  Drop.");
+      NS_LOG_WARN ("UdpBasedSocket: No receive buffer space available on node " << Simulator::GetContext () << ". Drop.");
       m_dropTrace (packet);
     }
 }

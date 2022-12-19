@@ -23,6 +23,7 @@
 #include "ns3/log-macros-enabled.h"
 #include "ns3/node.h"
 #include "ns3/packet.h"
+#include "ns3/simulator.h"
 #include "ns3/udp-l4-protocol.h"
 #include "udp-based-l4-protocol.h"
 #include "udp-based-socket.h"
@@ -121,7 +122,7 @@ UdpBasedL4Protocol::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t p
     }
   else
     {
-      NS_FATAL_ERROR ("No endPoints matched in UDP-based L4 protocol with inner port " << innerPort);
+      NS_FATAL_ERROR ("No endPoints matched in UDP-based L4 protocol with inner port " << innerPort << " on node " << Simulator::GetContext ());
     }
 }
 

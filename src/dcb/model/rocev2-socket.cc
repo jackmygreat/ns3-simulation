@@ -153,11 +153,7 @@ RoCEv2Socket::HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce)
           }
         if (psn + 1 == m_psnEnd)
           { // last ACk received, flow finshed
-            // TODO: do some trae here, record FCT
             NotifyFlowCompletes ();
-            // NS_LOG_INFO ("At time " << Simulator::Now () << " node " << Simulator::GetContext ()
-            //                         << " received last ack packet");
-
             Close ();
           }
         break;
@@ -179,10 +175,12 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   NS_LOG_FUNCTION (this << packet);
 
   const uint32_t srcQP = roce.GetSrcQP (), dstQP = roce.GetDestQP ();
-  std::map<uint32_t, FlowInfo>::iterator flowInfoIter = m_receiverFlowInfo.find (srcQP);
+  Ipv4Address srcIp = header.GetSource();
+  FlowIdentifier flowId = FlowIdentifier {std::move (srcIp), srcQP};
+  std::map<FlowIdentifier, FlowInfo>::iterator flowInfoIter = m_receiverFlowInfo.find (flowId);
   if (flowInfoIter == m_receiverFlowInfo.end ())
     {
-      auto pp = m_receiverFlowInfo.emplace (srcQP, FlowInfo{dstQP});
+      auto pp = m_receiverFlowInfo.emplace (std::move (flowId), FlowInfo{dstQP});
       flowInfoIter = std::move (pp.first);
     }
 
@@ -198,6 +196,7 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   uint32_t expectedPSN = flowInfoIter->second.nextPSN;
   if (psn > expectedPSN)
     { // packet out-of-order, send NACK
+      NS_LOG_LOGIC ("RoCEv2 receiver " << Simulator::GetContext () << "send NACK of flow " << srcQP << "->" << dstQP);
       Ptr<Packet> nack = RoCEv2L4Protocol::GenerateNACK (dstQP, srcQP, expectedPSN);
       m_innerProto->Send (nack, header.GetDestination (), header.GetSource (), dstQP, srcQP, 0);
     }
@@ -212,7 +211,7 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
     }
   else
     {
-      NS_LOG_WARN ("[WARN] RoCEv2 socket receives smaller PSN than expected, something wrong");
+      NS_LOG_WARN ("RoCEv2 socket receives smaller PSN than expected, something wrong");
     }
 
   UdpBasedSocket::ForwardUp (packet, header, port, incomingInterface);
@@ -228,7 +227,7 @@ RoCEv2Socket::GoBackN (uint32_t lostPSN) const
 }
 
 void
-RoCEv2Socket::ScheduleNextCNP (std::map<uint32_t, FlowInfo>::iterator flowInfoIter,
+RoCEv2Socket::ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flowInfoIter,
                                Ipv4Header header)
 {
   NS_LOG_FUNCTION (this);
@@ -238,7 +237,7 @@ RoCEv2Socket::ScheduleNextCNP (std::map<uint32_t, FlowInfo>::iterator flowInfoIt
     {
       return;
     }
-  uint32_t srcQP = flowInfoIter->first;
+  auto [srcIp, srcQP] = flowInfoIter->first;
 
   // send Congestion Notification Packet (CNP) to sender
   Ptr<Packet> cnp = RoCEv2L4Protocol::GenerateCNP (flowInfo.dstQP, srcQP);
