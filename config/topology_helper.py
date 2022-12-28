@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from typing import List, Tuple
 import re
 from itertools import zip_longest, chain
+from copy import deepcopy
 
 
 class Utils:
@@ -227,11 +228,10 @@ class LinksGenerator:
         """
         if not isinstance(nodes1, Iterable) or not isinstance(nodes2, Iterable):
             raise ValueError(f"the parameters for connectN2One() should be an iterable object (i.e., list-like)")
-        
         for node, p in zip_longest(nodes1, ports2):
             if node is None or p is None:
                 raise ValueError("nodes1 and ports2 has different length")
-            self.connectN2One(nodes2, p, nodes, ports1, rate, delay)        
+            self.connectN2One(nodes2, p, node, ports1, rate, delay)        
 
     def getAllLinks(self):
         return self.links
@@ -292,6 +292,165 @@ class TopologyGenerator:
     def __str__(self):
         return f"{self.nodes.getAllNodes()}\n{self.links.getAllLinks()}"
 
+
+class FattreeGenerator(TopologyGenerator):
+    '''3-tier Fat tree generator'''
+
+    def __init__(self, k, *args):
+        if k <= 0 or k % 2 == 1:
+            raise ValueError("the k of k-ary Fat tree should be a postive even number")
+        self.k = k
+        # configuration of node groups
+        self.hostPod = [None] * self.getNPods()
+        self.edgeSwitchPod = [None] * self.getNPods()
+        self.aggSwitchPod = [None] * self.getNPods()
+        self.coreSwitch = None
+        #configuration of link groups
+        self.linkPodTier = [[None, None, None] for _ in range(self.getNPods())]
+        super().__init__(*args)
+
+    def setHostConfigOfPod(self, podIndex, config, copy=True):
+        self._checkPodIndex(podIndex)
+        if copy:
+            config = deepcopy(config)
+        config["num"] = self.getNHostsPerPod()
+        self.hostPod[podIndex] = config
+
+    def setHostConfigAll(self, config):
+        config = deepcopy(config)
+        for pod in range(self.getNPods()):
+            self.setHostConfigOfPod(pod, config, False)
+
+    def setEdgeConfigOfPod(self, podIndex, config, copy=True):
+        self._checkPodIndex(podIndex)
+        self._checkSwitchPorts(config)
+        if copy:
+            config = deepcopy(config)
+        config["num"] = self.getNEdgeSwitchesPerPod()
+        self.edgeSwitchPod[podIndex] = config
+
+    def setEdgeConfigAll(self, config):
+        config = deepcopy(config)
+        for pod in range(self.getNPods()):
+            self.setEdgeConfigOfPod(pod, config, False)
+
+    def setAggConfigOfPod(self, podIndex, config, copy=True):
+        self._checkPodIndex(podIndex)
+        self._checkSwitchPorts(config)
+        if copy:
+            config = deepcopy(config)
+        config["num"] = self.getNAggSwitchesPerPod()
+        self.aggSwitchPod[podIndex] = config
+
+    def setAggConfigAll(self, config):
+        config = deepcopy(config)        
+        for pod in range(self.getNPods()):
+            self.setAggConfigOfPod(pod, config, False)
+
+    def setCoreConfig(self, config):
+        self._checkSwitchPorts(config)
+        config = deepcopy(config)
+        config["num"] = self.getNCoreSwitches()
+        self.coreSwitch = config
+
+    def setLinkConfigOfPodTier(self, podIndex, tierIndex, config, copy=True):
+        self._checkPodIndex(podIndex)
+        self._checkTierIndex(tierIndex)
+        if copy:
+            config = deepcopy(config)
+        self.linkPodTier[podIndex][tierIndex] = config
+
+    def setLinkConfigOfTier(self, tierIndex, config, copy=True):
+        if copy:
+            config = deepcopy(config)
+        for pod in range(self.getNPods()):
+            self.setLinkConfigOfPodTier(pod, tierIndex, config, False)
+
+    def setLinkConfigAll(self, config):
+        config = deepcopy(config)        
+        for tier in [0, 1, 2]:
+            self.setLinkConfigOfTier(tier, config, False)
+
+    def createFattree(self):
+        # create nodes
+        hostGroups = [self.nodes.addHostGroup(**config) for config in self.hostPod]
+        edgeGroups, aggGroups = [], []
+        for edge, agg in zip(self.edgeSwitchPod, self.aggSwitchPod):
+            edgeGroups.append(self.nodes.addSwitchGroup(**edge))
+            aggGroups.append(self.nodes.addSwitchGroup(**agg))
+        coreGroup = self.nodes.addSwitchGroup(**self.coreSwitch)
+
+        # add links
+        halfRadix = self.getNHostsPerToR()
+        for podIndex in range(self.getNPods()):
+            # 1. connect hosts to ToR
+            hosts = hostGroups[podIndex]
+            for i in range(0, len(hosts), halfRadix):
+                tor = edgeGroups[podIndex][i // halfRadix]
+                self.links.connectN2One(nNodes=hosts[i:i+halfRadix], port=0,
+                                        one=tor, nPorts=range(halfRadix),
+                                        **self.linkPodTier[podIndex][0])
+            # 2. connect ToRs to Aggregate switches
+            tors, aggs = edgeGroups[podIndex], aggGroups[podIndex]
+            self.links.connectM2N(nodes1=tors, ports1=range(halfRadix, halfRadix * 2),
+                                  nodes2=aggs, ports2=range(halfRadix),
+                                  **self.linkPodTier[podIndex][1])
+            # 3. connect Aggregate switches to Core switches
+            for i in range(0, len(coreGroup), halfRadix):
+                agg = aggGroups[podIndex][i // halfRadix]
+                self.links.connectN2One(nNodes=coreGroup[i:i+halfRadix], port=podIndex,
+                                        one=agg, nPorts=range(halfRadix, halfRadix * 2),
+                                        **self.linkPodTier[podIndex][2])
+            
+    def getNCoreSwitches(self) -> int:
+        '''Get the number of the core switches.'''
+        return (self.k // 2) ** 2
+
+    def getNPods(self) -> int:
+        '''Get the number of pods.'''
+        return self.k
+
+    def getNAggSwitchesPerPod(self) -> int:
+        '''Get the number of the aggregate switches per pod.'''
+        return self.k // 2
+
+    def getNEdgeSwitchesPerPod(self) -> int:
+        '''Get the number of the edge switches per pod.'''
+        return self.k // 2
+
+    def getNHostsPerToR(self) -> int:
+        '''Get the number of hosts per ToR (i.e., edge switch).'''
+        return self.k // 2
+
+    def getNHostsPerPod(self) -> int:
+        '''Get the number of hosts per pod'''
+        return self.getNHostsPerToR() * self.getNEdgeSwitchesPerPod()
+
+    def getNHosts(self) -> int:
+        '''Get the total number of hosts in the Fat tree'''
+        return self.getNHostsPerPod * self.getNPods()
+
+    def getNToRs(self) -> int:
+        '''Get the number of ToRs in the Fat tree'''
+        return self.getNEdgeSwitchesPerPod() * self.getNPods()
+
+    def getToRofHost(self, host) -> int:
+        return host // self.getNHostsPerToR()
+
+    def _checkPodIndex(self, index):
+        if index < 0 or index > self.getNPods():
+            raise ValueError(f"Pod index out of range. You input {index} but {self.k}-ary Fat tree has {self.getNPods()} pods.")
+
+    def _checkTierIndex(self, index):
+        if index not in {0, 1, 2}:
+            raise ValueError(f"the tier of Fat tree should be 0, 1 or 2, not {index}")
+
+    def _checkSwitchPorts(self, config):
+        if "ports" not in config:
+            raise KeyError("Switch config must have 'ports' field")
+        if len(config["ports"]) != self.k:
+            raise ValueError(f"Switch radix must be k. Your switch has "
+                             f"{len(config['ports'])} ports but the k is {self.k}")
 
 class Units:
 
