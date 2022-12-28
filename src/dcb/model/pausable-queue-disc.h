@@ -74,8 +74,6 @@ public:
 
   void RegisterTrafficControlCallback (TCEgressCallback cb);
 
-  void ConfigECN (const EcnConfig& config);
-
 private:
   virtual bool DoEnqueue (Ptr<QueueDiscItem> item) override;
 

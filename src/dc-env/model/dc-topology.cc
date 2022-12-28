@@ -51,7 +51,7 @@ DcTopology::DcTopology (uint32_t nodeNum) : m_nHosts(0)
 {
   NS_LOG_FUNCTION (this);
   m_nodes.resize (nodeNum);
-  // m_ipAddrHelper.SetBase ("10.0.0.0", "255.0.0.0");
+  m_links.resize (nodeNum);
 }
 
 DcTopology::~DcTopology ()
@@ -62,6 +62,8 @@ DcTopology::~DcTopology ()
 void
 DcTopology::InstallNode (const uint32_t index, const TopoNode node)
 {
+  NS_LOG_FUNCTION (this << index);
+  
   if (index >= m_nodes.size ())
     {
       NS_FATAL_ERROR ("node index " << index << " is out of bound, since there are "
@@ -69,6 +71,15 @@ DcTopology::InstallNode (const uint32_t index, const TopoNode node)
     }
   m_nodes[index] = node;
   m_nHosts += (node.type == TopoNode::NodeType::HOST);
+}
+ 
+void
+DcTopology::InstallLink (const uint32_t node1, const uint32_t node2)
+{
+  NS_LOG_FUNCTION (this << node1 << node2);
+
+  m_links[node1].push_back(node2);
+  m_links[node2].push_back(node1);
 }
 
 const DcTopology::TopoNode &
@@ -126,6 +137,25 @@ DcTopology::CreateRamdomHostChooser () const
   rng->SetAttribute ("Min", DoubleValue (0));
   rng->SetAttribute ("Max", DoubleValue (m_nHosts));
   return rng;
+}
+
+void
+DcTopology::Print (std::ostream &os) const
+{
+  os << "Topology:" << std::endl;
+  const uint32_t n = m_nodes.size();
+  for (uint32_t i = 0; i < n; i++)
+    {
+      std::string name1 = IsHost (i) ? "host" : "switch";
+      for (uint32_t j: m_links[i])
+        {
+          if (i < j)
+            {
+              std::string name2 = IsHost (j) ? "host" : "switch";
+              os << name1 << i << "<->" << name2 << j << std::endl;
+            }
+        }
+    }
 }
 
 } // namespace ns3

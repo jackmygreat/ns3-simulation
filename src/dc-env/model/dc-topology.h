@@ -71,6 +71,8 @@ public:
 
   void InstallNode (const uint32_t index, const TopoNode node);
 
+  void InstallLink (const uint32_t node1, const uint32_t node2);
+
   const TopoNode &GetNode (const uint32_t index) const;
 
   const Ptr<NetDevice> GetNetDeviceOfNode (const uint32_t nodei, const uint32_t devi) const;
@@ -89,9 +91,12 @@ public:
    */
   const Ptr<UniformRandomVariable> CreateRamdomHostChooser () const;
 
+  void Print (std::ostream& os) const;
+
 private:
 
   std::vector<TopoNode> m_nodes;
+  std::vector<std::vector<uint32_t> > m_links;
   uint32_t m_nHosts;
 
 public:

@@ -1718,6 +1718,7 @@ class Application final :
     kLoadFieldNumber = 4,
     kStartTimeFieldNumber = 5,
     kStopTimeFieldNumber = 6,
+    kDestFieldNumber = 7,
   };
   // repeated uint32 nodeIndices = 1;
   int nodeindices_size() const;
@@ -1796,6 +1797,19 @@ class Application final :
   void _internal_set_stoptime(uint32_t value);
   public:
 
+  // optional uint32 dest = 7;
+  bool has_dest() const;
+  private:
+  bool _internal_has_dest() const;
+  public:
+  void clear_dest();
+  uint32_t dest() const;
+  void set_dest(uint32_t value);
+  private:
+  uint32_t _internal_dest() const;
+  void _internal_set_dest(uint32_t value);
+  public:
+
   // @@protoc_insertion_point(class_scope:ns3_proto.Application)
  private:
   class _Internal;
@@ -1804,6 +1818,8 @@ class Application final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
+    ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > nodeindices_;
     mutable std::atomic<int> _nodeindices_cached_byte_size_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr protocolgroup_;
@@ -1811,7 +1827,7 @@ class Application final :
     double load_;
     uint32_t starttime_;
     uint32_t stoptime_;
-    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+    uint32_t dest_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_topology_2eproto;
@@ -3219,6 +3235,34 @@ inline void Application::_internal_set_stoptime(uint32_t value) {
 inline void Application::set_stoptime(uint32_t value) {
   _internal_set_stoptime(value);
   // @@protoc_insertion_point(field_set:ns3_proto.Application.stopTime)
+}
+
+// optional uint32 dest = 7;
+inline bool Application::_internal_has_dest() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool Application::has_dest() const {
+  return _internal_has_dest();
+}
+inline void Application::clear_dest() {
+  _impl_.dest_ = 0u;
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline uint32_t Application::_internal_dest() const {
+  return _impl_.dest_;
+}
+inline uint32_t Application::dest() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.dest)
+  return _internal_dest();
+}
+inline void Application::_internal_set_dest(uint32_t value) {
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.dest_ = value;
+}
+inline void Application::set_dest(uint32_t value) {
+  _internal_set_dest(value);
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.dest)
 }
 
 // -------------------------------------------------------------------

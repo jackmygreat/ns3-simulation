@@ -126,6 +126,7 @@ DcbSwitchStackHelper::Initialize ()
   SetRoutingHelper (listRouting);
   // SetRoutingHelper (staticRoutingv6);
   m_tcFactory.SetTypeId (DcbTrafficControl::GetTypeId ());
+  m_bufferSize = 32 * 1024 * 1024; // 32 MB
   m_fcEnabled = true;
 }
 
@@ -171,6 +172,12 @@ void
 DcbSwitchStackHelper::SetFCEnabled (bool enable)
 {
   m_fcEnabled = enable;
+}
+
+void
+DcbSwitchStackHelper::SetBufferSize (uint32_t bytes)
+{
+  m_bufferSize = bytes;
 }
 
 void
@@ -327,6 +334,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
           NS_FATAL_ERROR (
               "Flow control enabled but there is no DcbTrafficControl aggregated to the node");
         }
+      dcbTc->SetBufferSize (m_bufferSize);
 
       PausableQueueDisc::TCEgressCallback tcCallback =
           MakeCallback (&DcbTrafficControl::EgressProcess, dcbTc);
@@ -363,12 +371,6 @@ DcbSwitchStackHelper::Install (std::string nodeName) const
 {
   Ptr<Node> node = Names::Find<Node> (nodeName);
   Install (node);
-}
-
-void
-DcbSwitchStackHelper::AddEcnConfig (EcnConfig config)
-{
-  m_ecnConfigs.push_back (std::move (config));
 }
 
 /**

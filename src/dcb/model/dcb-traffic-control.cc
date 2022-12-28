@@ -82,7 +82,15 @@ void
 DcbTrafficControl::RegisterDeviceNumber (const uint32_t num)
 {
   NS_LOG_FUNCTION (this << num);
-  m_ports.resize (num);
+  m_buffer.RegisterPortNumber (num);
+}
+
+void
+DcbTrafficControl::SetBufferSize (uint32_t bytes)
+{
+  NS_LOG_FUNCTION (this << bytes);
+  
+  m_buffer.SetBufferSpace (bytes);
 }
 
 void
@@ -105,13 +113,14 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
   // update ingress queue length
   Ipv4Header ipv4Header;
   packet->PeekHeader (ipv4Header);
-  IncrementIngressQueueCounter (index, priority,
-                                packet->GetSize () - ipv4Header.GetSerializedSize ());
+  m_buffer.InPacketProcess (index, priority,
+                            packet->GetSize () - ipv4Header.GetSerializedSize ());
 
-  if (m_ports[index].FcEnabled ())
+  PortInfo& port = m_buffer.GetPort(index);
+  if (port.FcEnabled ())
     {
       // run flow control ingress process
-      m_ports[index].GetFC ()->IngressProcess (packet, protocol, from, to, packetType);
+      port.GetFC ()->IngressProcess (packet, protocol, from, to, packetType);
     }
   TrafficControlLayer::Receive (device, packet, protocol, from, to, packetType);
 }
@@ -123,20 +132,27 @@ DcbTrafficControl::EgressProcess (uint32_t outPort, uint8_t priority, Ptr<Packet
   DeviceIndexTag tag;
   packet->RemovePacketTag (tag);
   uint32_t fromIdx = tag.GetIndex ();
-  DecrementIngressQueueCounter (fromIdx, priority, packet->GetSize ());
+  m_buffer.OutPacketProcess (fromIdx, priority, packet->GetSize ());
 
-  m_ports[outPort].CallFCPacketOutPipeline (fromIdx, priority, packet);
-  if (m_ports[outPort].FcEnabled ())
+  PortInfo& port = m_buffer.GetPort (outPort);
+  port.CallFCPacketOutPipeline (fromIdx, priority, packet);
+  if (port.FcEnabled ())
     {
-      m_ports[outPort].GetFC ()->EgressProcess (packet);
+      port.GetFC ()->EgressProcess (packet);
     }
+}
+
+uint32_t
+DcbTrafficControl::GetIngressQueueLength (uint32_t port, uint8_t priority) const
+{
+  return m_buffer.GetIngressQueueLength(port, priority);
 }
 
 void
 DcbTrafficControl::InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc)
 {
   NS_LOG_FUNCTION (this << portIdx);
-  m_ports[portIdx].SetFC (fc);
+  m_buffer.GetPort(portIdx).SetFC (fc);
 
   // Set egress callback to other ports.
   // When we enable FC on one port, it means that other ports may do something when
@@ -144,7 +160,7 @@ DcbTrafficControl::InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc
   // For example, if we config PFC on port 0, than ports other than 0 should check
   // whether port 0 has to send RESUME frame when sending out a packet.
   PortInfo::FCPacketOutCb cb = MakeCallback (&DcbFlowControlPort::PacketOutCallbackProcess, fc);
-  for (auto &port : m_ports)
+  for (auto &port : m_buffer.GetPorts ())
     {
       port.AddPacketOutCallback (portIdx, cb);
     }
@@ -159,24 +175,7 @@ DcbTrafficControl::PeekPriorityOfPacket (const Ptr<const Packet> packet)
   return Socket::IpTos2Priority (ipv4Header.GetTos ());
   // return ipv4Header.GetDscp () >> 3;
 }
-
-inline void
-DcbTrafficControl::IncrementIngressQueueCounter (uint32_t index, uint8_t priority,
-                                                 uint32_t packetSize)
-{
-  // NOTICE: no index checking nor value checking for better performance, be careful
-  m_ports[index].IncreQueueLength (priority, static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
-}
-
-void
-DcbTrafficControl::DecrementIngressQueueCounter (uint32_t index, uint8_t priority,
-                                                 uint32_t packetSize)
-{
-  // NOTICE: no index checking nor value checking for better performance, be careful
-  m_ports[index].IncreQueueLength (priority,
-                                   -static_cast<uint32_t> (ceil (packetSize / CELL_SIZE)));
-}
-
+  
 void
 DcbTrafficControl::PortInfo::AddPacketOutCallback (uint32_t fromIdx, FCPacketOutCb cb)
 {
@@ -198,6 +197,82 @@ DcbTrafficControl::PortInfo::CallFCPacketOutPipeline (uint32_t fromIdx, uint8_t 
           cb (priority, packet);
         }
     }
+}
+
+DcbTrafficControl::Buffer::Buffer () : m_remainCells (32 * 1024 * 1024 / CELL_SIZE)
+{
+}
+
+void
+DcbTrafficControl::Buffer::SetBufferSpace(uint32_t bytes)
+{
+  NS_LOG_FUNCTION (this << bytes);
+
+  m_remainCells = CalcCellSize (bytes);
+}
+
+void
+DcbTrafficControl::Buffer::RegisterPortNumber (const uint32_t num)
+{
+  NS_LOG_FUNCTION (this << num);
+
+  m_ports.resize (num);
+}
+
+void
+DcbTrafficControl::Buffer::InPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize)
+{
+  uint32_t packetCells = CalcCellSize(packetSize);
+  if (m_remainCells > packetCells)
+    {
+      m_remainCells -= packetCells;
+      IncrementIngressQueueCounter (portIndex, priority, packetCells);
+    }
+  else
+    {
+      NS_LOG_WARN ("Buffer full, packet drop.");
+    }
+}
+  
+void
+DcbTrafficControl::Buffer::OutPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize)
+{
+  uint32_t packetCells = CalcCellSize(packetSize);
+  m_remainCells += packetCells;
+  DecrementIngressQueueCounter (portIndex, priority, packetCells);
+}
+
+DcbTrafficControl::PortInfo&
+DcbTrafficControl::Buffer::GetPort (uint32_t portIndex)
+{
+  return m_ports[portIndex];
+}
+
+std::vector<DcbTrafficControl::PortInfo>&
+DcbTrafficControl::Buffer::GetPorts ()
+{
+  return m_ports;
+}
+
+void
+DcbTrafficControl::Buffer::IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells)
+{
+  // NOTICE: no index checking nor value checking for better performance, be careful
+  m_ports[index].IncreQueueLength (priority, packetCells);
+}
+
+void
+DcbTrafficControl::Buffer::DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells)
+{
+  // NOTICE: no index checking nor value checking for better performance, be careful
+  m_ports[index].IncreQueueLength (priority, packetCells);
+}
+
+// static  
+uint32_t
+DcbTrafficControl::Buffer::CalcCellSize (uint32_t bytes)
+{
+  return static_cast<uint32_t> (ceil (bytes / CELL_SIZE));
 }
 
 /** Tags implementation **/

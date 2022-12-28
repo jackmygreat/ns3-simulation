@@ -131,18 +131,7 @@ PausableQueueDisc::RegisterTrafficControlCallback (TCEgressCallback cb)
   NS_LOG_FUNCTION (this);
   m_tcEgress = cb;
 }
-
-void
-PausableQueueDisc::ConfigECN (const EcnConfig& config)
-{
-  // CheckConfig ();
-  // for (const EcnConfig::QueueConfig& qConfig: config.queues)
-  // {
-      // uint32_t i = qConfig.priority;
-      // DynamicCast<FifoQueueDiscEcn>(GetQueueDiscClass(i)->GetQueueDisc())->ConfigECN (qConfig);
-  // }
-}
-
+  
 bool
 PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
 {
@@ -162,7 +151,6 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       bool retval = qdiscClass->GetQueueDisc()->Enqueue (item);
       if (!retval)
         {
-          qdiscClass->GetQueueDisc()->Enqueue (item); // TODO: reove this line
           NS_FATAL_ERROR("PausableQueueDisc: enqueue failed on node " << Simulator::GetContext ());
         }
       return retval;

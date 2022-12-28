@@ -208,6 +208,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
 
   // Configure ports
   DcbSwitchStackHelper switchStack;
+  switchStack.SetBufferSize (QueueSize (switchGroup.buffersize()).GetValue ());
   for (const auto &portConfig : switchGroup.ports ())
     {
       AddPortToSwitch (portConfig, sw, switchStack);
@@ -257,7 +258,6 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
               Ptr<PausableQueueDiscClass> c = CreateObject<PausableQueueDiscClass> ();
               c->SetQueueDisc (qd);
               dev->AddQueueDiscClass (c);
-              // switchStack.AddEcnConfig (std::move (ecnConfig));
             }
         }
     }
@@ -329,6 +329,8 @@ ProtobufTopologyLoader::InstallLink (const ns3_proto::Link &linkConfig, Ptr<DcTo
 
   dev1->Attach (channel);
   dev2->Attach (channel);
+
+  topology->InstallLink (node1, node2); // as metadata
 }
 
 void
@@ -378,6 +380,11 @@ ProtobufTopologyLoader::InstallApplications (
         appHelper.SetCdf (*(p->second));
       }
 
+      if (appConfig.has_dest ())
+        {
+          appHelper.SetDestination(appConfig.dest ());
+        }
+
       for (const auto &nodeI : appConfig.nodeindices ())
         {
           if (!topology->IsHost (nodeI))
@@ -392,41 +399,6 @@ ProtobufTopologyLoader::InstallApplications (
           app.Stop (MicroSeconds (appConfig.stoptime ()));
         }
     }
-
-  // node 0 and node 1 to node 3
-
-  // UdpEchoServerHelper echoServer (1234); // TODO: dynamic port
-  // DcTopology::HostIterator it = topology->hosts_begin ();
-  // for (it++; it != topology->hosts_end (); it++)
-  //   {
-  //     Ptr<Node> receiver = it->nodePtr;
-  //     ApplicationContainer apps = echoServer.Install (receiver);
-  //     apps.Start (MilliSeconds (1));
-  //     apps.Stop (MilliSeconds (12));
-  //   }
-
-  // node 3 receiver
-  // Ptr<Node> receiver = topology->GetNode (3).nodePtr;
-  // appHelper.SetLoad (DynamicCast<DcbNetDevice> (receiver->GetDevice (0)), 0.);
-  // ApplicationContainer apps = appHelper.Install (receiver);
-  // apps.Start (MilliSeconds (1));
-  // apps.Stop (MilliSeconds (6));
-
-  // appHelper.SetDestination (3);
-
-  // node 0 sender
-  // Ptr<Node> sender = topology->GetNode (0).nodePtr;
-  // appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
-  // ApplicationContainer appc = appHelper.Install (sender);
-  // appc.Start (MilliSeconds (2));
-  // appc.Stop (MilliSeconds (4));
-
-  // node 1 sender
-  // sender = topology->GetNode (1).nodePtr;
-  // appHelper.SetLoad (DynamicCast<DcbNetDevice> (sender->GetDevice (0)), 0.5);
-  // appc = appHelper.Install (sender);
-  // appc.Start (MilliSeconds (2));
-  // appc.Stop (MilliSeconds (4));
 }
 
 void

@@ -32,6 +32,7 @@ main ()
   ProtobufTopologyLoader topoLoader;
   // topoLoader.RunConfigScript("config/dumbell_topo.py");
   Ptr<DcTopology> topology = topoLoader.LoadTopology();
+  // topology->Print(std::cout);
   
   LogComponentEnable ("TraceApplication", LOG_LEVEL_INFO);
   LogComponentEnable ("ProtobufTopologyLoader", LOG_LEVEL_DEBUG);
@@ -48,15 +49,23 @@ main ()
   TracerExtension::ConfigOutputDirectory("data");
   TracerExtension::ConfigTraceFCT (TracerExtension::Protocol::RoCEv2, "fct.csv");
 
-  // // capture packet at host-0
-  // Ptr<NetDevice> dev = topology->GetNetDeviceOfNode(0, 0);
-  // TracerExtension::EnableDevicePcap(dev, "host");
+  // capture packet at host-0
+  Ptr<NetDevice> dev = topology->GetNetDeviceOfNode(0, 0);
+  TracerExtension::EnableDevicePcap(dev, "host");
 
-  // // capture packet at host-2
-  // dev = topology->GetNetDeviceOfNode(2, 0);
-  // TracerExtension::EnableDevicePcap(dev, "host");
+  // capture packet at host-2
+  dev = topology->GetNetDeviceOfNode(2, 0);
+  TracerExtension::EnableDevicePcap(dev, "host");
 
-  // // capture packet at all switches
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(16).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(17).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(18).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(19).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(24).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(25).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(26).nodePtr, "switch");
+  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(27).nodePtr, "switch");
+  // capture packet at all switches
   // for (auto sw = topology->switches_begin(); sw != topology->switches_end(); sw++)
   //   {
   //     TracerExtension::EnableSwitchIpv4Pcap(sw->nodePtr, "switch");

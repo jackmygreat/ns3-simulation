@@ -108,9 +108,9 @@ public:
    */
   void InstallAll (void) const;
 
-  void SetFCEnabled (bool enable);
+  void SetBufferSize (uint32_t bytes);
 
-  void AddEcnConfig (EcnConfig config);
+  void SetFCEnabled (bool enable);
 
   /**
    * \brief Enable/disable IPv6 stack install.
@@ -136,10 +136,6 @@ public:
   * \return the number of stream indices assigned by this helper
   */
   int64_t AssignStreams (NodeContainer c, int64_t stream);
-
-private:
-
-  std::vector<EcnConfig> m_ecnConfigs;
   
 private:
   /**
@@ -261,6 +257,8 @@ private:
   bool m_ipv6NsRsJitterEnabled;
 
   ObjectFactory m_tcFactory;
+
+  uint32_t m_bufferSize;
   
   bool m_fcEnabled;
 

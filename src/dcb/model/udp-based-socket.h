@@ -27,7 +27,6 @@
 #include "ns3/traced-callback.h"
 #include "ns3/udp-l4-protocol.h"
 #include "udp-based-l4-protocol.h"
-#include <_types/_uint32_t.h>
 #include <queue>
 #include <map>
 

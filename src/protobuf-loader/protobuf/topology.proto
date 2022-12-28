@@ -73,6 +73,7 @@ message Application { // application configurations
 	double load = 4;      // 0.0 ~ 1.0
 	uint32 startTime = 5; // in microseconds
 	uint32 stopTime = 6;  // in microseconds
+	optional uint32 dest = 7; // one single destination
 }
 
 message Topology {  // used to aggregate all nodes and links as a topology

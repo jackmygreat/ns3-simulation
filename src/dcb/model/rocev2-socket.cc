@@ -149,7 +149,7 @@ RoCEv2Socket::HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce)
         uint32_t psn = m_buffer.Pop ().m_psn; // packet acked, pop out from buffer
         if (psn != roce.GetPSN ())
           {
-            NS_FATAL_ERROR ("[WARN] RoCEv2 socket receive an ACK with PSN not expected");
+            NS_FATAL_ERROR ("RoCEv2 socket receive an ACK with PSN not expected");
           }
         if (psn + 1 == m_psnEnd)
           { // last ACk received, flow finshed
@@ -222,7 +222,7 @@ RoCEv2Socket::GoBackN (uint32_t lostPSN) const
 {
   // DcbTxBuffer::DcbTxBufferItemI item = m_buffer.FindPSN(lostPSN);
   NS_LOG_WARN (
-      "[WARN] Go-back-N not implemented. Packet lost or out-of-order happens. Sender is node "
+      "Go-back-N not implemented. Packet lost or out-of-order happens. Sender is node "
       << Simulator::GetContext () << " at time " << Simulator::Now ());
 }
 

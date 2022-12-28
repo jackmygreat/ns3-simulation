@@ -125,6 +125,8 @@ public:
    */
   virtual void RegisterDeviceNumber (const uint32_t num);
 
+  void SetBufferSize (uint32_t bytes);
+
   /**
    * \brief Called by NetDevices, incoming packet
    *
@@ -148,11 +150,7 @@ public:
    */
   void EgressProcess (uint32_t port, uint8_t priority, Ptr<Packet> packet);
 
-  inline uint32_t
-  GetIngressQueueLength (uint32_t port, uint32_t priority) const
-  {
-    return m_ports[port].GetQueueLength (priority);
-  }
+  uint32_t GetIngressQueueLength (uint32_t port, uint8_t priority) const;
 
   void InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc);
 
@@ -213,16 +211,38 @@ public:
     bool m_fcEnabled;
     Ptr<DcbFlowControlPort> m_fc;
     std::vector<std::pair<uint32_t, FCPacketOutCb>> m_fcPacketOutPipeline;
-  };
-
-protected:
-  void IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize);
-  void DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetSize);
+  }; // class PortInfo
 
 private:
-  constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
 
-  std::vector<PortInfo> m_ports;
+  class Buffer {
+  public:
+    Buffer ();
+    void SetBufferSpace (uint32_t bytes);
+    void RegisterPortNumber (const uint32_t num);
+    void InPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize);
+    void OutPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize);
+    PortInfo& GetPort (uint32_t portIndex);
+    std::vector<PortInfo>& GetPorts ();
+    inline uint32_t
+    GetIngressQueueLength (uint32_t port, uint8_t priority) const
+    {
+      return m_ports[port].GetQueueLength (priority);
+    }
+
+  protected:
+    void IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells);
+    void DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells);
+
+  private:
+    constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
+    
+    static uint32_t CalcCellSize (uint32_t bytes);
+    uint32_t m_remainCells;
+    std::vector<PortInfo> m_ports;
+  }; // class Buffer
+  
+  Buffer m_buffer;
 };
 
 class DeviceIndexTag : public Tag
