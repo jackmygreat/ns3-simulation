@@ -226,12 +226,12 @@ DcbTrafficControl::Buffer::InPacketProcess (uint32_t portIndex, uint8_t priority
   if (m_remainCells > packetCells)
     {
       m_remainCells -= packetCells;
-      IncrementIngressQueueCounter (portIndex, priority, packetCells);
     }
   else
     {
       NS_LOG_WARN ("Buffer full, packet drop.");
     }
+  IncrementIngressQueueCounter (portIndex, priority, packetCells);
 }
   
 void
@@ -242,30 +242,30 @@ DcbTrafficControl::Buffer::OutPacketProcess (uint32_t portIndex, uint8_t priorit
   DecrementIngressQueueCounter (portIndex, priority, packetCells);
 }
 
-DcbTrafficControl::PortInfo&
+inline DcbTrafficControl::PortInfo&
 DcbTrafficControl::Buffer::GetPort (uint32_t portIndex)
 {
   return m_ports[portIndex];
 }
 
-std::vector<DcbTrafficControl::PortInfo>&
+inline std::vector<DcbTrafficControl::PortInfo>&
 DcbTrafficControl::Buffer::GetPorts ()
 {
   return m_ports;
 }
 
-void
+inline void
 DcbTrafficControl::Buffer::IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells)
 {
   // NOTICE: no index checking nor value checking for better performance, be careful
   m_ports[index].IncreQueueLength (priority, packetCells);
 }
 
-void
+inline void
 DcbTrafficControl::Buffer::DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells)
 {
   // NOTICE: no index checking nor value checking for better performance, be careful
-  m_ports[index].IncreQueueLength (priority, packetCells);
+  m_ports[index].IncreQueueLength (priority, -packetCells);
 }
 
 // static  

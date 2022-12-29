@@ -371,6 +371,10 @@ class FattreeGenerator(TopologyGenerator):
         for tier in [0, 1, 2]:
             self.setLinkConfigOfTier(tier, config, False)
 
+    def __exit__(self, ex_type, ex_value, ex_traceback):
+        self.createFattree()
+        self.serializeToDefault()
+
     def createFattree(self):
         # create nodes
         hostGroups = [self.nodes.addHostGroup(**config) for config in self.hostPod]

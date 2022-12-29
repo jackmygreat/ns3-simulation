@@ -227,7 +227,7 @@ private:
     inline uint32_t
     GetIngressQueueLength (uint32_t port, uint8_t priority) const
     {
-      return m_ports[port].GetQueueLength (priority);
+      return m_ports[port].GetQueueLength (priority) * CELL_SIZE;
     }
 
   protected:
