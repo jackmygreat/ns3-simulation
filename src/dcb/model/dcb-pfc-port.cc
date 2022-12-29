@@ -62,7 +62,7 @@ DcbPfcPort::DoIngressProcess (Ptr<const Packet> packet, uint16_t protocol, const
     {
       if (CheckShouldSendPause (priority, packet->GetSize ()))
         {
-          NS_LOG_DEBUG ("Send pause frame from node " << Simulator::GetContext () << " port "
+          NS_LOG_DEBUG ("PFC: Send pause frame from node " << Simulator::GetContext () << " port "
                                                       << m_dev->GetIfIndex ());
           Ptr<Packet> pfcFrame = PfcFrame::GeneratePauseFrame (priority);
           // pause frames are sent directly to device without queueing in egress QueueDisc
@@ -79,7 +79,7 @@ DcbPfcPort::DoPacketOutCallbackProcess (uint8_t priority, Ptr<Packet> packet)
 
   if (CheckShouldSendResume (priority))
     {
-      NS_LOG_DEBUG ("Send Resume frame from node " << Simulator::GetContext () << " port "
+      NS_LOG_DEBUG ("PFC: Send resume frame from node " << Simulator::GetContext () << " port "
                                                    << m_dev->GetIfIndex ());
       Ptr<Packet> pfcFrame = PfcFrame::GeneratePauseFrame (priority, (uint16_t) 0);
       m_dev->Send (pfcFrame, Address (), PfcFrame::PROT_NUMBER);
@@ -119,14 +119,14 @@ DcbPfcPort::ReceivePfc (Ptr<NetDevice> dev, Ptr<const Packet> packet, uint16_t p
                   Simulator::Schedule (pauseTime, &PausableQueueDisc::SetPaused, qDisc, priority,
                                        false); // resume the queue after the pause time.
               UpdatePauseEvent (priority, event);
-              NS_LOG_LOGIC ("PFC: node " << Simulator::GetContext () << " port " << index
+              NS_LOG_DEBUG ("PFC: node " << Simulator::GetContext () << " port " << index
                                          << " priority " << (uint32_t) priority << " is paused");
             }
           else
             {
               qDisc->SetPaused (priority, false);
               CancelPauseEvent (priority);
-              NS_LOG_LOGIC ("PFC: node " << Simulator::GetContext () << " port " << index
+              NS_LOG_DEBUG ("PFC: node " << Simulator::GetContext () << " port " << index
                                          << " priority " << (uint32_t) priority << " is resumed");
             }
         }

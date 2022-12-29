@@ -277,6 +277,7 @@ ProtobufTopologyLoader::AddPortToSwitch (const ns3_proto::SwitchPortConfig portC
   ObjectFactory queueFactory;
   queueFactory.SetTypeId (DropTailQueue<Packet>::GetTypeId ());
   Ptr<Queue<Packet>> queue = queueFactory.Create<Queue<Packet>> ();
+  queue->SetMaxSize (QueueSize ("10p"));
   dev->SetQueue (queue);
 
   sw->AddDevice (dev);

@@ -151,7 +151,7 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       bool retval = qdiscClass->GetQueueDisc()->Enqueue (item);
       if (!retval)
         {
-          NS_FATAL_ERROR("PausableQueueDisc: enqueue failed on node " << Simulator::GetContext ());
+          NS_FATAL_ERROR("PausableQueueDisc: enqueue failed on node " << Simulator::GetContext () << ", queue size=" << qdiscClass->GetQueueDisc ()->GetCurrentSize ());
         }
       return retval;
     }

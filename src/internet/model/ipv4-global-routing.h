@@ -228,12 +228,19 @@ public:
    */
   int64_t AssignStreams (int64_t stream);
 
+  enum EcmpMode {
+    NONE,
+    PER_PACKET_ECMP,
+    PER_UDP_FLOW_ECMP,
+    PER_TCP_FLOW_ECMP
+  };
+
 protected:
   void DoDispose (void);
 
 private:
   /// Set to true if packets are randomly routed among ECMP; set to false for using only one route consistently
-  bool m_randomEcmpRouting;
+  EcmpMode m_randomEcmpRouting;
   /// Set to true if this interface should respond to interface events by globallly recomputing routes 
   bool m_respondToInterfaceEvents;
   /// A uniform random number generator for randomly routing packets among ECMP 
@@ -266,7 +273,17 @@ private:
    * \param oif output interface if any (put 0 otherwise)
    * \return Ipv4Route to route the packet to reach dest address
    */
-  Ptr<Ipv4Route> LookupGlobal (Ipv4Address dest, Ptr<NetDevice> oif = 0);
+  Ptr<Ipv4Route> LookupGlobal (Ipv4Header header, Ptr<const Packet> p, Ptr<NetDevice> oif = 0);
+  constexpr static const uint32_t HASH_BUF_SIZE = 12;
+  union HashBuf {
+    struct {
+      uint32_t _srcIp;
+      uint32_t _dstIp;
+      uint16_t _srcPort;
+      uint16_t _dstPort;
+    } __attribute__((__packed__));
+    char _b[HASH_BUF_SIZE];
+  };
 
   HostRoutes m_hostRoutes;             //!< Routes to hosts
   NetworkRoutes m_networkRoutes;       //!< Routes to networks

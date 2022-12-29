@@ -286,7 +286,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
   Ptr<Ipv4ListRouting> routing = DynamicCast<Ipv4ListRouting> (ipv4Routing);
   DynamicCast<Ipv4GlobalRouting> (routing->GetRoutingProtocol (0, priority))
       ->SetAttribute ("RandomEcmpRouting",
-                      BooleanValue (true)); // paramenter 0 should be consistent with Initialize()
+                      UintegerValue (Ipv4GlobalRouting::EcmpMode::PER_UDP_FLOW_ECMP)); // paramenter 0 should be consistent with Initialize()
 
   if (m_ipv6Enabled)
     {

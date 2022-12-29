@@ -129,6 +129,7 @@ RoCEv2Socket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
       break;
     case RoCEv2Header::Opcode::CNP:
       m_ccOps->UpdateStateWithCNP ();
+      NS_LOG_DEBUG ("DCQCN: Received CNP and rate decreased to " << m_sockState->GetRateRatio () << " at time " << Simulator::Now ());
       break;
     default:
       HandleDataPacket (packet, header, port, incomingInterface, rocev2Header);
@@ -245,6 +246,8 @@ RoCEv2Socket::ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flow
   flowInfo.receivedECN = false;
   flowInfo.lastCNPEvent = Simulator::Schedule (m_CNPInterval, &RoCEv2Socket::ScheduleNextCNP, this,
                                                flowInfoIter, header);
+
+  NS_LOG_DEBUG ("DCQCN: Receiver send CNP at time " << Simulator::Now ());
 }
 
 int
