@@ -63,7 +63,7 @@ DcbPfcPort::DoIngressProcess (Ptr<const Packet> packet, uint16_t protocol, const
       if (CheckShouldSendPause (priority, packet->GetSize ()))
         {
           NS_LOG_DEBUG ("PFC: Send pause frame from node " << Simulator::GetContext () << " port "
-                                                      << m_dev->GetIfIndex ());
+                                                           << m_dev->GetIfIndex ());
           Ptr<Packet> pfcFrame = PfcFrame::GeneratePauseFrame (priority);
           // pause frames are sent directly to device without queueing in egress QueueDisc
           m_dev->Send (pfcFrame, from, PfcFrame::PROT_NUMBER);
@@ -80,7 +80,7 @@ DcbPfcPort::DoPacketOutCallbackProcess (uint8_t priority, Ptr<Packet> packet)
   if (CheckShouldSendResume (priority))
     {
       NS_LOG_DEBUG ("PFC: Send resume frame from node " << Simulator::GetContext () << " port "
-                                                   << m_dev->GetIfIndex ());
+                                                        << m_dev->GetIfIndex ());
       Ptr<Packet> pfcFrame = PfcFrame::GeneratePauseFrame (priority, (uint16_t) 0);
       m_dev->Send (pfcFrame, Address (), PfcFrame::PROT_NUMBER);
       SetPaused (priority, false);
@@ -161,7 +161,7 @@ DcbPfcPort::CheckShouldSendPause (uint8_t priority, uint32_t packetSize) const
   // TODO: add support for dynamic threshold
   const PortInfo::IngressQueueInfo &q = m_port.getQueue (priority);
   return !q.isPaused &&
-         m_tc->GetIngressQueueLength (m_port.m_index, priority) + packetSize > q.reserve;
+         m_tc->CompareIngressQueueLength (m_port.m_index, priority, q.reserve - packetSize) > 0;
 }
 
 inline bool
@@ -169,7 +169,7 @@ DcbPfcPort::CheckShouldSendResume (uint8_t priority) const
 {
   // TODO: add support for dynamic threshold
   const PortInfo::IngressQueueInfo &q = m_port.getQueue (priority);
-  return q.isPaused && m_tc->GetIngressQueueLength (m_port.m_index, priority) <= q.xon;
+  return q.isPaused && m_tc->CompareIngressQueueLength (m_port.m_index, priority, q.xon) <= 0;
 }
 
 inline void
@@ -196,7 +196,7 @@ DcbPfcPort::CancelPauseEvent (uint8_t priority)
 
 DcbPfcPort::PortInfo::PortInfo (uint32_t index) : m_index (index)
 {
-  m_ingressQueues.resize (DcbTrafficControl::PRIORITY_NUMBER, IngressQueueInfo());
+  m_ingressQueues.resize (DcbTrafficControl::PRIORITY_NUMBER, IngressQueueInfo ());
   m_enableVec = 0xff;
 }
 

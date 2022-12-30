@@ -142,10 +142,20 @@ DcbTrafficControl::EgressProcess (uint32_t outPort, uint8_t priority, Ptr<Packet
     }
 }
 
-uint32_t
-DcbTrafficControl::GetIngressQueueLength (uint32_t port, uint8_t priority) const
+int32_t
+DcbTrafficControl::CompareIngressQueueLength (uint32_t port, uint8_t priority, uint32_t bytes) const
 {
-  return m_buffer.GetIngressQueueLength(port, priority);
+  uint32_t l = m_buffer.GetIngressQueueCells (port, priority);
+  uint32_t cells = ceil (bytes / Buffer::CELL_SIZE);
+  if (l > cells)
+    {
+      return 1;
+    }
+  else if (l < cells)
+    {
+      return -1;
+    }
+  return 0;
 }
 
 void

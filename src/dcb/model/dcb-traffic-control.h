@@ -150,7 +150,7 @@ public:
    */
   void EgressProcess (uint32_t port, uint8_t priority, Ptr<Packet> packet);
 
-  uint32_t GetIngressQueueLength (uint32_t port, uint8_t priority) const;
+  int32_t CompareIngressQueueLength (uint32_t port, uint8_t priority, uint32_t bytes) const;
 
   void InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc);
 
@@ -225,17 +225,18 @@ private:
     PortInfo& GetPort (uint32_t portIndex);
     std::vector<PortInfo>& GetPorts ();
     inline uint32_t
-    GetIngressQueueLength (uint32_t port, uint8_t priority) const
+    GetIngressQueueCells (uint32_t port, uint8_t priority) const
     {
-      return m_ports[port].GetQueueLength (priority) * CELL_SIZE;
+      return m_ports[port].GetQueueLength (priority);
     }
+
+    constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
 
   protected:
     void IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells);
     void DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells);
 
   private:
-    constexpr static const double CELL_SIZE = 80.0; // cell size of the switch in bytes
     
     static uint32_t CalcCellSize (uint32_t bytes);
     uint32_t m_remainCells;

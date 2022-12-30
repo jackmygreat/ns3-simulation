@@ -159,6 +159,7 @@ TraceApplication::StartApplication (void)
            t += GetNextFlowArriveInterval ())
         {
           ScheduleNextFlow (t);
+          break; // FIXME: remove this line
         }
       TracerExtension::RegisterTraceFCT (this);
     }
@@ -209,7 +210,6 @@ TraceApplication::CreateNewSocket (uint32_t destNode)
 
   Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_tid);
   socket->BindToNetDevice (GetNode ()->GetDevice (0));
-  SetSocketTos (socket);
   Ptr<UdpBasedSocket> udpBasedSocket = DynamicCast<UdpBasedSocket> (socket);
   if (udpBasedSocket)
     {
@@ -223,6 +223,10 @@ TraceApplication::CreateNewSocket (uint32_t destNode)
     }
   
   InetSocketAddress destAddr = NodeIndexToAddr (destNode);
+  if (m_ecnEnabled)
+    {
+      destAddr.SetTos (Ipv4Header::EcnType::ECN_ECT1);
+    }
   ret = socket->Connect (destAddr);
   if (ret == -1)
     {
@@ -240,7 +244,7 @@ TraceApplication::ScheduleNextFlow (const Time &startTime)
 {
   uint32_t destNode = GetDestinationNode ();
   Ptr<Socket> socket = CreateNewSocket (destNode);
-  uint64_t size = GetNextFlowSize ();
+  uint64_t size = 5 * 1024 * 1024; // GetNextFlowSize ();
 
   Flow *flow = new Flow (size, startTime, destNode, socket);
   m_flows.emplace (socket, flow); // used when flow completes
@@ -323,17 +327,6 @@ TraceApplication::SetEcnEnabled (bool enabled)
 {
   NS_LOG_FUNCTION(this << enabled);
   m_ecnEnabled = enabled;
-}
-
-void
-TraceApplication::SetSocketTos (Ptr<Socket> socket) const
-{
-  uint8_t tos = 0;
-  if (m_ecnEnabled)
-    {
-      tos |= Ipv4Header::EcnType::ECN_ECT1;
-      socket->SetIpTos (tos);
-    }
 }
 
 void

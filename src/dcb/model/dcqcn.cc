@@ -20,6 +20,7 @@
 
 #include "dcqcn.h"
 #include "ns3/rocev2-header.h"
+#include "ns3/simulator.h"
 #include "rocev2-socket.h"
 
 namespace ns3 {
@@ -54,9 +55,9 @@ DcqcnCongestionOps::DcqcnCongestionOps (Ptr<RoCEv2SocketState> sockState)
 {
   NS_LOG_FUNCTION (this);
   m_alphaTimer.SetFunction (&DcqcnCongestionOps::UpdateAlpha, this);
-  m_alphaTimer.SetDelay (MicroSeconds (55));
+  m_alphaTimer.SetDelay (MicroSeconds (35)); // 55
   m_rateTimer.SetFunction (&DcqcnCongestionOps::RateTimerTriggered, this);
-  m_rateTimer.SetDelay (MicroSeconds (1500));
+  m_rateTimer.SetDelay (MicroSeconds (300)); // 1500
 }
 
 DcqcnCongestionOps::~DcqcnCongestionOps ()
@@ -136,6 +137,7 @@ DcqcnCongestionOps::UpdateRate ()
 {
   NS_LOG_FUNCTION (this);
 
+  double old = m_curRateRatio;
   if (m_rateUpdateIter > m_F && m_bytesUpdateIter > m_F)
     { // Hyper increase
       uint32_t i = std::min (m_rateUpdateIter, m_bytesUpdateIter) - m_F + 1;
@@ -150,6 +152,10 @@ DcqcnCongestionOps::UpdateRate ()
 
   m_curRateRatio = (m_targetRateRatio + m_curRateRatio) / 2;
   m_sockState->SetRateRatio (m_curRateRatio);
+  if (old < 100)
+    {
+      NS_LOG_DEBUG ("DCQCN: Rate update from " << old << " to " << m_curRateRatio << "% at time " << Simulator::Now ().GetMicroSeconds () << "us");
+    }
 }
 
 void

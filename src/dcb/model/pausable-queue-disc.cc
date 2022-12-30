@@ -131,7 +131,7 @@ PausableQueueDisc::RegisterTrafficControlCallback (TCEgressCallback cb)
   NS_LOG_FUNCTION (this);
   m_tcEgress = cb;
 }
-  
+
 bool
 PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
 {
@@ -148,10 +148,12 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       uint8_t priority = cosTag.GetCoS () & 0x0f;
       NS_ASSERT_MSG (priority < 8, "Priority should be 0~7 but here we have " << priority);
       Ptr<PausableQueueDiscClass> qdiscClass = GetQueueDiscClass (priority);
-      bool retval = qdiscClass->GetQueueDisc()->Enqueue (item);
+      bool retval = qdiscClass->GetQueueDisc ()->Enqueue (item);
       if (!retval)
         {
-          NS_FATAL_ERROR("PausableQueueDisc: enqueue failed on node " << Simulator::GetContext () << ", queue size=" << qdiscClass->GetQueueDisc ()->GetCurrentSize ());
+          NS_FATAL_ERROR ("PausableQueueDisc: enqueue failed on node "
+                          << Simulator::GetContext ()
+                          << ", queue size=" << qdiscClass->GetQueueDisc ()->GetCurrentSize ());
         }
       return retval;
     }
@@ -237,7 +239,7 @@ PausableQueueDisc::InitializeParams (void)
 {
   NS_LOG_FUNCTION (this);
 }
-  
+
 TypeId
 PausableQueueDiscClass::GetTypeId ()
 {

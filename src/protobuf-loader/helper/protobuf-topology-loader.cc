@@ -255,6 +255,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
               Ptr<FifoQueueDiscEcn> qd = factory.Create<FifoQueueDiscEcn> ();
               qd->Initialize ();
               qd->ConfigECN (ecnKMin, ecnKMax, ecnPMax);
+              qd->SetMaxSize (QueueSize (switchGroup.buffersize()));
               Ptr<PausableQueueDiscClass> c = CreateObject<PausableQueueDiscClass> ();
               c->SetQueueDisc (qd);
               dev->AddQueueDiscClass (c);

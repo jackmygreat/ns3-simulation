@@ -23,6 +23,7 @@
 #include "dcqcn.h"
 #include "ns3/assert.h"
 #include "ns3/fatal-error.h"
+#include "ns3/nstime.h"
 #include "ns3/packet.h"
 #include "rocev2-l4-protocol.h"
 #include "udp-based-l4-protocol.h"
@@ -129,7 +130,9 @@ RoCEv2Socket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
       break;
     case RoCEv2Header::Opcode::CNP:
       m_ccOps->UpdateStateWithCNP ();
-      NS_LOG_DEBUG ("DCQCN: Received CNP and rate decreased to " << m_sockState->GetRateRatio () << " at time " << Simulator::Now ());
+      NS_LOG_DEBUG ("DCQCN: Received CNP and rate decreased to "
+                    << m_sockState->GetRateRatio () << "% at time "
+                    << Simulator::Now ().GetMicroSeconds () << "us");
       break;
     default:
       HandleDataPacket (packet, header, port, incomingInterface, rocev2Header);
@@ -155,7 +158,7 @@ RoCEv2Socket::HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce)
         if (psn + 1 == m_psnEnd)
           { // last ACk received, flow finshed
             NotifyFlowCompletes ();
-            Close ();
+            Simulator::Schedule (MicroSeconds (50), &RoCEv2Socket::Close, this); // a delay to handle remaing packets (e.g., CNP)
           }
         break;
       }
@@ -176,8 +179,8 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   NS_LOG_FUNCTION (this << packet);
 
   const uint32_t srcQP = roce.GetSrcQP (), dstQP = roce.GetDestQP ();
-  Ipv4Address srcIp = header.GetSource();
-  FlowIdentifier flowId = FlowIdentifier {std::move (srcIp), srcQP};
+  Ipv4Address srcIp = header.GetSource ();
+  FlowIdentifier flowId = FlowIdentifier{std::move (srcIp), srcQP};
   std::map<FlowIdentifier, FlowInfo>::iterator flowInfoIter = m_receiverFlowInfo.find (flowId);
   if (flowInfoIter == m_receiverFlowInfo.end ())
     {
@@ -197,7 +200,8 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   uint32_t expectedPSN = flowInfoIter->second.nextPSN;
   if (psn > expectedPSN)
     { // packet out-of-order, send NACK
-      NS_LOG_LOGIC ("RoCEv2 receiver " << Simulator::GetContext () << "send NACK of flow " << srcQP << "->" << dstQP);
+      NS_LOG_LOGIC ("RoCEv2 receiver " << Simulator::GetContext () << "send NACK of flow " << srcQP
+                                       << "->" << dstQP);
       Ptr<Packet> nack = RoCEv2L4Protocol::GenerateNACK (dstQP, srcQP, expectedPSN);
       m_innerProto->Send (nack, header.GetDestination (), header.GetSource (), dstQP, srcQP, 0);
     }
@@ -222,9 +226,8 @@ void
 RoCEv2Socket::GoBackN (uint32_t lostPSN) const
 {
   // DcbTxBuffer::DcbTxBufferItemI item = m_buffer.FindPSN(lostPSN);
-  NS_LOG_WARN (
-      "Go-back-N not implemented. Packet lost or out-of-order happens. Sender is node "
-      << Simulator::GetContext () << " at time " << Simulator::Now ());
+  NS_LOG_WARN ("Go-back-N not implemented. Packet lost or out-of-order happens. Sender is node "
+               << Simulator::GetContext () << " at time " << Simulator::Now ());
 }
 
 void
@@ -247,7 +250,7 @@ RoCEv2Socket::ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flow
   flowInfo.lastCNPEvent = Simulator::Schedule (m_CNPInterval, &RoCEv2Socket::ScheduleNextCNP, this,
                                                flowInfoIter, header);
 
-  NS_LOG_DEBUG ("DCQCN: Receiver send CNP at time " << Simulator::Now ());
+  NS_LOG_DEBUG ("DCQCN: Receiver send CNP to " << srcIp << " qp " << srcQP << " at time " << Simulator::Now ().GetMicroSeconds ());
 }
 
 int
@@ -287,9 +290,9 @@ RoCEv2Socket::BindToNetDevice (Ptr<NetDevice> netdevice)
     {
       m_deviceRate = dcbDev->GetDataRate ();
       double rai =
-          static_cast<double> (DataRate ("40Mbps").GetBitRate ()) / m_deviceRate.GetBitRate ();
+          static_cast<double> (DataRate ("100Mbps").GetBitRate ()) / m_deviceRate.GetBitRate ();
       m_ccOps->SetRateAIRatio (rai);
-      m_ccOps->SetRateHyperAIRatio (5 * rai);
+      m_ccOps->SetRateHyperAIRatio (10 * rai);
       m_ccOps->SetReady ();
     }
 }

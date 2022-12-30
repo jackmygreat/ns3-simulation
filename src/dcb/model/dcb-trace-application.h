@@ -194,8 +194,6 @@ private:
    */
   uint32_t GetNextFlowSize () const;
 
-  void SetSocketTos (Ptr<Socket> socket) const;
-
   //helpers
   /**
    * \brief Cancel all pending events.
