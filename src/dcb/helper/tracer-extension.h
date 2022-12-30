@@ -22,6 +22,7 @@
 #define TRACER_EXTENSION_H
 
 #include <fstream>
+#include "ns3/dcb-net-device.h"
 #include "ns3/rocev2-header.h"
 #include "ns3/rocev2-socket.h"
 #include "ns3/dcb-trace-application.h"
@@ -43,6 +44,7 @@ public:
   };
 
   static void ConfigOutputDirectory (std::string dirName);
+  static void ConfigStopTime (Time stopTime);
 
   static void ConfigTraceFCT (Protocol protocol, std::string fileName);
 
@@ -58,12 +60,17 @@ public:
    */
   static void EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix);
 
+  static void EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval);
+
+  static void EnablePortQueueLength (Ptr<NetDevice> device, std::string context, Time interval);
+
 private:
   static std::string outputDirectory;
+  static Time stopTime;
 
   static std::string GetRealFileName (std::string fileName);
 
-  struct TraceFCTConfig
+  struct TraceFCTUnit
   {
     static Protocol protocol; // TODO: not supporting multiple protocols
     static std::ofstream fctFileStream;
@@ -71,6 +78,32 @@ private:
     static void FlowCompletionTracer (uint32_t destNode, uint32_t srcPort, uint32_t dstPort,
                                       uint32_t flowSize, Time startTime, Time finishTime);
   };
+    
+  class RateTracer
+  {
+  public:
+    RateTracer (Time interval, std::string context);
+    void Trace (Ptr<const Packet> packet); 
+  private:
+    void LogRate ();
+    uint64_t m_bytes;
+    Timer m_timer;
+    std::string m_context;
+    std::ofstream m_ofstream;
+  }; // class RateTracer
+
+  class QueueLengthTracer
+  {
+  public:
+    QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc, Time interval);
+    void Trace ();
+
+  private:
+    Ptr<PausableQueueDisc> m_queueDisc;
+    Timer m_timer;
+    std::ofstream m_ofstream;
+  }; // class QueueLengthTracer
+  
 
 }; // class TracerExtension
 
