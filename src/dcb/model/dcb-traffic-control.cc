@@ -182,7 +182,7 @@ DcbTrafficControl::PeekPriorityOfPacket (const Ptr<const Packet> packet)
 {
   Ipv4Header ipv4Header;
   packet->PeekHeader (ipv4Header);
-  return Socket::IpTos2Priority (ipv4Header.GetTos ());
+  return Socket::IpTos2Priority (ipv4Header.GetTos ()); // TODO: more priorities
   // return ipv4Header.GetDscp () >> 3;
 }
   
