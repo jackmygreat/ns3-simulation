@@ -23,7 +23,6 @@
 #include "dcb-net-device-helper.h"
 #include "dcb-switch-stack-helper.h"
 #include "ns3/dcb-net-device.h"
-#include <_types/_uint32_t.h>
 #include <fstream>
 
 namespace ns3 {
