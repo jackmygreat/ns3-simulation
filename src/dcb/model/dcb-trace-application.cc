@@ -20,6 +20,8 @@
 
 #include "dcb-net-device.h"
 #include "ns3/fatal-error.h"
+#include "ns3/tcp-socket-factory.h"
+#include "ns3/uinteger.h"
 #include "rocev2-l4-protocol.h"
 #include "rocev2-socket.h"
 #include "ns3/integer.h"
@@ -33,6 +35,7 @@
 #include "ns3/node.h"
 #include "ns3/socket.h"
 #include "ns3/type-id.h"
+#include "ns3/tcp-socket-factory.h"
 #include "ns3/udp-l4-protocol.h"
 #include "udp-based-socket.h"
 #include "ns3/udp-socket-factory.h"
@@ -52,13 +55,13 @@ TraceApplication::GetTypeId ()
       TypeId ("ns3::TraceApplication")
           .SetParent<Application> ()
           .SetGroupName ("Dcb")
-          .AddAttribute ("Protocol",
-                         "The type of protocol to use. This should be "
-                         "a subclass of ns3::SocketFactory",
-                         TypeIdValue (UdpSocketFactory::GetTypeId ()),
-                         MakeTypeIdAccessor (&TraceApplication::m_tid),
-                         // This should check for SocketFactory as a parent
-                         MakeTypeIdChecker ())
+          // .AddAttribute ("Protocol",
+          //                "The type of protocol to use. This should be "
+          //                "a subclass of ns3::SocketFactory",
+          //                TypeIdValue (UdpSocketFactory::GetTypeId ()),
+          //                MakeTypeIdAccessor (&TraceApplication::m_socketTid),
+          //                // This should check for SocketFactory as a parent
+          //                MakeTypeIdChecker ())
           .AddTraceSource ("FlowComplete", "Trace when a flow completes.",
                            MakeTraceSourceAccessor (&TraceApplication::m_flowCompleteTrace),
                            "ns3::TracerExtension::FlowTracedCallback");
@@ -73,7 +76,7 @@ TraceApplication::TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex
       m_nodeIndex (nodeIndex),
       m_ecnEnabled (true),
       m_totBytes (0),
-      m_headerSize (8 + 20 + 14),
+      m_headerSize (8 + 20 + 14 + 2),
       m_destNode (destIndex)
 {
   NS_LOG_FUNCTION (this);
@@ -114,6 +117,18 @@ TraceApplication::~TraceApplication ()
 // }
 
 void
+TraceApplication::SetProtocolGroup (ProtocolGroup protoGroup)
+{
+  m_protoGroup = protoGroup;
+  if (protoGroup == ProtocolGroup::TCP)
+    {
+      NS_FATAL_ERROR ("TCP not fully supported."); // TODO
+      m_socketTid = TcpSocketFactory::GetTypeId ();
+      m_headerSize = 20 + 20 + 14 + 2;
+    }
+}
+
+void
 TraceApplication::SetInnerUdpProtocol (std::string innerTid)
 {
   SetInnerUdpProtocol (TypeId (innerTid));
@@ -123,7 +138,11 @@ void
 TraceApplication::SetInnerUdpProtocol (TypeId innerTid)
 {
   NS_LOG_FUNCTION (this << innerTid);
-  m_tid = UdpBasedSocketFactory::GetTypeId ();
+  if (m_protoGroup != ProtocolGroup::RoCEv2)
+    {
+      NS_FATAL_ERROR ("Inner UDP protocol should be used together with RoCEv2 protocol group.");
+    }
+  m_socketTid = UdpBasedSocketFactory::GetTypeId ();
   Ptr<Node> node = GetNode ();
   Ptr<UdpBasedSocketFactory> socketFactory = node->GetObject<UdpBasedSocketFactory> ();
   if (socketFactory)
@@ -143,14 +162,18 @@ TraceApplication::StartApplication (void)
   NS_LOG_FUNCTION (this);
 
   if (m_enableReceive)
-    { // crate a special socket to act as the receiver
-      Ptr<RoCEv2Socket> socket = DynamicCast<RoCEv2Socket> (
-          Socket::CreateSocket (GetNode (), UdpBasedSocketFactory::GetTypeId ()));
-      socket->BindToNetDevice (GetNode ()->GetDevice (0));
-      socket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
-      socket->ShutdownSend ();
-      socket->SetStopTime (m_stopTime);
-      socket->SetRecvCallback (MakeCallback (&TraceApplication::HandleRead, this));
+    {
+      if (m_protoGroup == ProtocolGroup::RoCEv2)
+        {
+          // crate a special socket to act as the receiver
+          Ptr<RoCEv2Socket> socket = DynamicCast<RoCEv2Socket> (
+              Socket::CreateSocket (GetNode (), UdpBasedSocketFactory::GetTypeId ()));
+          socket->BindToNetDevice (GetNode ()->GetDevice (0));
+          socket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
+          socket->ShutdownSend ();
+          socket->SetStopTime (m_stopTime);
+          socket->SetRecvCallback (MakeCallback (&TraceApplication::HandleRead, this));
+        }
     }
 
   if (m_enableSend)
@@ -159,9 +182,11 @@ TraceApplication::StartApplication (void)
            t += GetNextFlowArriveInterval ())
         {
           ScheduleNextFlow (t);
-          break; // FIXME: remove this line
         }
-      TracerExtension::RegisterTraceFCT (this);
+      if (m_protoGroup == ProtocolGroup::RoCEv2)
+        {
+          TracerExtension::RegisterTraceFCT (this);
+        }
     }
 }
 
@@ -196,7 +221,19 @@ TraceApplication::NodeIndexToAddr (uint32_t destNode) const
 {
   NS_LOG_FUNCTION (this);
 
-  uint32_t portNum = RoCEv2L4Protocol::DefaultServicePort (); // FIXME: dynamic port
+  uint32_t portNum;
+  switch (m_protoGroup)
+    {
+    case ProtocolGroup::RAW_UDP:
+      NS_FATAL_ERROR ("UDP port has not been chosen");
+      break;
+    case ProtocolGroup::TCP:
+      portNum = 200; // FIXME not raw
+      break;
+    case ProtocolGroup::RoCEv2:
+      portNum = RoCEv2L4Protocol::DefaultServicePort ();
+      break;
+    }
 
   // 0 interface is LoopbackNetDevice
   Ipv4Address ipv4Addr = m_topology->GetInterfaceOfNode (destNode, 1).GetAddress ();
@@ -208,20 +245,29 @@ TraceApplication::CreateNewSocket (uint32_t destNode)
 {
   NS_LOG_FUNCTION (this);
 
-  Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_tid);
+  Ptr<Socket> socket = Socket::CreateSocket (GetNode (), m_socketTid);
   socket->BindToNetDevice (GetNode ()->GetDevice (0));
-  Ptr<UdpBasedSocket> udpBasedSocket = DynamicCast<UdpBasedSocket> (socket);
-  if (udpBasedSocket)
+  if (m_protoGroup == ProtocolGroup::TCP)
     {
-      udpBasedSocket->SetFlowCompleteCallback (
-          MakeCallback (&TraceApplication::FlowCompletes, this));
+      socket->SetAttribute ("SegmentSize",
+                            UintegerValue (1440)); // default TCP segment is too small
     }
+  else
+    {
+      Ptr<UdpBasedSocket> udpBasedSocket = DynamicCast<UdpBasedSocket> (socket);
+      if (udpBasedSocket)
+        {
+          udpBasedSocket->SetFlowCompleteCallback (
+              MakeCallback (&TraceApplication::FlowCompletes, this));
+        }
+    }
+
   int ret = socket->Bind ();
   if (ret == -1)
     {
       NS_FATAL_ERROR ("Failed to bind socket");
     }
-  
+
   InetSocketAddress destAddr = NodeIndexToAddr (destNode);
   if (m_ecnEnabled)
     {
@@ -244,7 +290,7 @@ TraceApplication::ScheduleNextFlow (const Time &startTime)
 {
   uint32_t destNode = GetDestinationNode ();
   Ptr<Socket> socket = CreateNewSocket (destNode);
-  uint64_t size = 5 * 1024 * 1024; // GetNextFlowSize ();
+  uint64_t size = GetNextFlowSize ();
 
   Flow *flow = new Flow (size, startTime, destNode, socket);
   m_flows.emplace (socket, flow); // used when flow completes
@@ -289,7 +335,10 @@ TraceApplication::SendNextPacket (Flow *flow)
     }
   else
     {
-      NS_FATAL_ERROR ("Unable to send packet; actual " << actual << " size " << packetSize << ";");
+      // NS_FATAL_ERROR ("Unable to send packet; actual " << actual << " size " << packetSize << ";");
+      // retry later
+      Time txTime = m_socketLinkRate.CalculateBytesTxTime (packetSize + m_headerSize);
+      Simulator::Schedule (txTime, &TraceApplication::SendNextPacket, this, flow);
     }
 }
 
@@ -325,7 +374,7 @@ TraceApplication::GetNextFlowSize () const
 void
 TraceApplication::SetEcnEnabled (bool enabled)
 {
-  NS_LOG_FUNCTION(this << enabled);
+  NS_LOG_FUNCTION (this << enabled);
   m_ecnEnabled = enabled;
 }
 
@@ -353,18 +402,18 @@ TraceApplication::HandleRead (Ptr<Socket> socket)
       if (InetSocketAddress::IsMatchingType (from))
         {
           NS_LOG_LOGIC ("TraceApplication: At time "
-                       << Simulator::Now ().As (Time::S) << " client received "
-                       << packet->GetSize () << " bytes from "
-                       << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port "
-                       << InetSocketAddress::ConvertFrom (from).GetPort ());
+                        << Simulator::Now ().As (Time::S) << " client received "
+                        << packet->GetSize () << " bytes from "
+                        << InetSocketAddress::ConvertFrom (from).GetIpv4 () << " port "
+                        << InetSocketAddress::ConvertFrom (from).GetPort ());
         }
       else if (Inet6SocketAddress::IsMatchingType (from))
         {
           NS_LOG_LOGIC ("TraceApplication: At time "
-                       << Simulator::Now ().As (Time::S) << " client received "
-                       << packet->GetSize () << " bytes from "
-                       << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port "
-                       << Inet6SocketAddress::ConvertFrom (from).GetPort ());
+                        << Simulator::Now ().As (Time::S) << " client received "
+                        << packet->GetSize () << " bytes from "
+                        << Inet6SocketAddress::ConvertFrom (from).GetIpv6 () << " port "
+                        << Inet6SocketAddress::ConvertFrom (from).GetPort ());
         }
       // socket->GetSockName (localAddress);
       // m_rxTrace (packet);
@@ -382,8 +431,8 @@ TraceApplication::FlowCompletes (Ptr<UdpBasedSocket> socket)
                       << Simulator::GetContext ());
     }
   Flow *flow = p->second;
-  m_flowCompleteTrace (flow->destNode, socket->GetSrcPort (), socket->GetDstPort (), flow->totalBytes,
-                       flow->startTime, Simulator::Now ());
+  m_flowCompleteTrace (Simulator::GetContext (), flow->destNode, socket->GetSrcPort (),
+                       socket->GetDstPort (), flow->totalBytes, flow->startTime, Simulator::Now ());
 }
 
 void

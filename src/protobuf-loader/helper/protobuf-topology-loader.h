@@ -29,6 +29,7 @@
 #include "ns3/dcb-host-stack-helper.h"
 #include "ns3/dcb-switch-stack-helper.h"
 #include "ns3/topology.pb.h"
+#include <functional>
 
 /**
  * \file
@@ -78,7 +79,7 @@ protected:
    * Add one port to the switch `sw` according to portConfig
    */
   Ptr<DcbNetDevice> AddPortToSwitch (const ns3_proto::SwitchPortConfig portConfig,
-                                     const Ptr<Node> sw, DcbSwitchStackHelper& switchStack);
+                                     const Ptr<Node> sw, DcbSwitchStackHelper &switchStack);
 
   void AssignAddress (const Ptr<Node> node, const Ptr<NetDevice> device);
 
@@ -90,14 +91,21 @@ protected:
   InstallApplications (const google::protobuf::RepeatedPtrField<ns3_proto::Application> &appsConfig,
                        Ptr<DcTopology> topology);
 
+public:
+
+  typedef std::function<void (const ns3_proto::Application &, Ptr<DcTopology>)> AppInstallFunc;
+  
+  static void InstallTraceApplication (const ns3_proto::Application &appConfig, Ptr<DcTopology> topology);
+
 private:
   // Notice: this variable should be consistent with `TopologyGenerator.outputFile`
   // in config/topology_helper.py
   std::string m_protoBinaryName = "config/topology.bin";
 
   uint32_t m_ecmpSeed = 0;
-
-  static std::map<std::string, TraceApplicationHelper::ProtocolGroup> protocolGroupMapper;
+  
+  static std::map<std::string, AppInstallFunc> appInstallMapper;
+  static std::map<std::string, TraceApplication::ProtocolGroup> protocolGroupMapper;
   static std::map<std::string, TraceApplication::TraceCdf *> appCdfMapper;
 
   void LogIpAddress (const Ptr<const DcTopology> topology) const; // for debug

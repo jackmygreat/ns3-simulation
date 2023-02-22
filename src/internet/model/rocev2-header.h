@@ -22,6 +22,7 @@
 #define ROCEV2_HEADR_H
 
 #include "ns3/header.h"
+#include "ns3/udp-header.h"
 
 namespace ns3 {
 
@@ -136,6 +137,36 @@ private:
   } m_u;
 
 }; // class AETHeader
+
+/**
+ * A combination of UDP header and RoCEv2 header.
+ * This is useful when we want to peek RoCEv2 header from an IP packet.
+ */  
+class UdpRoCEv2Header : public Header
+{
+public:
+  static TypeId GetTypeId (void);
+  virtual TypeId GetInstanceTypeId (void) const override;
+
+  UdpRoCEv2Header ();
+
+  virtual uint32_t GetSerializedSize (void) const override;
+  virtual void Serialize (Buffer::Iterator start) const override;
+  virtual uint32_t Deserialize (Buffer::Iterator start) override;
+  virtual void Print (std::ostream &os) const override;
+
+  void SetUdp (const UdpHeader& udp);
+  const UdpHeader& GetUdp () const;
+
+  void SetRoCE (const RoCEv2Header& rocev2);
+  const RoCEv2Header& GetRoCE () const;
+
+private:
+
+  UdpHeader m_udp;
+  RoCEv2Header m_rocev2;
+  
+}; // UdpRoCEv2Header
 
 } // namespace ns3
 

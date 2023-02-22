@@ -231,14 +231,17 @@ public:
   enum EcmpMode {
     NONE,
     PER_PACKET_ECMP,
-    PER_UDP_FLOW_ECMP,
-    PER_TCP_FLOW_ECMP
+    PER_FLOW_ECMP,
   };
 
 protected:
   void DoDispose (void);
 
 private:
+
+  static uint32_t TcpEcmp (const Ipv4Header &header, const Ptr<const Packet> p, const size_t totalRoutes);
+  static uint32_t UdpEcmp (const Ipv4Header &header, const Ptr<const Packet> p, const size_t totalRoutes);
+
   /// Set to true if packets are randomly routed among ECMP; set to false for using only one route consistently
   EcmpMode m_randomEcmpRouting;
   /// Set to true if this interface should respond to interface events by globallly recomputing routes 

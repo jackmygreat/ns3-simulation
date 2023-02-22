@@ -126,7 +126,7 @@ DcbSwitchStackHelper::Initialize ()
   SetRoutingHelper (listRouting);
   // SetRoutingHelper (staticRoutingv6);
   m_tcFactory.SetTypeId (DcbTrafficControl::GetTypeId ());
-  m_bufferSize = 32 * 1024 * 1024; // 32 MB
+  m_bufferSize = QueueSize ("32MiB"); // 32 MB
   m_fcEnabled = true;
 }
 
@@ -175,9 +175,9 @@ DcbSwitchStackHelper::SetFCEnabled (bool enable)
 }
 
 void
-DcbSwitchStackHelper::SetBufferSize (uint32_t bytes)
+DcbSwitchStackHelper::SetBufferSize (QueueSize bufSize)
 {
-  m_bufferSize = bytes;
+  m_bufferSize = bufSize;
 }
 
 void
@@ -286,7 +286,8 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
   Ptr<Ipv4ListRouting> routing = DynamicCast<Ipv4ListRouting> (ipv4Routing);
   DynamicCast<Ipv4GlobalRouting> (routing->GetRoutingProtocol (0, priority))
       ->SetAttribute ("RandomEcmpRouting",
-                      UintegerValue (Ipv4GlobalRouting::EcmpMode::PER_UDP_FLOW_ECMP)); // paramenter 0 should be consistent with Initialize()
+                      UintegerValue (Ipv4GlobalRouting::EcmpMode::PER_FLOW_ECMP));
+  // paramenter 0 should be consistent with Initialize()
 
   if (m_ipv6Enabled)
     {
@@ -334,7 +335,7 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
           NS_FATAL_ERROR (
               "Flow control enabled but there is no DcbTrafficControl aggregated to the node");
         }
-      dcbTc->SetBufferSize (m_bufferSize);
+      dcbTc->SetBufferSize (m_bufferSize.GetValue ());
 
       PausableQueueDisc::TCEgressCallback tcCallback =
           MakeCallback (&DcbTrafficControl::EgressProcess, dcbTc);
@@ -349,7 +350,8 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
           Ptr<PausableQueueDisc> qDisc = CreateObject<PausableQueueDisc> (i);
           qDisc->RegisterTrafficControlCallback (tcCallback);
           qDisc->SetPortIndex (i);
-          dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);      
+          qDisc->SetQueueSize (m_bufferSize);
+          dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);
           dcbDev->SetFcEnabled (true); // all NetDevices should support FC
         }
     }
@@ -361,7 +363,11 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
       for (uint32_t i = 0; i < devN; i++)
         {
           Ptr<NetDevice> dev = node->GetDevice (i);
-          tc->SetRootQueueDiscOnDevice (dev, qDiscFactory.Create<PausableQueueDisc> ());
+          Ptr<PausableQueueDisc> qDisc = qDiscFactory.Create<PausableQueueDisc> ();
+          qDisc->SetFCEnabled (false);
+          tc->SetRootQueueDiscOnDevice (dev, qDisc);
+          Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (dev);
+          dcbDev->SetFcEnabled (false); // all NetDevices should support FC
         }
     }
 }

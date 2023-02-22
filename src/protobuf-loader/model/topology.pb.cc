@@ -152,11 +152,12 @@ PROTOBUF_CONSTEXPR Application::Application(
   , /*decltype(_impl_._cached_size_)*/{}
   , /*decltype(_impl_.nodeindices_)*/{}
   , /*decltype(_impl_._nodeindices_cached_byte_size_)*/{0}
+  , /*decltype(_impl_.appname_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.protocolgroup_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
-  , /*decltype(_impl_.cdf_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.arg_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.starttime_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.stoptime_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.load_)*/0
-  , /*decltype(_impl_.starttime_)*/0u
-  , /*decltype(_impl_.stoptime_)*/0u
   , /*decltype(_impl_.dest_)*/0u} {}
 struct ApplicationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR ApplicationDefaultTypeInternal()
@@ -277,19 +278,21 @@ const uint32_t TableStruct_topology_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.nodeindices_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.appname_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.protocolgroup_),
-  PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.cdf_),
+  PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.arg_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.load_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.starttime_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.stoptime_),
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Application, _impl_.dest_),
   ~0u,
   ~0u,
-  ~0u,
-  ~0u,
-  ~0u,
-  ~0u,
   0,
+  1,
+  2,
+  ~0u,
+  ~0u,
+  3,
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::ns3_proto::Topology, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -310,8 +313,8 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 49, -1, -1, sizeof(::ns3_proto::SwitchGroup)},
   { 60, -1, -1, sizeof(::ns3_proto::AllNodes)},
   { 69, -1, -1, sizeof(::ns3_proto::Link)},
-  { 81, 94, -1, sizeof(::ns3_proto::Application)},
-  { 101, -1, -1, sizeof(::ns3_proto::Topology)},
+  { 81, 95, -1, sizeof(::ns3_proto::Application)},
+  { 103, -1, -1, sizeof(::ns3_proto::Topology)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -349,19 +352,21 @@ const char descriptor_table_protodef_topology_2eproto[] PROTOBUF_SECTION_VARIABL
   "tchGroups\030\003 \003(\0132\026.ns3_proto.SwitchGroup\""
   "_\n\004Link\022\r\n\005node1\030\001 \001(\r\022\r\n\005node2\030\002 \001(\r\022\r\n"
   "\005port1\030\003 \001(\r\022\r\n\005port2\030\004 \001(\r\022\014\n\004rate\030\005 \001("
-  "\t\022\r\n\005delay\030\006 \001(\t\"\225\001\n\013Application\022\023\n\013node"
-  "Indices\030\001 \003(\r\022\025\n\rprotocolGroup\030\002 \001(\t\022\013\n\003"
-  "cdf\030\003 \001(\t\022\014\n\004load\030\004 \001(\001\022\021\n\tstartTime\030\005 \001"
-  "(\r\022\020\n\010stopTime\030\006 \001(\r\022\021\n\004dest\030\007 \001(\rH\000\210\001\001B"
-  "\007\n\005_dest\"\253\001\n\010Topology\022-\n\014globalConfig\030\001 "
-  "\001(\0132\027.ns3_proto.GlobalConfig\022\"\n\005nodes\030\002 "
-  "\001(\0132\023.ns3_proto.AllNodes\022\036\n\005links\030\003 \003(\0132"
-  "\017.ns3_proto.Link\022,\n\014applications\030\004 \003(\0132\026"
-  ".ns3_proto.Applicationb\006proto3"
+  "\t\022\r\n\005delay\030\006 \001(\t\"\330\001\n\013Application\022\023\n\013node"
+  "Indices\030\001 \003(\r\022\017\n\007appName\030\002 \001(\t\022\032\n\rprotoc"
+  "olGroup\030\003 \001(\tH\000\210\001\001\022\020\n\003arg\030\004 \001(\tH\001\210\001\001\022\021\n\004"
+  "load\030\005 \001(\001H\002\210\001\001\022\021\n\tstartTime\030\006 \001(\t\022\020\n\010st"
+  "opTime\030\007 \001(\t\022\021\n\004dest\030\010 \001(\rH\003\210\001\001B\020\n\016_prot"
+  "ocolGroupB\006\n\004_argB\007\n\005_loadB\007\n\005_dest\"\253\001\n\010"
+  "Topology\022-\n\014globalConfig\030\001 \001(\0132\027.ns3_pro"
+  "to.GlobalConfig\022\"\n\005nodes\030\002 \001(\0132\023.ns3_pro"
+  "to.AllNodes\022\036\n\005links\030\003 \003(\0132\017.ns3_proto.L"
+  "ink\022,\n\014applications\030\004 \003(\0132\026.ns3_proto.Ap"
+  "plicationb\006proto3"
   ;
 static ::_pbi::once_flag descriptor_table_topology_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_topology_2eproto = {
-    false, false, 1190, descriptor_table_protodef_topology_2eproto,
+    false, false, 1257, descriptor_table_protodef_topology_2eproto,
     "topology.proto",
     &descriptor_table_topology_2eproto_once, nullptr, 0, 10,
     schemas, file_default_instances, TableStruct_topology_2eproto::offsets,
@@ -2588,8 +2593,17 @@ void Link::InternalSwap(Link* other) {
 class Application::_Internal {
  public:
   using HasBits = decltype(std::declval<Application>()._impl_._has_bits_);
-  static void set_has_dest(HasBits* has_bits) {
+  static void set_has_protocolgroup(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
+  }
+  static void set_has_arg(HasBits* has_bits) {
+    (*has_bits)[0] |= 2u;
+  }
+  static void set_has_load(HasBits* has_bits) {
+    (*has_bits)[0] |= 4u;
+  }
+  static void set_has_dest(HasBits* has_bits) {
+    (*has_bits)[0] |= 8u;
   }
 };
 
@@ -2607,28 +2621,53 @@ Application::Application(const Application& from)
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.nodeindices_){from._impl_.nodeindices_}
     , /*decltype(_impl_._nodeindices_cached_byte_size_)*/{0}
+    , decltype(_impl_.appname_){}
     , decltype(_impl_.protocolgroup_){}
-    , decltype(_impl_.cdf_){}
-    , decltype(_impl_.load_){}
+    , decltype(_impl_.arg_){}
     , decltype(_impl_.starttime_){}
     , decltype(_impl_.stoptime_){}
+    , decltype(_impl_.load_){}
     , decltype(_impl_.dest_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  _impl_.appname_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.appname_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_appname().empty()) {
+    _this->_impl_.appname_.Set(from._internal_appname(), 
+      _this->GetArenaForAllocation());
+  }
   _impl_.protocolgroup_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.protocolgroup_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_protocolgroup().empty()) {
+  if (from._internal_has_protocolgroup()) {
     _this->_impl_.protocolgroup_.Set(from._internal_protocolgroup(), 
       _this->GetArenaForAllocation());
   }
-  _impl_.cdf_.InitDefault();
+  _impl_.arg_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.cdf_.Set("", GetArenaForAllocation());
+    _impl_.arg_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (!from._internal_cdf().empty()) {
-    _this->_impl_.cdf_.Set(from._internal_cdf(), 
+  if (from._internal_has_arg()) {
+    _this->_impl_.arg_.Set(from._internal_arg(), 
+      _this->GetArenaForAllocation());
+  }
+  _impl_.starttime_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.starttime_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_starttime().empty()) {
+    _this->_impl_.starttime_.Set(from._internal_starttime(), 
+      _this->GetArenaForAllocation());
+  }
+  _impl_.stoptime_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.stoptime_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (!from._internal_stoptime().empty()) {
+    _this->_impl_.stoptime_.Set(from._internal_stoptime(), 
       _this->GetArenaForAllocation());
   }
   ::memcpy(&_impl_.load_, &from._impl_.load_,
@@ -2646,20 +2685,33 @@ inline void Application::SharedCtor(
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.nodeindices_){arena}
     , /*decltype(_impl_._nodeindices_cached_byte_size_)*/{0}
+    , decltype(_impl_.appname_){}
     , decltype(_impl_.protocolgroup_){}
-    , decltype(_impl_.cdf_){}
+    , decltype(_impl_.arg_){}
+    , decltype(_impl_.starttime_){}
+    , decltype(_impl_.stoptime_){}
     , decltype(_impl_.load_){0}
-    , decltype(_impl_.starttime_){0u}
-    , decltype(_impl_.stoptime_){0u}
     , decltype(_impl_.dest_){0u}
   };
+  _impl_.appname_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.appname_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   _impl_.protocolgroup_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.protocolgroup_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  _impl_.cdf_.InitDefault();
+  _impl_.arg_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-    _impl_.cdf_.Set("", GetArenaForAllocation());
+    _impl_.arg_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.starttime_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.starttime_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.stoptime_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.stoptime_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
@@ -2675,8 +2727,11 @@ Application::~Application() {
 inline void Application::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.nodeindices_.~RepeatedField();
+  _impl_.appname_.Destroy();
   _impl_.protocolgroup_.Destroy();
-  _impl_.cdf_.Destroy();
+  _impl_.arg_.Destroy();
+  _impl_.starttime_.Destroy();
+  _impl_.stoptime_.Destroy();
 }
 
 void Application::SetCachedSize(int size) const {
@@ -2690,12 +2745,23 @@ void Application::Clear() {
   (void) cached_has_bits;
 
   _impl_.nodeindices_.Clear();
-  _impl_.protocolgroup_.ClearToEmpty();
-  _impl_.cdf_.ClearToEmpty();
-  ::memset(&_impl_.load_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.stoptime_) -
-      reinterpret_cast<char*>(&_impl_.load_)) + sizeof(_impl_.stoptime_));
-  _impl_.dest_ = 0u;
+  _impl_.appname_.ClearToEmpty();
+  cached_has_bits = _impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.protocolgroup_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.arg_.ClearNonDefaultToEmpty();
+    }
+  }
+  _impl_.starttime_.ClearToEmpty();
+  _impl_.stoptime_.ClearToEmpty();
+  if (cached_has_bits & 0x0000000cu) {
+    ::memset(&_impl_.load_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&_impl_.dest_) -
+        reinterpret_cast<char*>(&_impl_.load_)) + sizeof(_impl_.dest_));
+  }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -2718,9 +2784,19 @@ const char* Application::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
         } else
           goto handle_unusual;
         continue;
-      // string protocolGroup = 2;
+      // string appName = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 18)) {
+          auto str = _internal_mutable_appname();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.Application.appName"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional string protocolGroup = 3;
+      case 3:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
           auto str = _internal_mutable_protocolgroup();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
@@ -2728,43 +2804,48 @@ const char* Application::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
         } else
           goto handle_unusual;
         continue;
-      // string cdf = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 26)) {
-          auto str = _internal_mutable_cdf();
+      // optional string arg = 4;
+      case 4:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 34)) {
+          auto str = _internal_mutable_arg();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
-          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.Application.cdf"));
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.Application.arg"));
         } else
           goto handle_unusual;
         continue;
-      // double load = 4;
-      case 4:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 33)) {
+      // optional double load = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 41)) {
+          _Internal::set_has_load(&has_bits);
           _impl_.load_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<double>(ptr);
           ptr += sizeof(double);
         } else
           goto handle_unusual;
         continue;
-      // uint32 startTime = 5;
-      case 5:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
-          _impl_.starttime_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
-          CHK_(ptr);
-        } else
-          goto handle_unusual;
-        continue;
-      // uint32 stopTime = 6;
+      // string startTime = 6;
       case 6:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
-          _impl_.stoptime_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 50)) {
+          auto str = _internal_mutable_starttime();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.Application.startTime"));
         } else
           goto handle_unusual;
         continue;
-      // optional uint32 dest = 7;
+      // string stopTime = 7;
       case 7:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 56)) {
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 58)) {
+          auto str = _internal_mutable_stoptime();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          CHK_(::_pbi::VerifyUTF8(str, "ns3_proto.Application.stopTime"));
+        } else
+          goto handle_unusual;
+        continue;
+      // optional uint32 dest = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 64)) {
           _Internal::set_has_dest(&has_bits);
           _impl_.dest_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
@@ -2810,52 +2891,66 @@ uint8_t* Application::_InternalSerialize(
     }
   }
 
-  // string protocolGroup = 2;
-  if (!this->_internal_protocolgroup().empty()) {
+  // string appName = 2;
+  if (!this->_internal_appname().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_appname().data(), static_cast<int>(this->_internal_appname().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.Application.appName");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_appname(), target);
+  }
+
+  // optional string protocolGroup = 3;
+  if (_internal_has_protocolgroup()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_protocolgroup().data(), static_cast<int>(this->_internal_protocolgroup().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
       "ns3_proto.Application.protocolGroup");
     target = stream->WriteStringMaybeAliased(
-        2, this->_internal_protocolgroup(), target);
+        3, this->_internal_protocolgroup(), target);
   }
 
-  // string cdf = 3;
-  if (!this->_internal_cdf().empty()) {
+  // optional string arg = 4;
+  if (_internal_has_arg()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_cdf().data(), static_cast<int>(this->_internal_cdf().length()),
+      this->_internal_arg().data(), static_cast<int>(this->_internal_arg().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "ns3_proto.Application.cdf");
+      "ns3_proto.Application.arg");
     target = stream->WriteStringMaybeAliased(
-        3, this->_internal_cdf(), target);
+        4, this->_internal_arg(), target);
   }
 
-  // double load = 4;
-  static_assert(sizeof(uint64_t) == sizeof(double), "Code assumes uint64_t and double are the same size.");
-  double tmp_load = this->_internal_load();
-  uint64_t raw_load;
-  memcpy(&raw_load, &tmp_load, sizeof(tmp_load));
-  if (raw_load != 0) {
+  // optional double load = 5;
+  if (_internal_has_load()) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteDoubleToArray(4, this->_internal_load(), target);
+    target = ::_pbi::WireFormatLite::WriteDoubleToArray(5, this->_internal_load(), target);
   }
 
-  // uint32 startTime = 5;
-  if (this->_internal_starttime() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(5, this->_internal_starttime(), target);
+  // string startTime = 6;
+  if (!this->_internal_starttime().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_starttime().data(), static_cast<int>(this->_internal_starttime().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.Application.startTime");
+    target = stream->WriteStringMaybeAliased(
+        6, this->_internal_starttime(), target);
   }
 
-  // uint32 stopTime = 6;
-  if (this->_internal_stoptime() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(6, this->_internal_stoptime(), target);
+  // string stopTime = 7;
+  if (!this->_internal_stoptime().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_stoptime().data(), static_cast<int>(this->_internal_stoptime().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "ns3_proto.Application.stopTime");
+    target = stream->WriteStringMaybeAliased(
+        7, this->_internal_stoptime(), target);
   }
 
-  // optional uint32 dest = 7;
+  // optional uint32 dest = 8;
   if (_internal_has_dest()) {
     target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(7, this->_internal_dest(), target);
+    target = ::_pbi::WireFormatLite::WriteUInt32ToArray(8, this->_internal_dest(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2888,45 +2983,56 @@ size_t Application::ByteSizeLong() const {
     total_size += data_size;
   }
 
-  // string protocolGroup = 2;
-  if (!this->_internal_protocolgroup().empty()) {
+  // string appName = 2;
+  if (!this->_internal_appname().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_protocolgroup());
+        this->_internal_appname());
   }
 
-  // string cdf = 3;
-  if (!this->_internal_cdf().empty()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_cdf());
-  }
-
-  // double load = 4;
-  static_assert(sizeof(uint64_t) == sizeof(double), "Code assumes uint64_t and double are the same size.");
-  double tmp_load = this->_internal_load();
-  uint64_t raw_load;
-  memcpy(&raw_load, &tmp_load, sizeof(tmp_load));
-  if (raw_load != 0) {
-    total_size += 1 + 8;
-  }
-
-  // uint32 startTime = 5;
-  if (this->_internal_starttime() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_starttime());
-  }
-
-  // uint32 stopTime = 6;
-  if (this->_internal_stoptime() != 0) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_stoptime());
-  }
-
-  // optional uint32 dest = 7;
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_dest());
+  if (cached_has_bits & 0x00000003u) {
+    // optional string protocolGroup = 3;
+    if (cached_has_bits & 0x00000001u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_protocolgroup());
+    }
+
+    // optional string arg = 4;
+    if (cached_has_bits & 0x00000002u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_arg());
+    }
+
+  }
+  // string startTime = 6;
+  if (!this->_internal_starttime().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_starttime());
   }
 
+  // string stopTime = 7;
+  if (!this->_internal_stoptime().empty()) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+        this->_internal_stoptime());
+  }
+
+  if (cached_has_bits & 0x0000000cu) {
+    // optional double load = 5;
+    if (cached_has_bits & 0x00000004u) {
+      total_size += 1 + 8;
+    }
+
+    // optional uint32 dest = 8;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(this->_internal_dest());
+    }
+
+  }
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -2946,27 +3052,32 @@ void Application::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PR
   (void) cached_has_bits;
 
   _this->_impl_.nodeindices_.MergeFrom(from._impl_.nodeindices_);
-  if (!from._internal_protocolgroup().empty()) {
-    _this->_internal_set_protocolgroup(from._internal_protocolgroup());
+  if (!from._internal_appname().empty()) {
+    _this->_internal_set_appname(from._internal_appname());
   }
-  if (!from._internal_cdf().empty()) {
-    _this->_internal_set_cdf(from._internal_cdf());
+  cached_has_bits = from._impl_._has_bits_[0];
+  if (cached_has_bits & 0x00000003u) {
+    if (cached_has_bits & 0x00000001u) {
+      _this->_internal_set_protocolgroup(from._internal_protocolgroup());
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _this->_internal_set_arg(from._internal_arg());
+    }
   }
-  static_assert(sizeof(uint64_t) == sizeof(double), "Code assumes uint64_t and double are the same size.");
-  double tmp_load = from._internal_load();
-  uint64_t raw_load;
-  memcpy(&raw_load, &tmp_load, sizeof(tmp_load));
-  if (raw_load != 0) {
-    _this->_internal_set_load(from._internal_load());
-  }
-  if (from._internal_starttime() != 0) {
+  if (!from._internal_starttime().empty()) {
     _this->_internal_set_starttime(from._internal_starttime());
   }
-  if (from._internal_stoptime() != 0) {
+  if (!from._internal_stoptime().empty()) {
     _this->_internal_set_stoptime(from._internal_stoptime());
   }
-  if (from._internal_has_dest()) {
-    _this->_internal_set_dest(from._internal_dest());
+  if (cached_has_bits & 0x0000000cu) {
+    if (cached_has_bits & 0x00000004u) {
+      _this->_impl_.load_ = from._impl_.load_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _this->_impl_.dest_ = from._impl_.dest_;
+    }
+    _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
@@ -2990,12 +3101,24 @@ void Application::InternalSwap(Application* other) {
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   _impl_.nodeindices_.InternalSwap(&other->_impl_.nodeindices_);
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.appname_, lhs_arena,
+      &other->_impl_.appname_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
       &_impl_.protocolgroup_, lhs_arena,
       &other->_impl_.protocolgroup_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
-      &_impl_.cdf_, lhs_arena,
-      &other->_impl_.cdf_, rhs_arena
+      &_impl_.arg_, lhs_arena,
+      &other->_impl_.arg_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.starttime_, lhs_arena,
+      &other->_impl_.starttime_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.stoptime_, lhs_arena,
+      &other->_impl_.stoptime_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Application, _impl_.dest_)

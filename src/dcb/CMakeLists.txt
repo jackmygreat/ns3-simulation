@@ -23,7 +23,6 @@ build_lib(
 	  model/rocev2-socket.cc
 	  model/dcqcn.cc
 	  utils/pfc-frame.cc
-	  utils/rocev2-header.cc
   HEADER_FILES
       helper/dcb-net-device-helper.h
       helper/dcb-host-stack-helper.h
@@ -46,7 +45,6 @@ build_lib(
 	  model/rocev2-socket.h
 	  model/dcqcn.h
 	  utils/pfc-frame.h
-	  utils/rocev2-header.h
   LIBRARIES_TO_LINK
       ${libcore}
 	  ${libnetwork}

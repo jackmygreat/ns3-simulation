@@ -34,7 +34,7 @@ TraceApplicationHelper::TraceApplicationHelper (Ptr<DcTopology> topo)
 }
 
 void
-TraceApplicationHelper::SetProtocolGroup (ProtocolGroup protoGroup)
+TraceApplicationHelper::SetProtocolGroup (TraceApplication::ProtocolGroup protoGroup)
 {
   m_protoGroup = protoGroup;
 }
@@ -108,11 +108,11 @@ TraceApplicationHelper::InstallPriv (Ptr<Node> node) const
   
   switch (m_protoGroup)
     {
-    case RAW_UDP:
+    case TraceApplication::ProtocolGroup::RAW_UDP:
       break; // do nothing
-    case TCP:
+    case TraceApplication::ProtocolGroup::TCP:
       break; // TODO: add support of TCP
-    case RoCEv2:
+    case TraceApplication::ProtocolGroup::RoCEv2:
       // must be called after node->AddApplication () becasue it needs to know the node
       app->SetInnerUdpProtocol (RoCEv2L4Protocol::GetTypeId ());
     };

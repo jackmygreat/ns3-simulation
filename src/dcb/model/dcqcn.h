@@ -92,6 +92,8 @@ private:
   double m_targetRateRatio;
   double m_curRateRatio;
   Time m_stopTime;
+  Time m_CNPInterval;
+  double m_minRateRatio;
   
 }; // class DcqcnCongestionOps
 

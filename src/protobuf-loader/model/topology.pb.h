@@ -1713,12 +1713,13 @@ class Application final :
 
   enum : int {
     kNodeIndicesFieldNumber = 1,
-    kProtocolGroupFieldNumber = 2,
-    kCdfFieldNumber = 3,
-    kLoadFieldNumber = 4,
-    kStartTimeFieldNumber = 5,
-    kStopTimeFieldNumber = 6,
-    kDestFieldNumber = 7,
+    kAppNameFieldNumber = 2,
+    kProtocolGroupFieldNumber = 3,
+    kArgFieldNumber = 4,
+    kStartTimeFieldNumber = 6,
+    kStopTimeFieldNumber = 7,
+    kLoadFieldNumber = 5,
+    kDestFieldNumber = 8,
   };
   // repeated uint32 nodeIndices = 1;
   int nodeindices_size() const;
@@ -1742,7 +1743,25 @@ class Application final :
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t >*
       mutable_nodeindices();
 
-  // string protocolGroup = 2;
+  // string appName = 2;
+  void clear_appname();
+  const std::string& appname() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_appname(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_appname();
+  PROTOBUF_NODISCARD std::string* release_appname();
+  void set_allocated_appname(std::string* appname);
+  private:
+  const std::string& _internal_appname() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_appname(const std::string& value);
+  std::string* _internal_mutable_appname();
+  public:
+
+  // optional string protocolGroup = 3;
+  bool has_protocolgroup() const;
+  private:
+  bool _internal_has_protocolgroup() const;
+  public:
   void clear_protocolgroup();
   const std::string& protocolgroup() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -1756,21 +1775,57 @@ class Application final :
   std::string* _internal_mutable_protocolgroup();
   public:
 
-  // string cdf = 3;
-  void clear_cdf();
-  const std::string& cdf() const;
-  template <typename ArgT0 = const std::string&, typename... ArgT>
-  void set_cdf(ArgT0&& arg0, ArgT... args);
-  std::string* mutable_cdf();
-  PROTOBUF_NODISCARD std::string* release_cdf();
-  void set_allocated_cdf(std::string* cdf);
+  // optional string arg = 4;
+  bool has_arg() const;
   private:
-  const std::string& _internal_cdf() const;
-  inline PROTOBUF_ALWAYS_INLINE void _internal_set_cdf(const std::string& value);
-  std::string* _internal_mutable_cdf();
+  bool _internal_has_arg() const;
+  public:
+  void clear_arg();
+  const std::string& arg() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_arg(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_arg();
+  PROTOBUF_NODISCARD std::string* release_arg();
+  void set_allocated_arg(std::string* arg);
+  private:
+  const std::string& _internal_arg() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_arg(const std::string& value);
+  std::string* _internal_mutable_arg();
   public:
 
-  // double load = 4;
+  // string startTime = 6;
+  void clear_starttime();
+  const std::string& starttime() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_starttime(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_starttime();
+  PROTOBUF_NODISCARD std::string* release_starttime();
+  void set_allocated_starttime(std::string* starttime);
+  private:
+  const std::string& _internal_starttime() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_starttime(const std::string& value);
+  std::string* _internal_mutable_starttime();
+  public:
+
+  // string stopTime = 7;
+  void clear_stoptime();
+  const std::string& stoptime() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_stoptime(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_stoptime();
+  PROTOBUF_NODISCARD std::string* release_stoptime();
+  void set_allocated_stoptime(std::string* stoptime);
+  private:
+  const std::string& _internal_stoptime() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_stoptime(const std::string& value);
+  std::string* _internal_mutable_stoptime();
+  public:
+
+  // optional double load = 5;
+  bool has_load() const;
+  private:
+  bool _internal_has_load() const;
+  public:
   void clear_load();
   double load() const;
   void set_load(double value);
@@ -1779,25 +1834,7 @@ class Application final :
   void _internal_set_load(double value);
   public:
 
-  // uint32 startTime = 5;
-  void clear_starttime();
-  uint32_t starttime() const;
-  void set_starttime(uint32_t value);
-  private:
-  uint32_t _internal_starttime() const;
-  void _internal_set_starttime(uint32_t value);
-  public:
-
-  // uint32 stopTime = 6;
-  void clear_stoptime();
-  uint32_t stoptime() const;
-  void set_stoptime(uint32_t value);
-  private:
-  uint32_t _internal_stoptime() const;
-  void _internal_set_stoptime(uint32_t value);
-  public:
-
-  // optional uint32 dest = 7;
+  // optional uint32 dest = 8;
   bool has_dest() const;
   private:
   bool _internal_has_dest() const;
@@ -1822,11 +1859,12 @@ class Application final :
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedField< uint32_t > nodeindices_;
     mutable std::atomic<int> _nodeindices_cached_byte_size_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr appname_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr protocolgroup_;
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr cdf_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr arg_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr starttime_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr stoptime_;
     double load_;
-    uint32_t starttime_;
-    uint32_t stoptime_;
     uint32_t dest_;
   };
   union { Impl_ _impl_; };
@@ -3077,9 +3115,67 @@ Application::mutable_nodeindices() {
   return _internal_mutable_nodeindices();
 }
 
-// string protocolGroup = 2;
+// string appName = 2;
+inline void Application::clear_appname() {
+  _impl_.appname_.ClearToEmpty();
+}
+inline const std::string& Application::appname() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.appName)
+  return _internal_appname();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Application::set_appname(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.appname_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.appName)
+}
+inline std::string* Application::mutable_appname() {
+  std::string* _s = _internal_mutable_appname();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.appName)
+  return _s;
+}
+inline const std::string& Application::_internal_appname() const {
+  return _impl_.appname_.Get();
+}
+inline void Application::_internal_set_appname(const std::string& value) {
+  
+  _impl_.appname_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Application::_internal_mutable_appname() {
+  
+  return _impl_.appname_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Application::release_appname() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Application.appName)
+  return _impl_.appname_.Release();
+}
+inline void Application::set_allocated_appname(std::string* appname) {
+  if (appname != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.appname_.SetAllocated(appname, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.appname_.IsDefault()) {
+    _impl_.appname_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.appName)
+}
+
+// optional string protocolGroup = 3;
+inline bool Application::_internal_has_protocolgroup() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool Application::has_protocolgroup() const {
+  return _internal_has_protocolgroup();
+}
 inline void Application::clear_protocolgroup() {
   _impl_.protocolgroup_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& Application::protocolgroup() const {
   // @@protoc_insertion_point(field_get:ns3_proto.Application.protocolGroup)
@@ -3088,7 +3184,7 @@ inline const std::string& Application::protocolgroup() const {
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
 void Application::set_protocolgroup(ArgT0&& arg0, ArgT... args) {
- 
+ _impl_._has_bits_[0] |= 0x00000001u;
  _impl_.protocolgroup_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:ns3_proto.Application.protocolGroup)
 }
@@ -3101,22 +3197,32 @@ inline const std::string& Application::_internal_protocolgroup() const {
   return _impl_.protocolgroup_.Get();
 }
 inline void Application::_internal_set_protocolgroup(const std::string& value) {
-  
+  _impl_._has_bits_[0] |= 0x00000001u;
   _impl_.protocolgroup_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Application::_internal_mutable_protocolgroup() {
-  
+  _impl_._has_bits_[0] |= 0x00000001u;
   return _impl_.protocolgroup_.Mutable(GetArenaForAllocation());
 }
 inline std::string* Application::release_protocolgroup() {
   // @@protoc_insertion_point(field_release:ns3_proto.Application.protocolGroup)
-  return _impl_.protocolgroup_.Release();
+  if (!_internal_has_protocolgroup()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* p = _impl_.protocolgroup_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.protocolgroup_.IsDefault()) {
+    _impl_.protocolgroup_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
 }
 inline void Application::set_allocated_protocolgroup(std::string* protocolgroup) {
   if (protocolgroup != nullptr) {
-    
+    _impl_._has_bits_[0] |= 0x00000001u;
   } else {
-    
+    _impl_._has_bits_[0] &= ~0x00000001u;
   }
   _impl_.protocolgroup_.SetAllocated(protocolgroup, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -3127,59 +3233,85 @@ inline void Application::set_allocated_protocolgroup(std::string* protocolgroup)
   // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.protocolGroup)
 }
 
-// string cdf = 3;
-inline void Application::clear_cdf() {
-  _impl_.cdf_.ClearToEmpty();
+// optional string arg = 4;
+inline bool Application::_internal_has_arg() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
 }
-inline const std::string& Application::cdf() const {
-  // @@protoc_insertion_point(field_get:ns3_proto.Application.cdf)
-  return _internal_cdf();
+inline bool Application::has_arg() const {
+  return _internal_has_arg();
+}
+inline void Application::clear_arg() {
+  _impl_.arg_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& Application::arg() const {
+  // @@protoc_insertion_point(field_get:ns3_proto.Application.arg)
+  return _internal_arg();
 }
 template <typename ArgT0, typename... ArgT>
 inline PROTOBUF_ALWAYS_INLINE
-void Application::set_cdf(ArgT0&& arg0, ArgT... args) {
- 
- _impl_.cdf_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:ns3_proto.Application.cdf)
+void Application::set_arg(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000002u;
+ _impl_.arg_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:ns3_proto.Application.arg)
 }
-inline std::string* Application::mutable_cdf() {
-  std::string* _s = _internal_mutable_cdf();
-  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.cdf)
+inline std::string* Application::mutable_arg() {
+  std::string* _s = _internal_mutable_arg();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.arg)
   return _s;
 }
-inline const std::string& Application::_internal_cdf() const {
-  return _impl_.cdf_.Get();
+inline const std::string& Application::_internal_arg() const {
+  return _impl_.arg_.Get();
 }
-inline void Application::_internal_set_cdf(const std::string& value) {
-  
-  _impl_.cdf_.Set(value, GetArenaForAllocation());
+inline void Application::_internal_set_arg(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.arg_.Set(value, GetArenaForAllocation());
 }
-inline std::string* Application::_internal_mutable_cdf() {
-  
-  return _impl_.cdf_.Mutable(GetArenaForAllocation());
+inline std::string* Application::_internal_mutable_arg() {
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _impl_.arg_.Mutable(GetArenaForAllocation());
 }
-inline std::string* Application::release_cdf() {
-  // @@protoc_insertion_point(field_release:ns3_proto.Application.cdf)
-  return _impl_.cdf_.Release();
-}
-inline void Application::set_allocated_cdf(std::string* cdf) {
-  if (cdf != nullptr) {
-    
-  } else {
-    
+inline std::string* Application::release_arg() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Application.arg)
+  if (!_internal_has_arg()) {
+    return nullptr;
   }
-  _impl_.cdf_.SetAllocated(cdf, GetArenaForAllocation());
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* p = _impl_.arg_.Release();
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  if (_impl_.cdf_.IsDefault()) {
-    _impl_.cdf_.Set("", GetArenaForAllocation());
+  if (_impl_.arg_.IsDefault()) {
+    _impl_.arg_.Set("", GetArenaForAllocation());
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.cdf)
+  return p;
+}
+inline void Application::set_allocated_arg(std::string* arg) {
+  if (arg != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  _impl_.arg_.SetAllocated(arg, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.arg_.IsDefault()) {
+    _impl_.arg_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.arg)
 }
 
-// double load = 4;
+// optional double load = 5;
+inline bool Application::_internal_has_load() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline bool Application::has_load() const {
+  return _internal_has_load();
+}
 inline void Application::clear_load() {
   _impl_.load_ = 0;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 inline double Application::_internal_load() const {
   return _impl_.load_;
@@ -3189,7 +3321,7 @@ inline double Application::load() const {
   return _internal_load();
 }
 inline void Application::_internal_set_load(double value) {
-  
+  _impl_._has_bits_[0] |= 0x00000004u;
   _impl_.load_ = value;
 }
 inline void Application::set_load(double value) {
@@ -3197,49 +3329,109 @@ inline void Application::set_load(double value) {
   // @@protoc_insertion_point(field_set:ns3_proto.Application.load)
 }
 
-// uint32 startTime = 5;
+// string startTime = 6;
 inline void Application::clear_starttime() {
-  _impl_.starttime_ = 0u;
+  _impl_.starttime_.ClearToEmpty();
 }
-inline uint32_t Application::_internal_starttime() const {
-  return _impl_.starttime_;
-}
-inline uint32_t Application::starttime() const {
+inline const std::string& Application::starttime() const {
   // @@protoc_insertion_point(field_get:ns3_proto.Application.startTime)
   return _internal_starttime();
 }
-inline void Application::_internal_set_starttime(uint32_t value) {
-  
-  _impl_.starttime_ = value;
-}
-inline void Application::set_starttime(uint32_t value) {
-  _internal_set_starttime(value);
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Application::set_starttime(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.starttime_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:ns3_proto.Application.startTime)
 }
+inline std::string* Application::mutable_starttime() {
+  std::string* _s = _internal_mutable_starttime();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.startTime)
+  return _s;
+}
+inline const std::string& Application::_internal_starttime() const {
+  return _impl_.starttime_.Get();
+}
+inline void Application::_internal_set_starttime(const std::string& value) {
+  
+  _impl_.starttime_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Application::_internal_mutable_starttime() {
+  
+  return _impl_.starttime_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Application::release_starttime() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Application.startTime)
+  return _impl_.starttime_.Release();
+}
+inline void Application::set_allocated_starttime(std::string* starttime) {
+  if (starttime != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.starttime_.SetAllocated(starttime, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.starttime_.IsDefault()) {
+    _impl_.starttime_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.startTime)
+}
 
-// uint32 stopTime = 6;
+// string stopTime = 7;
 inline void Application::clear_stoptime() {
-  _impl_.stoptime_ = 0u;
+  _impl_.stoptime_.ClearToEmpty();
 }
-inline uint32_t Application::_internal_stoptime() const {
-  return _impl_.stoptime_;
-}
-inline uint32_t Application::stoptime() const {
+inline const std::string& Application::stoptime() const {
   // @@protoc_insertion_point(field_get:ns3_proto.Application.stopTime)
   return _internal_stoptime();
 }
-inline void Application::_internal_set_stoptime(uint32_t value) {
-  
-  _impl_.stoptime_ = value;
-}
-inline void Application::set_stoptime(uint32_t value) {
-  _internal_set_stoptime(value);
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void Application::set_stoptime(ArgT0&& arg0, ArgT... args) {
+ 
+ _impl_.stoptime_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
   // @@protoc_insertion_point(field_set:ns3_proto.Application.stopTime)
 }
+inline std::string* Application::mutable_stoptime() {
+  std::string* _s = _internal_mutable_stoptime();
+  // @@protoc_insertion_point(field_mutable:ns3_proto.Application.stopTime)
+  return _s;
+}
+inline const std::string& Application::_internal_stoptime() const {
+  return _impl_.stoptime_.Get();
+}
+inline void Application::_internal_set_stoptime(const std::string& value) {
+  
+  _impl_.stoptime_.Set(value, GetArenaForAllocation());
+}
+inline std::string* Application::_internal_mutable_stoptime() {
+  
+  return _impl_.stoptime_.Mutable(GetArenaForAllocation());
+}
+inline std::string* Application::release_stoptime() {
+  // @@protoc_insertion_point(field_release:ns3_proto.Application.stopTime)
+  return _impl_.stoptime_.Release();
+}
+inline void Application::set_allocated_stoptime(std::string* stoptime) {
+  if (stoptime != nullptr) {
+    
+  } else {
+    
+  }
+  _impl_.stoptime_.SetAllocated(stoptime, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.stoptime_.IsDefault()) {
+    _impl_.stoptime_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:ns3_proto.Application.stopTime)
+}
 
-// optional uint32 dest = 7;
+// optional uint32 dest = 8;
 inline bool Application::_internal_has_dest() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline bool Application::has_dest() const {
@@ -3247,7 +3439,7 @@ inline bool Application::has_dest() const {
 }
 inline void Application::clear_dest() {
   _impl_.dest_ = 0u;
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline uint32_t Application::_internal_dest() const {
   return _impl_.dest_;
@@ -3257,7 +3449,7 @@ inline uint32_t Application::dest() const {
   return _internal_dest();
 }
 inline void Application::_internal_set_dest(uint32_t value) {
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   _impl_.dest_ = value;
 }
 inline void Application::set_dest(uint32_t value) {

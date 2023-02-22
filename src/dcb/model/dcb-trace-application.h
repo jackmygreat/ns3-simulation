@@ -59,6 +59,12 @@ public:
    */  
   TraceApplication (Ptr<DcTopology> topology, uint32_t nodeIndex, int32_t destIndex = -1);
   virtual ~TraceApplication ();
+
+  enum ProtocolGroup {
+    RAW_UDP,
+    TCP,
+    RoCEv2
+  };
   
   /**
   * \brief Assign a fixed random variable stream number to the random variables
@@ -68,6 +74,8 @@ public:
   * \return the number of stream indices assigned by this model
   */
   // int64_t AssignStreams (int64_t stream);
+
+  void SetProtocolGroup (ProtocolGroup protoGroup);
 
   void SetInnerUdpProtocol (std::string innerTid);
   void SetInnerUdpProtocol (TypeId innerTid);
@@ -230,7 +238,8 @@ private:
   // bool                   m_connected;       //!< True if connected
   DataRate               m_socketLinkRate;  //!< Link rate of the deice
   uint64_t               m_totBytes;        //!< Total bytes sent so far
-  TypeId                 m_tid;             //!< Type of the socket used
+  TypeId                 m_socketTid;       //!< Type of the socket used
+  ProtocolGroup          m_protoGroup;      //!< Protocol group
   TypeId                 m_innerUdpProtocol; //!< inner-UDP protocol type id
   uint32_t               m_headerSize;     //!< total header bytes of a packet
   Ptr<EmpiricalRandomVariable>   m_flowSizeRng;       //!< Flow size random generator
@@ -248,9 +257,9 @@ private:
   TracedCallback<Ptr<const Packet>, const Address &, const Address &, const SeqTsSizeHeader &>
       m_txTraceWithSeqTsSize;
 
-  TracedCallback<uint32_t, uint32_t, uint32_t, uint32_t, Time, Time> m_flowCompleteTrace;
-};
-
+  TracedCallback<uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, Time, Time> m_flowCompleteTrace;
+}; // class TraceApplication
+  
 } // namespace ns3
 
 #endif // DCB_TRACE_APPLICATION_H

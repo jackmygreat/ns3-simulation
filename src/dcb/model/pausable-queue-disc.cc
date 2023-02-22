@@ -31,6 +31,7 @@
 #include "ns3/object-factory.h"
 #include "ns3/queue-disc.h"
 #include "ns3/queue-item.h"
+#include "ns3/queue-size.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/type-id.h"
 #include "ns3/uinteger.h"
@@ -50,7 +51,7 @@ PausableQueueDisc::GetTypeId ()
           .SetParent<QueueDisc> ()
           .SetGroupName ("Dcb")
           .AddConstructor<PausableQueueDisc> ()
-          .AddAttribute ("FcEnabled", "Wether flow control is enabled", BooleanValue (true),
+          .AddAttribute ("FcEnabled", "Wether flow control is enabled", BooleanValue (false),
                          MakeBooleanAccessor (&PausableQueueDisc::m_fcEnabled),
                          MakeBooleanChecker ())
           .AddAttribute ("TrafficControlCallback", "Callback when deque completed",
@@ -60,12 +61,12 @@ PausableQueueDisc::GetTypeId ()
   return tid;
 }
 
-PausableQueueDisc::PausableQueueDisc ()
+PausableQueueDisc::PausableQueueDisc (): m_queueSize ("1000p")
 {
   NS_LOG_FUNCTION (this);
 }
 
-PausableQueueDisc::PausableQueueDisc (uint32_t port) : m_portIndex (port)
+  PausableQueueDisc::PausableQueueDisc (uint32_t port) : m_portIndex (port), m_queueSize ("1000p")
 {
   NS_LOG_FUNCTION (this);
 }
@@ -119,6 +120,12 @@ PausableQueueDisc::SetFCEnabled (bool enable)
 }
 
 void
+PausableQueueDisc::SetQueueSize (QueueSize qSize)
+{
+  m_queueSize = qSize;
+}
+
+void
 PausableQueueDisc::SetPaused (uint8_t priority, bool paused)
 {
   NS_LOG_FUNCTION (this);
@@ -151,7 +158,7 @@ PausableQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       bool retval = qdiscClass->GetQueueDisc ()->Enqueue (item);
       if (!retval)
         {
-          NS_FATAL_ERROR ("PausableQueueDisc: enqueue failed on node "
+          NS_LOG_WARN ("PausableQueueDisc: enqueue failed on node "
                           << Simulator::GetContext ()
                           << ", queue size=" << qdiscClass->GetQueueDisc ()->GetCurrentSize ());
         }
@@ -222,6 +229,7 @@ PausableQueueDisc::CheckConfig (void)
       // create 8 fifo queue discs
       ObjectFactory factory;
       factory.SetTypeId ("ns3::FifoQueueDiscEcn");
+      factory.Set ("MaxSize", QueueSizeValue (m_queueSize));
       for (uint8_t i = 0; i < 8; i++)
         {
           Ptr<QueueDisc> qd = factory.Create<QueueDisc> ();

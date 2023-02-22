@@ -21,6 +21,7 @@
 #include "rocev2-header.h"
 #include "ns3/fatal-error.h"
 #include "ns3/type-id.h"
+#include "ns3/udp-header.h"
 
 namespace ns3 {
 
@@ -42,8 +43,7 @@ RoCEv2Header::GetInstanceTypeId (void) const
   return GetTypeId ();
 }
 
-RoCEv2Header::RoCEv2Header ()
-    : m_opcode (RoCEv2Header::Opcode::RC_SEND_ONLY), m_pKey (0)
+RoCEv2Header::RoCEv2Header () : m_opcode (RoCEv2Header::Opcode::RC_SEND_ONLY), m_pKey (0)
 {
   m_ua.u = 0;
   m_ub.u = 0;
@@ -64,9 +64,9 @@ RoCEv2Header::Serialize (Buffer::Iterator start) const
   i.WriteU8 ((m_ua.se << 7) | (m_ua.m << 6) | (m_ua.padCnt << 4) | (m_ua.tVer));
   i.WriteHtonU16 (m_pKey);
   uint8_t h = (m_ub.fr << 7) | (m_ub.br << 6) | (m_ub.reserved);
-  i.WriteHtonU32((h << 24) | m_ub.destQP);
+  i.WriteHtonU32 ((h << 24) | m_ub.destQP);
   h = (m_uc.ackQ << 7) | (m_uc.reserved);
-  i.WriteHtonU32((h << 24) | m_uc.psn);
+  i.WriteHtonU32 ((h << 24) | m_uc.psn);
 }
 
 uint32_t
@@ -80,22 +80,22 @@ RoCEv2Header::Deserialize (Buffer::Iterator start)
   m_ua.m = (b >> 6) & 0b1;
   m_ua.padCnt = (b >> 4) & 0b11;
   m_ua.tVer = b & 0b1111;
-  
-  m_pKey = i.ReadNtohU16();
-  
-  uint32_t u = i.ReadNtohU32();
+
+  m_pKey = i.ReadNtohU16 ();
+
+  uint32_t u = i.ReadNtohU32 ();
   uint8_t h = u >> 24;
   m_ub.fr = h >> 7;
   m_ub.br = (h >> 6) & 0b1;
   m_ub.reserved = h & 0b11'1111;
   m_ub.destQP = u & 0xffffff;
 
-  u = i.ReadNtohU32();
+  u = i.ReadNtohU32 ();
   h = u >> 24;
   m_uc.ackQ = h >> 7;
   m_uc.reserved = h & 0b111'1111;
   m_uc.psn = u & 0xffffff;
-  
+
   return GetSerializedSize ();
 }
 
@@ -261,6 +261,81 @@ void
 AETHeader::SetMSN (uint32_t msn)
 {
   m_u.msn = msn & 0xffffff;
+}
+
+TypeId
+UdpRoCEv2Header::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::UdpRoCEv2Header")
+                          .SetGroupName ("Dcb")
+                          .SetParent<Header> ()
+                          .AddConstructor<UdpRoCEv2Header> ();
+  return tid;
+}
+
+TypeId
+UdpRoCEv2Header::GetInstanceTypeId () const
+{
+  return GetTypeId ();
+}
+
+UdpRoCEv2Header::UdpRoCEv2Header ()
+{
+}
+
+uint32_t
+UdpRoCEv2Header::GetSerializedSize () const
+{
+  return m_udp.GetSerializedSize () + m_rocev2.GetSerializedSize ();
+}
+
+void
+UdpRoCEv2Header::Serialize (Buffer::Iterator start) const
+{
+  m_udp.Serialize (start);
+  start.Next (m_udp.GetSerializedSize ());
+  m_rocev2.Serialize (start);
+}
+
+uint32_t
+UdpRoCEv2Header::Deserialize (Buffer::Iterator start)
+{
+  m_udp.Deserialize (start);
+  start.Next (m_udp.GetSerializedSize ());
+  m_rocev2.Deserialize (start);
+  return GetSerializedSize ();
+}
+
+void
+UdpRoCEv2Header::Print (std::ostream &os) const
+{
+  m_udp.Print (os);
+  os << " | ";
+  m_rocev2.Print (os);
+}
+
+void
+UdpRoCEv2Header::SetUdp (const UdpHeader &udp)
+{
+  m_udp = udp;
+}
+
+const UdpHeader &
+UdpRoCEv2Header::GetUdp () const
+{
+  return m_udp;
+}
+
+void
+UdpRoCEv2Header::SetRoCE (const RoCEv2Header &rocev2)
+{
+  m_rocev2 = rocev2;
+}
+
+const RoCEv2Header &
+UdpRoCEv2Header::GetRoCE () const
+{
+  return m_rocev2;
 }
 
 } // namespace ns3

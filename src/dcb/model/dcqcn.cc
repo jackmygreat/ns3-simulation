@@ -32,18 +32,16 @@ NS_OBJECT_ENSURE_REGISTERED (DcqcnCongestionOps);
 TypeId
 DcqcnCongestionOps::GetTypeId ()
 {
-  static TypeId tid = TypeId ("ns3::DcqcnCongestionOps")
-                          .SetParent<Object> ()
-                          .SetGroupName ("Dcb");
+  static TypeId tid = TypeId ("ns3::DcqcnCongestionOps").SetParent<Object> ().SetGroupName ("Dcb");
   return tid;
 }
 
 DcqcnCongestionOps::DcqcnCongestionOps (Ptr<RoCEv2SocketState> sockState)
     : m_sockState (sockState),
-      m_alpha (1.),
-      m_g (1 / 16.),
-      m_raiRatio (0.04),
-      m_hraiRatio (0.2),
+      m_alpha (1.), // larger alpha means more aggressive rate reduction
+      m_g (0.00390625), // 1 / 16.
+      m_raiRatio (.5),
+      m_hraiRatio (1.),
       m_alphaTimer (Timer::CANCEL_ON_DESTROY),
       m_bytesThreshold (150 * 1024),
       m_bytesCounter (0),
@@ -51,13 +49,15 @@ DcqcnCongestionOps::DcqcnCongestionOps (Ptr<RoCEv2SocketState> sockState)
       m_bytesUpdateIter (0),
       m_F (5),
       m_targetRateRatio (100.),
-      m_curRateRatio (100.)
+      m_curRateRatio (100.),
+      m_CNPInterval (MicroSeconds (4)),
+      m_minRateRatio (1e-3)
 {
   NS_LOG_FUNCTION (this);
   m_alphaTimer.SetFunction (&DcqcnCongestionOps::UpdateAlpha, this);
-  m_alphaTimer.SetDelay (MicroSeconds (35)); // 55
+  m_alphaTimer.SetDelay (MicroSeconds (1)); // 55
   m_rateTimer.SetFunction (&DcqcnCongestionOps::RateTimerTriggered, this);
-  m_rateTimer.SetDelay (MicroSeconds (300)); // 1500
+  m_rateTimer.SetDelay (MicroSeconds (900)); // 1500
 }
 
 DcqcnCongestionOps::~DcqcnCongestionOps ()
@@ -66,7 +66,7 @@ DcqcnCongestionOps::~DcqcnCongestionOps ()
 }
 
 void
-DcqcnCongestionOps::SetReady()
+DcqcnCongestionOps::SetReady ()
 {
   m_rateTimer.Schedule ();
 }
@@ -92,6 +92,7 @@ DcqcnCongestionOps::UpdateStateWithCNP ()
 
   m_targetRateRatio = m_curRateRatio;
   m_curRateRatio *= 1 - m_alpha / 2;
+  m_curRateRatio = std::max(m_curRateRatio, m_minRateRatio);
   m_sockState->SetRateRatio (m_curRateRatio);
   m_alpha = (1 - m_g) * m_alpha + m_g;
 
@@ -114,7 +115,7 @@ DcqcnCongestionOps::UpdateAlpha ()
 
   m_alpha *= 1 - m_g;
   if (Simulator::Now () < m_stopTime)
-    {  
+    {
       m_alphaTimer.Schedule ();
     }
 }
@@ -127,7 +128,7 @@ DcqcnCongestionOps::RateTimerTriggered ()
   m_rateUpdateIter++;
   UpdateRate ();
   if (Simulator::Now () < m_stopTime)
-    {  
+    {
       m_rateTimer.Schedule ();
     }
 }
@@ -154,7 +155,8 @@ DcqcnCongestionOps::UpdateRate ()
   m_sockState->SetRateRatio (m_curRateRatio);
   if (old < 100)
     {
-      NS_LOG_DEBUG ("DCQCN: Rate update from " << old << " to " << m_curRateRatio << "% at time " << Simulator::Now ().GetMicroSeconds () << "us");
+      NS_LOG_DEBUG ("DCQCN: Rate update from " << old << " to " << m_curRateRatio << "% at time "
+                                               << Simulator::Now ().GetMicroSeconds () << "us");
     }
 }
 

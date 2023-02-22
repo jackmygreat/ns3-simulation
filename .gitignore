@@ -51,3 +51,4 @@ cmake-build-release/
 .lock-ns3_darwin_build
 .DS_Store
 __pycache__
+/data

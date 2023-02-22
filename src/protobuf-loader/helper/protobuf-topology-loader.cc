@@ -27,6 +27,7 @@
 #include "ns3/dc-topology.h"
 #include "ns3/dcb-net-device.h"
 #include "ns3/global-router-interface.h"
+#include "ns3/inet-socket-address.h"
 #include "ns3/ipv4-address-generator.h"
 #include "ns3/ipv4-l3-protocol.h"
 #include "ns3/ipv4.h"
@@ -88,7 +89,7 @@ ProtobufTopologyLoader::LoadTopology ()
   LoadSwitches (topoConfig.nodes ().switchgroups (), topology);
   LoadLinks (topoConfig.links (), topology);
   InitGlobalRouting ();
-  
+
   LogAllRoutes (topology); // TODO: remove me
 
   InstallApplications (topoConfig.applications (), topology);
@@ -208,7 +209,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
 
   // Configure ports
   DcbSwitchStackHelper switchStack;
-  switchStack.SetBufferSize (QueueSize (switchGroup.buffersize()).GetValue ());
+  switchStack.SetBufferSize (QueueSize (switchGroup.buffersize ()));
   for (const auto &portConfig : switchGroup.ports ())
     {
       AddPortToSwitch (portConfig, sw, switchStack);
@@ -218,10 +219,11 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
   for (int i = 0; i < switchGroup.ports_size (); i++)
     {
       const ns3_proto::SwitchPortConfig &portConfig = switchGroup.ports (i);
-      
+
       if (portConfig.queues_size () != 0 && portConfig.queues_size () != 8)
         {
-          NS_FATAL_ERROR ("The port configuration should have 8 queues or 0 queue, not " << portConfig.queues_size());
+          NS_FATAL_ERROR ("The port configuration should have 8 queues or 0 queue, not "
+                          << portConfig.queues_size ());
         }
 
       if (portConfig.pfcenabled ()) // Configure PFC
@@ -238,12 +240,12 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
         }
       AssignAddress (sw, sw->GetDevice (i));
 
-      if (portConfig.ecnenabled()) // Configure ECN
+      if (portConfig.ecnenabled ()) // Configure ECN
         {
           ObjectFactory factory;
           factory.SetTypeId ("ns3::FifoQueueDiscEcn");
           Ptr<QueueDisc> dev = DynamicCast<DcbNetDevice> (sw->GetDevice (i))->GetQueueDisc ();
-      
+
           for (int qi = 0; qi < portConfig.queues_size (); qi++)
             {
               const ns3_proto::PortQueueConfig &queueConfig = portConfig.queues (qi);
@@ -255,7 +257,7 @@ ProtobufTopologyLoader::CreateOneSwitch (const uint32_t queueNum,
               Ptr<FifoQueueDiscEcn> qd = factory.Create<FifoQueueDiscEcn> ();
               qd->Initialize ();
               qd->ConfigECN (ecnKMin, ecnKMax, ecnPMax);
-              qd->SetMaxSize (QueueSize (switchGroup.buffersize()));
+              qd->SetMaxSize (QueueSize (switchGroup.buffersize ()));
               Ptr<PausableQueueDiscClass> c = CreateObject<PausableQueueDiscClass> ();
               c->SetQueueDisc (qd);
               dev->AddQueueDiscClass (c);
@@ -342,16 +344,24 @@ ProtobufTopologyLoader::InitGlobalRouting ()
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 }
 
-std::map<std::string, TraceApplicationHelper::ProtocolGroup>
-    ProtobufTopologyLoader::protocolGroupMapper = {
-        {"RAW_UDP", TraceApplicationHelper::ProtocolGroup::RAW_UDP},
-        {"TCP", TraceApplicationHelper::ProtocolGroup::TCP},
-        {"RoCEv2", TraceApplicationHelper::ProtocolGroup::RoCEv2},
+std::map<std::string, ProtobufTopologyLoader::AppInstallFunc>
+    ProtobufTopologyLoader::appInstallMapper = {
+        {"TraceApplication", ProtobufTopologyLoader::InstallTraceApplication},
+        // {"PacketSink", ProtobufTopologyLoader::InstallPacketSink},
+        // {"PreGeneratedApplication", ProtobufTopologyLoader::InstallPreGeneratedApplication}
+};
+
+std::map<std::string, TraceApplication::ProtocolGroup> ProtobufTopologyLoader::protocolGroupMapper =
+    {
+        {"RAW_UDP", TraceApplication::ProtocolGroup::RAW_UDP},
+        {"TCP", TraceApplication::ProtocolGroup::TCP},
+        {"RoCEv2", TraceApplication::ProtocolGroup::RoCEv2},
 };
 
 std::map<std::string, TraceApplication::TraceCdf *> ProtobufTopologyLoader::appCdfMapper = {
     {"WebSearch", &TraceApplication::TRACE_WEBSEARCH_CDF},
-    {"FdHadoop", &TraceApplication::TRACE_FDHADOOP_CDF}};
+    {"FdHadoop", &TraceApplication::TRACE_FDHADOOP_CDF}
+};
 
 void
 ProtobufTopologyLoader::InstallApplications (
@@ -360,46 +370,75 @@ ProtobufTopologyLoader::InstallApplications (
 {
   NS_LOG_FUNCTION (this);
 
-  TraceApplicationHelper appHelper (topology);
   for (const auto &appConfig : appsConfig)
     {
-      { // set protocol group
-        auto p = protocolGroupMapper.find (appConfig.protocolgroup ());
-        if (p == protocolGroupMapper.end ())
-          {
-            NS_FATAL_ERROR ("Cannot recognize protocol group \"" << appConfig.protocolgroup ()
-                                                                 << "\"");
-          }
-        appHelper.SetProtocolGroup (p->second);
-      }
-
-      { // set CDF
-        auto p = appCdfMapper.find (appConfig.cdf ());
-        if (p == appCdfMapper.end ())
-          {
-            NS_FATAL_ERROR ("Cannot recognize CDF \"" << appConfig.cdf () << "\".");
-          }
-        appHelper.SetCdf (*(p->second));
-      }
-
-      if (appConfig.has_dest ())
+      auto it = appInstallMapper.find (appConfig.appname ());
+      if (it == appInstallMapper.end ())
         {
-          appHelper.SetDestination(appConfig.dest ());
+          NS_FATAL_ERROR ("App \"" << appConfig.appname ()
+                                   << "\" installation logic has not been implemented");
         }
+      AppInstallFunc appInstallLogic = it->second;
+      appInstallLogic (appConfig, topology);
+    }
+}
 
-      for (const auto &nodeI : appConfig.nodeindices ())
+// static
+void
+ProtobufTopologyLoader::InstallTraceApplication (const ns3_proto::Application &appConfig,
+                                                 Ptr<DcTopology> topology)
+{
+  TraceApplicationHelper appHelper (topology);
+
+  {
+    if (!appConfig.has_protocolgroup ())
+      {
+        NS_FATAL_ERROR ("Using TraceApplication needs to specify \"protocolGroup\"");
+      }
+    // set protocol group
+    auto p = protocolGroupMapper.find (appConfig.protocolgroup ());
+    if (p == protocolGroupMapper.end ())
+      {
+        NS_FATAL_ERROR ("Cannot recognize protocol group \"" << appConfig.protocolgroup () << "\"");
+      }
+    appHelper.SetProtocolGroup (p->second);
+  }
+
+  {
+    if (!appConfig.has_arg ())
+      {
+        NS_FATAL_ERROR ("Using TraceApplication needs to specify \"arg\" which is the CDF name");
+      }
+    // set CDF
+    auto p = appCdfMapper.find (appConfig.arg ());
+    if (p == appCdfMapper.end ())
+      {
+        NS_FATAL_ERROR ("Cannot recognize CDF \"" << appConfig.arg () << "\".");
+      }
+    appHelper.SetCdf (*(p->second));
+  }
+
+  if (appConfig.has_dest ())
+    {
+      appHelper.SetDestination (appConfig.dest ());
+    }
+
+  for (const auto &nodeI : appConfig.nodeindices ())
+    {
+      if (!topology->IsHost (nodeI))
         {
-          if (!topology->IsHost (nodeI))
-            {
-              NS_FATAL_ERROR (
-                  "Node " << nodeI << " is not a host and thus could not install an application.");
-            }
-          Ptr<Node> node = topology->GetNode (nodeI).nodePtr;
-          appHelper.SetLoad (DynamicCast<DcbNetDevice> (node->GetDevice (0)), appConfig.load ());
-          ApplicationContainer app = appHelper.Install (node);
-          app.Start (MicroSeconds (appConfig.starttime ()));
-          app.Stop (MicroSeconds (appConfig.stoptime ()));
+          NS_FATAL_ERROR ("Node " << nodeI
+                                  << " is not a host and thus could not install an application.");
         }
+      Ptr<Node> node = topology->GetNode (nodeI).nodePtr;
+      if (!appConfig.has_load ())
+        {
+          NS_FATAL_ERROR ("Using TraceApplication needs to specify \"load\"");
+        }
+      appHelper.SetLoad (DynamicCast<DcbNetDevice> (node->GetDevice (0)), appConfig.load ());
+      ApplicationContainer app = appHelper.Install (node);
+      app.Start (Time (appConfig.starttime ()));
+      app.Stop (Time (appConfig.stoptime ()));
     }
 }
 

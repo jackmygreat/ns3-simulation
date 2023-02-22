@@ -108,7 +108,7 @@ public:
    */
   void InstallAll (void) const;
 
-  void SetBufferSize (uint32_t bytes);
+  void SetBufferSize (QueueSize bufSize);
 
   void SetFCEnabled (bool enable);
 
@@ -258,7 +258,7 @@ private:
 
   ObjectFactory m_tcFactory;
 
-  uint32_t m_bufferSize;
+  QueueSize m_bufferSize;
   
   bool m_fcEnabled;
 

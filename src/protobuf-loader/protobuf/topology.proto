@@ -68,12 +68,13 @@ message Link {
 
 message Application { // application configurations
 	repeated uint32 nodeIndices = 1; // nodes that run the application
-	string protocolGroup = 2;
-	string cdf = 3;
-	double load = 4;      // 0.0 ~ 1.0
-	uint32 startTime = 5; // in microseconds
-	uint32 stopTime = 6;  // in microseconds
-	optional uint32 dest = 7; // one single destination
+	string appName = 2;
+	optional string protocolGroup = 3; // used by Application
+	optional string arg = 4;       // CDF for TraceApplication
+	optional double load = 5;      // 0.0 ~ 1.0 used by TraceApplication
+	string startTime = 6;
+	string stopTime = 7;
+	optional uint32 dest = 8; // one single destination
 }
 
 message Topology {  // used to aggregate all nodes and links as a topology

@@ -67,6 +67,7 @@ public:
 
   void SetPortIndex (uint32_t portIndex);
   void SetFCEnabled (bool enable);
+  void SetQueueSize (QueueSize qSize);
 
   void SetPaused (uint8_t priority, bool paused);
 
@@ -90,6 +91,8 @@ private:
   TCEgressCallback m_tcEgress;
 
   int32_t m_portIndex; //!< the port index this QueueDisc belongs to
+
+  QueueSize m_queueSize;
 
 }; // class PausableQueueDisc
 

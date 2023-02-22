@@ -39,13 +39,7 @@ public:
   
   ApplicationContainer Install (Ptr<Node> node) const;
 
-  enum ProtocolGroup {
-    RAW_UDP,
-    TCP,
-    RoCEv2
-  };
-  
-  void SetProtocolGroup (ProtocolGroup protoGroup);
+  void SetProtocolGroup (TraceApplication::ProtocolGroup protoGroup);
   void SetCdf (const TraceApplication::TraceCdf& cdf);
   void SetLoad (Ptr<const DcbNetDevice> dev, double load);
   void SetDestination (int32_t dest);
@@ -72,7 +66,7 @@ private:
   static double CalculateCdfMeanSize (const TraceApplication::TraceCdf * const cdf);
 
   Ptr<DcTopology> m_topology;
-  ProtocolGroup m_protoGroup;
+  TraceApplication::ProtocolGroup m_protoGroup;
   TraceApplication::TraceCdf* m_cdf;
   double m_flowMeanInterval;
   int32_t m_dest;

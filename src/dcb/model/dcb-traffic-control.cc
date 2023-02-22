@@ -30,6 +30,7 @@
 #include "ns3/log-macros-enabled.h"
 #include "ns3/nstime.h"
 #include "ns3/pfc-frame.h"
+#include "ns3/trace-source-accessor.h"
 #include "ns3/type-id.h"
 #include "ns3/simulator.h"
 #include "ns3/ipv4-header.h"
@@ -46,10 +47,15 @@ NS_OBJECT_ENSURE_REGISTERED (DcbTrafficControl);
 TypeId
 DcbTrafficControl::GetTypeId (void)
 {
-  static TypeId tid = TypeId ("ns3::DcbTrafficControl")
-                          .SetParent<TrafficControlLayer> ()
-                          .SetGroupName ("Dcb")
-                          .AddConstructor<DcbTrafficControl> ();
+  static TypeId tid =
+      TypeId ("ns3::DcbTrafficControl")
+          .SetParent<TrafficControlLayer> ()
+          .SetGroupName ("Dcb")
+          .AddConstructor<DcbTrafficControl> ()
+          .AddTraceSource ("BufferOverflow", "Trace source indicating buffer overflow",
+                           MakeTraceSourceAccessor (&DcbTrafficControl::m_bufferOverflowTrace),
+                           "ns3::Packet::TracedCallback");
+  ;
   return tid;
 }
 
@@ -89,7 +95,7 @@ void
 DcbTrafficControl::SetBufferSize (uint32_t bytes)
 {
   NS_LOG_FUNCTION (this << bytes);
-  
+
   m_buffer.SetBufferSpace (bytes);
 }
 
@@ -113,10 +119,15 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
   // update ingress queue length
   Ipv4Header ipv4Header;
   packet->PeekHeader (ipv4Header);
-  m_buffer.InPacketProcess (index, priority,
-                            packet->GetSize () - ipv4Header.GetSerializedSize ());
+  bool success = m_buffer.InPacketProcess (index, priority,
+                                           packet->GetSize () - ipv4Header.GetSerializedSize ());
+  if (!success)
+    {
+      m_bufferOverflowTrace (packet);
+      return;
+    }
 
-  PortInfo& port = m_buffer.GetPort(index);
+  PortInfo &port = m_buffer.GetPort (index);
   if (port.FcEnabled ())
     {
       // run flow control ingress process
@@ -134,7 +145,7 @@ DcbTrafficControl::EgressProcess (uint32_t outPort, uint8_t priority, Ptr<Packet
   uint32_t fromIdx = tag.GetIndex ();
   m_buffer.OutPacketProcess (fromIdx, priority, packet->GetSize ());
 
-  PortInfo& port = m_buffer.GetPort (outPort);
+  PortInfo &port = m_buffer.GetPort (outPort);
   port.CallFCPacketOutPipeline (fromIdx, priority, packet);
   if (port.FcEnabled ())
     {
@@ -162,7 +173,7 @@ void
 DcbTrafficControl::InstallFCToPort (uint32_t portIdx, Ptr<DcbFlowControlPort> fc)
 {
   NS_LOG_FUNCTION (this << portIdx);
-  m_buffer.GetPort(portIdx).SetFC (fc);
+  m_buffer.GetPort (portIdx).SetFC (fc);
 
   // Set egress callback to other ports.
   // When we enable FC on one port, it means that other ports may do something when
@@ -182,10 +193,10 @@ DcbTrafficControl::PeekPriorityOfPacket (const Ptr<const Packet> packet)
 {
   Ipv4Header ipv4Header;
   packet->PeekHeader (ipv4Header);
-  return Socket::IpTos2Priority (ipv4Header.GetTos ()); // TODO: more priorities
+  return Socket::IpTos2Priority (ipv4Header.GetTos ());
   // return ipv4Header.GetDscp () >> 3;
 }
-  
+
 void
 DcbTrafficControl::PortInfo::AddPacketOutCallback (uint32_t fromIdx, FCPacketOutCb cb)
 {
@@ -214,7 +225,7 @@ DcbTrafficControl::Buffer::Buffer () : m_remainCells (32 * 1024 * 1024 / CELL_SI
 }
 
 void
-DcbTrafficControl::Buffer::SetBufferSpace(uint32_t bytes)
+DcbTrafficControl::Buffer::SetBufferSpace (uint32_t bytes)
 {
   NS_LOG_FUNCTION (this << bytes);
 
@@ -229,56 +240,59 @@ DcbTrafficControl::Buffer::RegisterPortNumber (const uint32_t num)
   m_ports.resize (num);
 }
 
-void
-DcbTrafficControl::Buffer::InPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize)
+bool
+DcbTrafficControl::Buffer::InPacketProcess (uint32_t portIndex, uint8_t priority,
+                                            uint32_t packetSize)
 {
-  uint32_t packetCells = CalcCellSize(packetSize);
+  uint32_t packetCells = CalcCellSize (packetSize);
   if (m_remainCells > packetCells)
     {
       m_remainCells -= packetCells;
+      IncrementIngressQueueCounter (portIndex, priority, packetCells);
+        return true;
     }
-  else
-    {
-      NS_LOG_WARN ("Buffer full, packet drop.");
-    }
-  IncrementIngressQueueCounter (portIndex, priority, packetCells);
+  NS_LOG_DEBUG ("Buffer overflow, packet drop.");
+  return false; // buffer overflow  
 }
-  
+
 void
-DcbTrafficControl::Buffer::OutPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize)
+DcbTrafficControl::Buffer::OutPacketProcess (uint32_t portIndex, uint8_t priority,
+                                             uint32_t packetSize)
 {
-  uint32_t packetCells = CalcCellSize(packetSize);
+  uint32_t packetCells = CalcCellSize (packetSize);
   m_remainCells += packetCells;
   DecrementIngressQueueCounter (portIndex, priority, packetCells);
 }
 
-inline DcbTrafficControl::PortInfo&
+inline DcbTrafficControl::PortInfo &
 DcbTrafficControl::Buffer::GetPort (uint32_t portIndex)
 {
   return m_ports[portIndex];
 }
 
-inline std::vector<DcbTrafficControl::PortInfo>&
+inline std::vector<DcbTrafficControl::PortInfo> &
 DcbTrafficControl::Buffer::GetPorts ()
 {
   return m_ports;
 }
 
 inline void
-DcbTrafficControl::Buffer::IncrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells)
+DcbTrafficControl::Buffer::IncrementIngressQueueCounter (uint32_t index, uint8_t priority,
+                                                         uint32_t packetCells)
 {
   // NOTICE: no index checking nor value checking for better performance, be careful
   m_ports[index].IncreQueueLength (priority, packetCells);
 }
 
 inline void
-DcbTrafficControl::Buffer::DecrementIngressQueueCounter (uint32_t index, uint8_t priority, uint32_t packetCells)
+DcbTrafficControl::Buffer::DecrementIngressQueueCounter (uint32_t index, uint8_t priority,
+                                                         uint32_t packetCells)
 {
   // NOTICE: no index checking nor value checking for better performance, be careful
   m_ports[index].IncreQueueLength (priority, -packetCells);
 }
 
-// static  
+// static
 uint32_t
 DcbTrafficControl::Buffer::CalcCellSize (uint32_t bytes)
 {

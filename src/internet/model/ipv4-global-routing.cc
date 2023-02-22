@@ -33,8 +33,10 @@
 #include "ns3/node.h"
 #include "ipv4-global-routing.h"
 #include "global-route-manager.h"
+// #include "ns3/tcp-l4-protocol.h"
 #include "ns3/udp-header.h"
 #include "ns3/tcp-header.h"
+#include "ns3/rocev2-header.h"
 #include "ns3/uinteger.h"
 
 namespace ns3 {
@@ -50,10 +52,10 @@ Ipv4GlobalRouting::GetTypeId (void)
     .SetParent<Object> ()
     .SetGroupName ("Internet")
     .AddAttribute ("RandomEcmpRouting",
-                   "Set according to EcmpMode (NONE, PER_PACKET_ECMP, PER_UDP_FLOW_ECMP, PER_TCP_ECMP_FLOW)",
+                   "Set according to EcmpMode (NONE, PER_PACKET_ECMP, PER_FLOW_ECMP)",
                    UintegerValue (0),
                    MakeUintegerAccessor (&Ipv4GlobalRouting::m_randomEcmpRouting),
-                   MakeUintegerChecker<uint32_t> (0, 4))
+                   MakeUintegerChecker<uint32_t> (0, 2))
     .AddAttribute ("RespondToInterfaceEvents",
                    "Set to true if you want to dynamically recompute the global routes upon Interface notification events (up/down, or add/remove address)",
                    BooleanValue (false),
@@ -227,8 +229,7 @@ Ipv4GlobalRouting::LookupGlobal (Ipv4Header header, Ptr<const Packet> p, Ptr<Net
       // pick up one of the routes uniformly at random if random
       // ECMP routing is enabled, or always select the first route
       // consistently if random ECMP routing is disabled
-      uint32_t selectIndex;
-      HashBuf buf;
+      uint32_t selectIndex = 0;
       switch (m_randomEcmpRouting)
         {
         case NONE:
@@ -237,29 +238,23 @@ Ipv4GlobalRouting::LookupGlobal (Ipv4Header header, Ptr<const Packet> p, Ptr<Net
         case PER_PACKET_ECMP:
           selectIndex = m_rand->GetInteger (0, allRoutes.size ()-1);
           break;
-        case PER_UDP_FLOW_ECMP:
+        case PER_FLOW_ECMP:
           {
-            UdpHeader udpHeader;
-            p->PeekHeader (udpHeader);
-            buf._srcIp = header.GetSource ().Get ();
-            buf._dstIp = header.GetDestination ().Get ();
-            buf._srcPort = udpHeader.GetSourcePort ();
-            buf._dstPort = udpHeader.GetDestinationPort ();
-            selectIndex = Hash32 (buf._b, HASH_BUF_SIZE) % allRoutes.size ();
-            break;
-          }
-        case PER_TCP_FLOW_ECMP:
-          {
-            TcpHeader tcpHeader;
-            p->PeekHeader (tcpHeader);
-            buf._srcIp = header.GetSource ().Get ();
-            buf._dstIp = header.GetDestination ().Get ();
-            buf._srcPort = tcpHeader.GetSourcePort ();
-            buf._dstPort = tcpHeader.GetDestinationPort ();
-            selectIndex = Hash32 (buf._b, HASH_BUF_SIZE) % allRoutes.size ();
+            switch (header.GetProtocol ())
+              {
+              case 0x6: // TcpL4Protocol::PROT_NUMBER
+                selectIndex = TcpEcmp (header, p, allRoutes.size ());
+                break;
+              case 0x11: // UdpL4Protocol::PROT_NUMBER
+                selectIndex = UdpEcmp (header, p, allRoutes.size ());                  
+                break;
+              default:
+                NS_FATAL_ERROR ("ECMP for this protocol has not been implemented.");
+              }
             break;
           }
         }
+      
       Ipv4RoutingTableEntry* route = allRoutes.at (selectIndex); 
       // create a Ipv4Route object from the selected routing table entry
       rtentry = Create<Ipv4Route> ();
@@ -624,6 +619,45 @@ Ipv4GlobalRouting::SetIpv4 (Ptr<Ipv4> ipv4)
   NS_LOG_FUNCTION (this << ipv4);
   NS_ASSERT (m_ipv4 == 0 && ipv4 != 0);
   m_ipv4 = ipv4;
+}
+
+uint32_t // static
+Ipv4GlobalRouting::TcpEcmp (const Ipv4Header &header, const Ptr<const Packet> p, const size_t totalRoutes)
+{
+  TcpHeader tcpHeader;
+  HashBuf buf;
+  p->PeekHeader (tcpHeader);
+  buf._srcIp = header.GetSource ().Get ();
+  buf._dstIp = header.GetDestination ().Get ();
+  buf._srcPort = tcpHeader.GetSourcePort ();
+  buf._dstPort = tcpHeader.GetDestinationPort ();
+  return Hash32 (buf._b, HASH_BUF_SIZE) % totalRoutes;
+}
+
+uint32_t // static
+Ipv4GlobalRouting::UdpEcmp (const Ipv4Header &header, const Ptr<const Packet> p, const size_t totalRoutes)
+{
+  HashBuf buf;
+  UdpHeader udpHeader;
+  p->PeekHeader (udpHeader);
+  if (udpHeader.GetSourcePort () == 4791) // RoCEv2L4Protocol::PROT_NUMBER
+    { // RoCEv2
+      UdpRoCEv2Header udpRoCEheader;
+      p->PeekHeader (udpRoCEheader);
+      buf._srcIp = header.GetSource ().Get ();
+      buf._dstIp = header.GetDestination ().Get ();
+      buf._srcPort = udpRoCEheader.GetRoCE ().GetSrcQP ();
+      buf._dstPort = udpRoCEheader.GetRoCE ().GetDestQP ();
+    }
+  else
+    {
+      // normal UDP
+      buf._srcIp = header.GetSource ().Get ();
+      buf._dstIp = header.GetDestination ().Get ();
+      buf._srcPort = udpHeader.GetSourcePort ();
+      buf._dstPort = udpHeader.GetDestinationPort ();
+    }
+  return Hash32 (buf._b, HASH_BUF_SIZE) % totalRoutes;
 }
 
 

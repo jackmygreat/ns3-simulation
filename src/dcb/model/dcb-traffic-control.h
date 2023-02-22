@@ -220,7 +220,11 @@ private:
     Buffer ();
     void SetBufferSpace (uint32_t bytes);
     void RegisterPortNumber (const uint32_t num);
-    void InPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize);
+    /**
+     * \brief Process when packet received.
+     * Returns whether the packet is accomondated into the buffer, false for packet drop. 
+     */
+    bool InPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize);
     void OutPacketProcess (uint32_t portIndex, uint8_t priority, uint32_t packetSize);
     PortInfo& GetPort (uint32_t portIndex);
     std::vector<PortInfo>& GetPorts ();
@@ -244,6 +248,8 @@ private:
   }; // class Buffer
   
   Buffer m_buffer;
+
+  TracedCallback<Ptr<const Packet> > m_bufferOverflowTrace;
 };
 
 class DeviceIndexTag : public Tag
