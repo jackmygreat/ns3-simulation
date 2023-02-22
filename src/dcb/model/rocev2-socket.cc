@@ -44,14 +44,10 @@ NS_OBJECT_ENSURE_REGISTERED (RoCEv2Socket);
 TypeId
 RoCEv2Socket::GetTypeId ()
 {
-  static TypeId tid =
-      TypeId ("ns3::RoCEv2Socket")
-          .SetParent<UdpBasedSocket> ()
-          .SetGroupName ("Dcb")
-          .AddConstructor<RoCEv2Socket> ()
-          .AddAttribute ("CNPInterval", "The interval for a receiver to send CNP",
-                         TimeValue (MicroSeconds (50)),
-                         MakeTimeAccessor (&RoCEv2Socket::m_CNPInterval), MakeTimeChecker ());
+  static TypeId tid = TypeId ("ns3::RoCEv2Socket")
+                          .SetParent<UdpBasedSocket> ()
+                          .SetGroupName ("Dcb")
+                          .AddConstructor<RoCEv2Socket> ();
   return tid;
 }
 
@@ -90,7 +86,7 @@ RoCEv2Socket::SendPendingPacket ()
     }
   // rateRatio is controled by congestion control
   // rateRatio = sending rate calculated by CC / line rate, which is between [0.0., 1.0]
-  const double rateRatio = m_sockState->GetRateRatio (); // in percentage, i.e., maximum is 100.0
+  const double rateRatio = m_sockState->GetRateRatioPercent (); // in percentage, i.e., maximum is 100.0
   if (rateRatio > 1e-6)
     {
       m_isSending = true;
@@ -131,7 +127,7 @@ RoCEv2Socket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
     case RoCEv2Header::Opcode::CNP:
       m_ccOps->UpdateStateWithCNP ();
       NS_LOG_DEBUG ("DCQCN: Received CNP and rate decreased to "
-                    << m_sockState->GetRateRatio () << "% at time "
+                    << m_sockState->GetRateRatioPercent () << "% at time "
                     << Simulator::Now ().GetMicroSeconds () << "us");
       break;
     default:
@@ -158,7 +154,8 @@ RoCEv2Socket::HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce)
         if (psn + 1 == m_psnEnd)
           { // last ACk received, flow finshed
             NotifyFlowCompletes ();
-            Simulator::Schedule (MicroSeconds (50), &RoCEv2Socket::Close, this); // a delay to handle remaing packets (e.g., CNP)
+            Simulator::Schedule (MicroSeconds (50), &RoCEv2Socket::Close,
+                                 this); // a delay to handle remaing packets (e.g., CNP)
           }
         break;
       }
@@ -247,10 +244,11 @@ RoCEv2Socket::ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flow
   Ptr<Packet> cnp = RoCEv2L4Protocol::GenerateCNP (flowInfo.dstQP, srcQP);
   m_innerProto->Send (cnp, header.GetDestination (), header.GetSource (), flowInfo.dstQP, srcQP, 0);
   flowInfo.receivedECN = false;
-  flowInfo.lastCNPEvent = Simulator::Schedule (m_CNPInterval, &RoCEv2Socket::ScheduleNextCNP, this,
-                                               flowInfoIter, header);
+  flowInfo.lastCNPEvent = Simulator::Schedule (
+      m_ccOps->GetCNPInterval (), &RoCEv2Socket::ScheduleNextCNP, this, flowInfoIter, header);
 
-  NS_LOG_DEBUG ("DCQCN: Receiver send CNP to " << srcIp << " qp " << srcQP << " at time " << Simulator::Now ().GetMicroSeconds ());
+  NS_LOG_DEBUG ("DCQCN: Receiver send CNP to " << srcIp << " qp " << srcQP << " at time "
+                                               << Simulator::Now ().GetMicroSeconds ());
 }
 
 int
@@ -289,10 +287,10 @@ RoCEv2Socket::BindToNetDevice (Ptr<NetDevice> netdevice)
   if (dcbDev)
     {
       m_deviceRate = dcbDev->GetDataRate ();
-      double rai =
-          static_cast<double> (DataRate ("100Mbps").GetBitRate ()) / m_deviceRate.GetBitRate ();
-      m_ccOps->SetRateAIRatio (rai);
-      m_ccOps->SetRateHyperAIRatio (10 * rai);
+      // double rai =
+      //     static_cast<double> (DataRate ("100Mbps").GetBitRate ()) / m_deviceRate.GetBitRate ();
+      // m_ccOps->SetRateAIRatio (rai);
+      // m_ccOps->SetRateHyperAIRatio (10 * rai);
       m_ccOps->SetReady ();
     }
 }

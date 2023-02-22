@@ -92,8 +92,8 @@ DcqcnCongestionOps::UpdateStateWithCNP ()
 
   m_targetRateRatio = m_curRateRatio;
   m_curRateRatio *= 1 - m_alpha / 2;
-  m_curRateRatio = std::max(m_curRateRatio, m_minRateRatio);
-  m_sockState->SetRateRatio (m_curRateRatio);
+  m_curRateRatio = std::max (m_curRateRatio, m_minRateRatio);
+  m_sockState->SetRateRatioPercent (m_curRateRatio);
   m_alpha = (1 - m_g) * m_alpha + m_g;
 
   m_alphaTimer.Cancel (); // re-schedule timer
@@ -152,7 +152,7 @@ DcqcnCongestionOps::UpdateRate ()
   // Fast recovery: don't need to update target rate
 
   m_curRateRatio = (m_targetRateRatio + m_curRateRatio) / 2;
-  m_sockState->SetRateRatio (m_curRateRatio);
+  m_sockState->SetRateRatioPercent (m_curRateRatio);
   if (old < 100)
     {
       NS_LOG_DEBUG ("DCQCN: Rate update from " << old << " to " << m_curRateRatio << "% at time "
@@ -163,19 +163,25 @@ DcqcnCongestionOps::UpdateRate ()
 void
 DcqcnCongestionOps::SetRateAIRatio (double ratio)
 {
-  m_raiRatio = ratio;
+  m_raiRatio = ratio * 100.;
 }
 
 void
 DcqcnCongestionOps::SetRateHyperAIRatio (double ratio)
 {
-  m_hraiRatio = ratio;
+  m_hraiRatio = ratio * 100.;
 }
 
 void
 DcqcnCongestionOps::SetStopTime (Time stopTime)
 {
   m_stopTime = stopTime;
+}
+
+Time
+DcqcnCongestionOps::GetCNPInterval () const
+{
+  return m_CNPInterval;
 }
 
 } // namespace ns3

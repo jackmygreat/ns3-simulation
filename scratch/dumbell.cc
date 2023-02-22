@@ -52,19 +52,14 @@ main ()
   // capture packet at host-0
   Ptr<NetDevice> dev = topology->GetNetDeviceOfNode(0, 0);
   TracerExtension::EnableDevicePcap(dev, "host");
+  TracerExtension::EnableDeviceRateTrace(dev, "host0", MicroSeconds (10));
 
   // capture packet at host-2
   dev = topology->GetNetDeviceOfNode(2, 0);
   TracerExtension::EnableDevicePcap(dev, "host");
 
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(16).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(17).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(18).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(19).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(24).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(25).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(26).nodePtr, "switch");
-  TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(27).nodePtr, "switch");
+  // TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(16).nodePtr, "switch");
+  // TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(17).nodePtr, "switch");
   // capture packet at all switches
   // for (auto sw = topology->switches_begin(); sw != topology->switches_end(); sw++)
   //   {

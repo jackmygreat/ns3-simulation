@@ -91,13 +91,13 @@ public:
   RoCEv2SocketState ();
 
   inline void
-  SetRateRatio (double ratio)
+  SetRateRatioPercent (double ratio)
   {
     m_rateRatio = ratio;
   }
 
   inline double
-  GetRateRatio () const
+  GetRateRatioPercent () const
   {
     return m_rateRatio;
   }
@@ -168,8 +168,6 @@ private:
   void ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flowInfoIter, Ipv4Header header);
 
   // Time CalcTxTime (uint32_t bytes);
-
-  Time m_CNPInterval;
 
   Ptr<DcqcnCongestionOps> m_ccOps; //!< DCQCN congestion control
   Ptr<RoCEv2SocketState> m_sockState; //!< DCQCN socket state

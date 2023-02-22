@@ -68,6 +68,8 @@ public:
   void UpdateStateSend (Ptr<Packet> packet);
 
   void SetStopTime (Time stopTime);
+
+  Time GetCNPInterval () const;
   
 private:
 

@@ -27,12 +27,23 @@ def _setValuesToMessage(messgaeType, valuesDict):
     '''
     instance = messgaeType()
     for name, value in valuesDict.items():
+        if not isinstance(name, str):
+            raise TypeError(f'message key "{name}" should be a str type')
         if isinstance(value, list):
-            getattr(instance, name).extend(value)
+            try:
+                getattr(instance, name).extend(value)
+            except TypeError:
+                raise TypeError(f'the value of {name} should not be a list')                
         elif isinstance(value, str):
-            setattr(instance, name, value.replace(" ", ""))
+            try:
+                setattr(instance, name, value.replace(" ", ""))
+            except TypeError:
+                raise TypeError(f'the value of {name} should not be a str')
         else:
-            setattr(instance, name, value)
+            try:
+                setattr(instance, name, value)
+            except TypeError:
+                raise TypeError(f"the value of {name} should be a str or list")
     return instance
 
     

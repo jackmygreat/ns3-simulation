@@ -246,6 +246,7 @@ private:
   Ptr<ExponentialRandomVariable> m_flowArriveTimeRng; //!< Flow arrive time random generator
   Ptr<UniformRandomVariable>     m_hostIndexRng;      //!< Host index random generator
   int32_t m_destNode; //!< if not choosing random destination, store the destined address here
+  Ptr<RoCEv2Socket>      m_receiverSocket;
 
   /// traced Callback: transmitted packets.
   TracedCallback<Ptr<const Packet>> m_txTrace;

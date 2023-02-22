@@ -166,13 +166,13 @@ TraceApplication::StartApplication (void)
       if (m_protoGroup == ProtocolGroup::RoCEv2)
         {
           // crate a special socket to act as the receiver
-          Ptr<RoCEv2Socket> socket = DynamicCast<RoCEv2Socket> (
+          m_receiverSocket = DynamicCast<RoCEv2Socket> (
               Socket::CreateSocket (GetNode (), UdpBasedSocketFactory::GetTypeId ()));
-          socket->BindToNetDevice (GetNode ()->GetDevice (0));
-          socket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
-          socket->ShutdownSend ();
-          socket->SetStopTime (m_stopTime);
-          socket->SetRecvCallback (MakeCallback (&TraceApplication::HandleRead, this));
+          m_receiverSocket->BindToNetDevice (GetNode ()->GetDevice (0));
+          m_receiverSocket->BindToLocalPort (RoCEv2L4Protocol::DefaultServicePort ());
+          m_receiverSocket->ShutdownSend ();
+          m_receiverSocket->SetStopTime (m_stopTime);
+          m_receiverSocket->SetRecvCallback (MakeCallback (&TraceApplication::HandleRead, this));
         }
     }
 

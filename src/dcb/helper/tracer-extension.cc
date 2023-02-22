@@ -46,9 +46,9 @@ TE::ConfigOutputDirectory (std::string dirName)
   TE::outputDirectory = dirName;
 }
 
-// static  
+// static
 void
-TE::ConfigStopTime(Time stopTime)
+TE::ConfigStopTime (Time stopTime)
 {
   TE::stopTime = stopTime;
 }
@@ -98,7 +98,7 @@ TE::EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix)
     {
       NS_FATAL_ERROR ("Ipv4 is not bound to the switch " << sw);
     }
-  const int nintf = ipv4->GetNInterfaces ();
+  const uint32_t nintf = ipv4->GetNInterfaces ();
   DcbSwitchStackHelper switchStack;
   for (uint32_t i = 1; i < nintf; i++) // interface 0 is loopback so we skip it.
     {
@@ -111,8 +111,7 @@ void
 TE::EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval)
 {
   RateTracer *tracer = new RateTracer (interval, context);
-  device->TraceConnectWithoutContext (
-      "MacTx", MakeCallback (&TE::RateTracer::Trace, tracer));
+  device->TraceConnectWithoutContext ("MacTx", MakeCallback (&TE::RateTracer::Trace, tracer));
 }
 
 // static
@@ -122,7 +121,7 @@ TE::EnablePortQueueLength (Ptr<NetDevice> device, std::string context, Time inte
   Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (device);
   if (dcbDev)
     {
-      new QueueLengthTracer (context, dcbDev->GetQueueDisc(), interval);
+      new QueueLengthTracer (context, dcbDev->GetQueueDisc (), interval);
     }
   else
     {
@@ -139,14 +138,15 @@ TE::GetRealFileName (std::string fileName)
 
 // static
 void
-TE::TraceFCTUnit::FlowCompletionTracer (uint32_t destNode, uint32_t srcPort, uint32_t dstPort,
-                                          uint32_t flowSize, Time startTime, Time finishTime)
+TE::TraceFCTUnit::FlowCompletionTracer (uint32_t srcNode, uint32_t dstNode, uint32_t srcPort,
+                                        uint32_t dstPort, uint32_t flowSize, Time startTime,
+                                        Time finishTime)
 {
   // TODO: add mutex lock for concurrency
   Time fct = finishTime - startTime;
   CsvWriter writer (&TE::TraceFCTUnit::fctFileStream, 8);
-  writer.WriteNextValue (Simulator::GetContext ()); // src node
-  writer.WriteNextValue (destNode); // dest node
+  writer.WriteNextValue (srcNode); // src node
+  writer.WriteNextValue (dstNode); // dest node
   writer.WriteNextValue (srcPort); // src port/qp
   writer.WriteNextValue (dstPort); // dest port/qp
   writer.WriteNextValue (flowSize);
@@ -159,8 +159,7 @@ TE::TraceFCTUnit::FlowCompletionTracer (uint32_t destNode, uint32_t srcPort, uin
   //                        << finishTime << " with FCT=" << fct);
 }
 
-TE::RateTracer::RateTracer (Time interval, std::string context)
-  : m_bytes (0), m_context (context)
+TE::RateTracer::RateTracer (Time interval, std::string context) : m_bytes (0), m_context (context)
 {
   m_timer.SetFunction (&TE::RateTracer::LogRate, this);
   m_timer.SetDelay (interval);
@@ -191,13 +190,15 @@ TE::RateTracer::LogRate ()
     {
       m_timer.Schedule ();
     }
-  else
-    {
-      delete this; // kill myself
-    }
+  // else
+  // {
+      // delete this; // kill myself
+  // }
 }
 
-TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc, Time interval) : m_queueDisc (queueDisc)
+TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc,
+                                          Time interval)
+    : m_queueDisc (queueDisc)
 {
   m_timer.SetFunction (&TE::QueueLengthTracer::Trace, this);
   m_timer.SetDelay (interval);
@@ -207,7 +208,7 @@ TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueue
   m_ofstream.open (filename);
   if (!m_ofstream.good ())
     {
-      std::cerr << "Error: Cannot open file \"" << filename << "\"" << std::endl;      
+      std::cerr << "Error: Cannot open file \"" << filename << "\"" << std::endl;
     }
 }
 
@@ -218,8 +219,8 @@ TE::QueueLengthTracer::Trace ()
   m_ofstream << Simulator::Now ().GetMicroSeconds ();
   for (size_t i = 0; i < nQueue; i++) // Get queue length of each priority
     {
-      uint32_t bytes = m_queueDisc->GetQueueDiscClass(i)->GetQueueDisc()->GetNBytes();
-      m_ofstream << "," << bytes; 
+      uint32_t bytes = m_queueDisc->GetQueueDiscClass (i)->GetQueueDisc ()->GetNBytes ();
+      m_ofstream << "," << bytes;
     }
   m_ofstream << std::endl;
   if (Simulator::Now () < TE::stopTime)

@@ -105,7 +105,8 @@ TraceApplicationHelper::InstallPriv (Ptr<Node> node) const
     }
 
   node->AddApplication (app);
-  
+
+  app->SetProtocolGroup (m_protoGroup);
   switch (m_protoGroup)
     {
     case TraceApplication::ProtocolGroup::RAW_UDP:

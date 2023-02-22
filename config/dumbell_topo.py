@@ -89,20 +89,23 @@ linkConfig2 = {
 
 senderConfig = {
     "nodeIndices": [0, 1],
+    "appName": "TraceApplication",
     "protocolGroup": "RoCEv2",
-    "cdf": "WebSearch",
+    "arg": "WebSearch",
     "load": 0.9,
-    "startTime": 2000,
-    "stopTime": 4000,
+    "startTime": "2 ms",
+    "stopTime": "4 ms",
+    "dest": 2
 }
 
 receiverConfig = {
     "nodeIndices": [2, 3],
+    "appName": "TraceApplication",
     "protocolGroup": "RoCEv2",
-    "cdf": "WebSearch",
+    "arg": "WebSearch",
     "load": 0.0,
-    "startTime": 1000,
-    "stopTime": 6000,
+    "startTime": "1 ms",
+    "stopTime": "6 ms",
 }
 
 with TopologyGenerator() as topo:
