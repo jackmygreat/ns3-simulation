@@ -24,7 +24,7 @@
 namespace ns3 {
 NS_LOG_COMPONENT_DEFINE ("CsvWriter");
 
-CsvWriter::CsvWriter (const std::string filepath, std::size_t columnNum, char delimiter /* =',' */)
+CsvWriter::CsvWriter (const std::string &filepath, std::size_t columnNum, char delimiter /* =',' */)
     : m_fileStream (filepath),
       m_stream (&m_fileStream),
       m_delimiter (delimiter),

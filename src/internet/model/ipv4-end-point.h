@@ -129,7 +129,7 @@ public:
    * \brief Set the reception callback.
    * \param callback callback function
    */
-  void SetRxCallback (Callback<void,Ptr<Packet>, Ipv4Header, uint16_t, Ptr<Ipv4Interface> > callback);
+  void SetRxCallback (Callback<void, Ptr<Packet>, Ipv4Header, uint16_t, Ptr<Ipv4Interface> > callback);
   /**
    * \brief Set the ICMP callback.
    * \param callback callback function
@@ -211,7 +211,7 @@ private:
   /**
    * \brief The RX callback.
    */
-  Callback<void,Ptr<Packet>, Ipv4Header, uint16_t, Ptr<Ipv4Interface> > m_rxCallback;
+  Callback<void, Ptr<Packet>, Ipv4Header, uint16_t, Ptr<Ipv4Interface> > m_rxCallback;
 
   /**
    * \brief The ICMPv6 callback.

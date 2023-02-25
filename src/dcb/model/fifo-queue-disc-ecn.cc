@@ -59,7 +59,7 @@ FifoQueueDiscEcn::DoEnqueue (Ptr<QueueDiscItem> item)
   Ptr<Ipv4QueueDiscItem> ipv4Item = DynamicCast<Ipv4QueueDiscItem> (item);
   if (ipv4Item && CheckShouldMarkECN (ipv4Item))
     {
-      NS_LOG_DEBUG ("Switch " << Simulator::GetContext () << " mark ECN on packet");
+      NS_LOG_DEBUG ("Switch " << Simulator::GetContext () << " FifoQueueDiscEcn marks ECN on packet");
       ipv4Item->Mark ();
     }
 
@@ -118,8 +118,9 @@ FifoQueueDiscEcn::CheckShouldMarkECN (Ptr<Ipv4QueueDiscItem> item) const
     }
   else
     { // mark ECN with probability
-      double prob = m_ecnPMax * (nbytes - m_ecnKMin) / (m_ecnKMax - m_ecnKMin);
-      return m_rng->GetValue () < prob;
+      // multiplied by 1024 to improve precision
+      double prob = m_ecnPMax * 1024 * (nbytes - m_ecnKMin) / (m_ecnKMax - m_ecnKMin);
+      return m_rng->GetValue () * 1024 < prob;
     }
 }
 

@@ -128,7 +128,6 @@ protected:
 
   virtual void NotifyNewAggregate () override;
 
-  // Ipv4EndPoint*       m_udpEndPoint;   //!< the IPv4 endpoint
   InnerEndPointDemux *m_innerEndPoints; //!< A list of inner-UDP end points.
 
   Ptr<Node> m_node; //!< the node this stack is associated with

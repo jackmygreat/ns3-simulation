@@ -90,12 +90,12 @@ private:
   uint32_t m_bytesCounter;
   uint32_t m_rateUpdateIter;
   uint32_t m_bytesUpdateIter;
-  uint32_t m_F;
+  const uint32_t m_F;
   double m_targetRateRatio;
   double m_curRateRatio;
-  Time m_stopTime;
   Time m_CNPInterval;
   double m_minRateRatio;
+  Time m_stopTime;
   
 }; // class DcqcnCongestionOps
 

@@ -99,13 +99,13 @@ protected:
       bool hasEvent;
       EventId pauseEvent;
       
-      IngressQueueInfo () = default;
+      IngressQueueInfo ();
 
-      void ReplacePauseEvent (EventId event);
+      void ReplacePauseEvent (const EventId &event);
       void CancelPauseEvent ();
     }; // struct IngressQueueInfo
 
-    PortInfo (uint32_t index);
+    explicit PortInfo (uint32_t index);
     PortInfo (uint32_t index, uint8_t enableVec);
 
     const IngressQueueInfo &getQueue (uint8_t priority) const;
@@ -124,7 +124,7 @@ protected:
 
   void SetPaused (uint8_t priority, bool paused);
 
-  void UpdatePauseEvent (uint8_t priority, EventId event);
+  void UpdatePauseEvent (uint8_t priority, const EventId &event);
   void CancelPauseEvent (uint8_t priority);
 
 private:

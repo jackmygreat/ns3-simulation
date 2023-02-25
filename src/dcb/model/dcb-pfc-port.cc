@@ -179,7 +179,7 @@ DcbPfcPort::SetPaused (uint8_t priority, bool paused)
 }
 
 inline void
-DcbPfcPort::UpdatePauseEvent (uint8_t priority, EventId event)
+DcbPfcPort::UpdatePauseEvent (uint8_t priority, const EventId &event)
 {
   m_port.getQueue (priority).ReplacePauseEvent (event);
 }
@@ -224,8 +224,13 @@ DcbPfcPort::PortInfo::getQueue (uint8_t priority)
  * class DcbPfcControl::PortInfo::IngressQueueInfo implementation starts.
  */
 
+DcbPfcPort::PortInfo::IngressQueueInfo::IngressQueueInfo ()
+    : reserve (0), xon (0), isPaused (false), hasEvent (false), pauseEvent ()
+{
+}
+
 inline void
-DcbPfcPort::PortInfo::IngressQueueInfo::ReplacePauseEvent (EventId event)
+DcbPfcPort::PortInfo::IngressQueueInfo::ReplacePauseEvent (const EventId &event)
 {
   if (hasEvent)
     {

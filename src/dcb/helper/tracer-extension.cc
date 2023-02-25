@@ -23,6 +23,7 @@
 #include "dcb-net-device-helper.h"
 #include "dcb-switch-stack-helper.h"
 #include "ns3/dcb-net-device.h"
+#include "ns3/dcb-traffic-control.h"
 #include <fstream>
 
 namespace ns3 {
@@ -33,6 +34,10 @@ std::string TE::outputDirectory = "";
 Time TE::stopTime;
 TE::Protocol TE::TraceFCTUnit::protocol = TE::Protocol::None;
 std::ofstream TE::TraceFCTUnit::fctFileStream;
+
+std::list<TE::RateTracer *> TE::RateTracer::tracers;
+std::list<TE::QueueLengthTracer *> TE::QueueLengthTracer::tracers;
+std::list<TE::BufferOverflowTracer *> TE::BufferOverflowTracer::tracers;
 
 TE::TracerExtension ()
 {
@@ -112,6 +117,7 @@ TE::EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time inte
 {
   RateTracer *tracer = new RateTracer (interval, context);
   device->TraceConnectWithoutContext ("MacTx", MakeCallback (&TE::RateTracer::Trace, tracer));
+  RateTracer::tracers.push_back (tracer);
 }
 
 // static
@@ -121,12 +127,32 @@ TE::EnablePortQueueLength (Ptr<NetDevice> device, std::string context, Time inte
   Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (device);
   if (dcbDev)
     {
-      new QueueLengthTracer (context, dcbDev->GetQueueDisc (), interval);
+      QueueLengthTracer *tracer =
+          new QueueLengthTracer (context, dcbDev->GetQueueDisc (), interval);
+      QueueLengthTracer::tracers.push_back (tracer);
     }
   else
     {
       NS_FATAL_ERROR ("Cannot cast NetDevice to DcbNetDevice");
     }
+}
+
+// static
+void
+TE::EnableBufferoverflowTrace (Ptr<Node> sw, std::string context)
+{
+  Ptr<DcbTrafficControl> tc = sw->GetObject<DcbTrafficControl> ();
+  BufferOverflowTracer *tracer = new BufferOverflowTracer (context, tc);
+  BufferOverflowTracer::tracers.push_back (tracer);
+}
+
+// static
+void
+TE::CleanTracers ()
+{
+  ClearTracersList (RateTracer::tracers);
+  ClearTracersList (QueueLengthTracer::tracers);
+  ClearTracersList (BufferOverflowTracer::tracers);
 }
 
 // static
@@ -165,12 +191,16 @@ TE::RateTracer::RateTracer (Time interval, std::string context) : m_bytes (0), m
   m_timer.SetDelay (interval);
   m_timer.Schedule ();
 
-  std::string filename = outputDirectory + "/rate-tx-" + context + ".csv";
+  std::string filename = GetRealFileName ("rate-tx-" + context + ".csv");
   m_ofstream.open (filename);
   if (!m_ofstream.good ())
     {
       std::cerr << "Error: Cannot open file \"" << filename << "\"" << std::endl;
     }
+}
+TE::RateTracer::~RateTracer ()
+{
+  m_ofstream.close ();
 }
 
 void
@@ -190,10 +220,6 @@ TE::RateTracer::LogRate ()
     {
       m_timer.Schedule ();
     }
-  // else
-  // {
-      // delete this; // kill myself
-  // }
 }
 
 TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc,
@@ -204,13 +230,17 @@ TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueue
   m_timer.SetDelay (interval);
   m_timer.Schedule ();
 
-  std::string filename = outputDirectory + "/queue-" + context + ".csv";
+  std::string filename = GetRealFileName ("queue-" + context + ".csv");
   m_ofstream.open (filename);
   if (!m_ofstream.good ())
     {
       std::cerr << "Error: Cannot open file \"" << filename << "\"" << std::endl;
     }
 }
+TE::QueueLengthTracer::~QueueLengthTracer ()
+{
+  m_ofstream.close ();
+}    
 
 void
 TE::QueueLengthTracer::Trace ()
@@ -227,10 +257,33 @@ TE::QueueLengthTracer::Trace ()
     {
       m_timer.Schedule ();
     }
-  else
-    {
-      delete this; // kill myself
-    }
+}
+
+TE::BufferOverflowTracer::BufferOverflowTracer (std::string context, Ptr<DcbTrafficControl> tc)
+{
+  std::string filename = GetRealFileName ("bufferoverflow-" + context + ".csv");
+  m_ofstream.open (filename);
+  tc->TraceConnectWithoutContext ("BufferOverflow",
+                                  MakeCallback (&BufferOverflowTracer::Trace, this));
+}
+TE::BufferOverflowTracer::~BufferOverflowTracer ()
+{
+  m_ofstream.close ();
+}    
+
+void
+TE::BufferOverflowTracer::Trace (Ptr<const Packet> packet)
+{
+  Ptr<Packet> p = packet->Copy ();
+  Ipv4Header ipHeader;
+  UdpRoCEv2Header header;
+  p->RemoveHeader (ipHeader);
+  p->PeekHeader (header);
+  m_ofstream << ipHeader.GetSource () << ","
+             << ipHeader.GetDestination () << ","
+             << header.GetRoCE ().GetSrcQP () << ","
+             << header.GetRoCE ().GetDestQP () << ","
+             << header.GetRoCE ().GetPSN ();
 }
 
 } // namespace ns3

@@ -383,13 +383,6 @@ protected:
   TracedCallback<Ptr<const Packet>> m_dropTrace; //!< Trace for dropped packets
 
 private:
-  /**
-   * \brief Kill this socket by zeroing its attributes (IPv4)
-   *
-   * This is a callback function configured to m_endpoint in
-   * SetupCallback(), invoked when the endpoint is destroyed.
-   */
-  void Destroy (void);
 
   Address m_defaultAddress; //!< Default address
   bool m_shutdownSend; //!< Send no longer allowed

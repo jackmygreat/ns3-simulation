@@ -127,7 +127,7 @@ DcbTrafficControl::Receive (Ptr<NetDevice> device, Ptr<const Packet> packet, uin
       return;
     }
 
-  PortInfo &port = m_buffer.GetPort (index);
+  const PortInfo &port = m_buffer.GetPort (index);
   if (port.FcEnabled ())
     {
       // run flow control ingress process
@@ -197,6 +197,11 @@ DcbTrafficControl::PeekPriorityOfPacket (const Ptr<const Packet> packet)
   // return ipv4Header.GetDscp () >> 3;
 }
 
+DcbTrafficControl::PortInfo::PortInfo () : m_fcEnabled (false), m_fc (nullptr)
+{
+  std::memset(m_ingressQueueLength, 0, sizeof(m_ingressQueueLength));
+}
+
 void
 DcbTrafficControl::PortInfo::AddPacketOutCallback (uint32_t fromIdx, FCPacketOutCb cb)
 {
@@ -210,7 +215,7 @@ DcbTrafficControl::PortInfo::CallFCPacketOutPipeline (uint32_t fromIdx, uint8_t 
 {
   NS_LOG_FUNCTION (this << packet);
 
-  for (auto &handler : m_fcPacketOutPipeline)
+  for (const auto &handler : m_fcPacketOutPipeline)
     {
       if (handler.first == fromIdx)
         {

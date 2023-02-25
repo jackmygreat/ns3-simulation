@@ -162,7 +162,7 @@ public:
   public:
     typedef Callback<void, uint8_t, Ptr<Packet>> FCPacketOutCb;
 
-    PortInfo () = default;
+    PortInfo ();
 
     /**
      * \brief Add a calback to this port when a packet from `fromIdx` is going
@@ -257,7 +257,7 @@ class DeviceIndexTag : public Tag
 public:
   DeviceIndexTag () = default;
 
-  DeviceIndexTag (uint32_t index);
+  explicit DeviceIndexTag (uint32_t index);
 
   void SetIndex (uint32_t index);
 
@@ -288,7 +288,7 @@ class CoSTag : public Tag
 public:
   CoSTag () = default;
 
-  CoSTag (uint8_t cos);
+  explicit CoSTag (uint8_t cos);
 
   void SetCoS (uint8_t cos);
 

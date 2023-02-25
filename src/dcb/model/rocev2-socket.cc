@@ -128,7 +128,9 @@ RoCEv2Socket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
       m_ccOps->UpdateStateWithCNP ();
       NS_LOG_DEBUG ("DCQCN: Received CNP and rate decreased to "
                     << m_sockState->GetRateRatioPercent () << "% at time "
-                    << Simulator::Now ().GetMicroSeconds () << "us");
+                    << Simulator::Now ().GetMicroSeconds () << "us. "
+                    << header.GetSource() << ":" << rocev2Header.GetSrcQP()
+                    << "->" << header.GetDestination() << ":" << rocev2Header.GetDestQP());
       break;
     default:
       HandleDataPacket (packet, header, port, incomingInterface, rocev2Header);

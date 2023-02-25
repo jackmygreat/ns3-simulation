@@ -289,7 +289,7 @@ private:
   /**
    * Whether this device support PFC functions
    */
-  bool m_fcEnabled = false;
+  bool m_fcEnabled;
 
   // The QueueDisc correspond to this device
   Ptr<PausableQueueDisc> m_queueDisc;

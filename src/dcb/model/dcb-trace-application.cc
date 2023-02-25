@@ -21,6 +21,7 @@
 #include "dcb-net-device.h"
 #include "ns3/fatal-error.h"
 #include "ns3/tcp-socket-factory.h"
+#include "ns3/udp-based-socket.h"
 #include "ns3/uinteger.h"
 #include "rocev2-l4-protocol.h"
 #include "rocev2-socket.h"
@@ -259,6 +260,11 @@ TraceApplication::CreateNewSocket (uint32_t destNode)
         {
           udpBasedSocket->SetFlowCompleteCallback (
               MakeCallback (&TraceApplication::FlowCompletes, this));
+          Ptr<RoCEv2Socket> roceSocket = DynamicCast<RoCEv2Socket> (udpBasedSocket);
+          if (roceSocket)
+            {
+              roceSocket->SetStopTime (m_stopTime);
+            }
         }
     }
 

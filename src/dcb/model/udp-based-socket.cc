@@ -59,6 +59,7 @@ UdpBasedSocket::UdpBasedSocket ()
     : m_node (0),
       m_innerProto (0),
       m_endPoint (0),
+      m_errno (),
       m_shutdownSend (false),
       m_shutdownRecv (false),
       m_connected (false),
@@ -547,13 +548,6 @@ UdpBasedSocket::GetDstPort () const
 {
   NS_LOG_FUNCTION (this);
   return m_endPoint->GetPeerPort();  
-}
-
-void
-UdpBasedSocket::Destroy ()
-{
-  NS_LOG_FUNCTION (this);
-  m_endPoint = 0;
 }
 
 void

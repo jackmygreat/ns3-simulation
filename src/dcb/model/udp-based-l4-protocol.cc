@@ -24,6 +24,7 @@
 #include "ns3/node.h"
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
+#include "ns3/udp-based-l4-protocol.h"
 #include "ns3/udp-l4-protocol.h"
 #include "udp-based-l4-protocol.h"
 #include "udp-based-socket.h"
@@ -46,9 +47,11 @@ UdpBasedL4Protocol::GetTypeId ()
   return tid;
 }
 
-UdpBasedL4Protocol::UdpBasedL4Protocol ()
+UdpBasedL4Protocol::UdpBasedL4Protocol () :
+  m_node (nullptr), m_udp (nullptr), m_udpEndPoint(nullptr)
 {
   NS_LOG_FUNCTION (this);
+  m_innerEndPoints = new InnerEndPointDemux ();
 }
 
 UdpBasedL4Protocol::~UdpBasedL4Protocol ()
@@ -101,8 +104,10 @@ void
 UdpBasedL4Protocol::Setup (Ptr<Node> node, Ptr<NetDevice> dev)
 {
   NS_LOG_FUNCTION (this << node << dev);
+  
   m_node = node;
   m_udp = node->GetObject<UdpL4Protocol> ();
+  NS_ASSERT_MSG (m_udp != nullptr, "UdpL4Protocol must be aggregated before UdpBasedL4Protocol::Setup()");
   m_udpEndPoint = m_udp->Allocate (dev, GetProtocolNumber ());
   m_udpEndPoint->BindToNetDevice (dev);
   FinishSetup (m_udpEndPoint); // bind callbacks
@@ -122,7 +127,8 @@ UdpBasedL4Protocol::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint16_t p
     }
   else
     {
-      NS_FATAL_ERROR ("No endPoints matched in UDP-based L4 protocol with inner port " << innerPort << " on node " << Simulator::GetContext ());
+      NS_FATAL_ERROR ("No endPoints matched in UDP-based L4 protocol with inner port "
+                      << innerPort << " on node " << Simulator::GetContext ());
     }
 }
 
@@ -136,7 +142,7 @@ UdpBasedL4Protocol::Allocate ()
 {
   return m_innerEndPoints->Allocate (GetDefaultServicePort ());
 }
-  
+
 Ipv4Address
 UdpBasedL4Protocol::GetLocalAddress () const
 {
@@ -149,9 +155,9 @@ UdpBasedL4Protocol::Send (Ptr<Packet> packet, Ipv4Address saddr, Ipv4Address dad
                           uint32_t dport, Ptr<Ipv4Route> route)
 {
   NS_LOG_FUNCTION (this << packet << saddr << daddr << sport << dport << route);
-  m_udp->Send (packet, saddr, daddr, GetProtocolNumber(), GetProtocolNumber(), route);
+  m_udp->Send (packet, saddr, daddr, GetProtocolNumber (), GetProtocolNumber (), route);
 }
- 
+
 void
 UdpBasedL4Protocol::DeAllocate (InnerEndPoint *endPoint)
 {
@@ -236,7 +242,7 @@ InnerEndPointDemux::InnerEndPointDemux (uint32_t portFirst, uint32_t portLast)
 
 InnerEndPointDemux::~InnerEndPointDemux ()
 {
-  for (auto &p : m_endPoints)
+  for (const auto &p : m_endPoints)
     {
       delete p.second;
     }
@@ -257,7 +263,7 @@ InnerEndPointDemux::Allocate (uint32_t dport)
 InnerEndPoint *
 InnerEndPointDemux::Allocate (uint32_t sport, uint32_t dport)
 {
-  if (m_endPoints.find(sport) != m_endPoints.end())
+  if (m_endPoints.find (sport) != m_endPoints.end ())
     {
       NS_FATAL_ERROR ("Inner port " << sport << " has already been allocated.");
     }

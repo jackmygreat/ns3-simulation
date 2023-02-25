@@ -24,6 +24,14 @@ namespace ns3 {
 
 NS_OBJECT_ENSURE_REGISTERED (PfcFrame);
 
+PfcFrame::PfcFrame () : m_opcode (DEFAULT_OPCODE), m_enableVec (0), m_frameCheck (0)
+{
+  std::memset (m_quantaVec, 0, sizeof (m_quantaVec));
+  std::memset (m_reserved, 0, sizeof (m_reserved));
+}
+
+
+
 // static
 Ptr<Packet>
 PfcFrame::GeneratePauseFrame (uint8_t priority, uint16_t quanta)
@@ -50,10 +58,6 @@ PfcFrame::GeneratePauseFrame (uint8_t enableVec, uint16_t quantaList[8])
   Ptr<Packet> packet = Create<Packet> (0);
   packet->AddHeader (pfcFrame);
   return packet;
-}
-
-PfcFrame::PfcFrame () : m_opcode (DEFAULT_OPCODE), m_enableVec (0)
-{
 }
 
 void

@@ -32,11 +32,11 @@ class CsvWriter
 {
 public:
 
-  CsvWriter (const std::string filepath, std::size_t columnNum, char delimiter = ',');
+  CsvWriter (const std::string &filepath, std::size_t columnNum, char delimiter = ',');
   CsvWriter (std::ostream* const stream, std::size_t columnNum, char delimiter=',');
   void SetColumnCount (std::size_t columnNum);
-  std::size_t GetColumnCount () const;
-  char Delimiter () const;
+  [[maybe_unused]] std::size_t GetColumnCount () const;
+  [[maybe_unused]] char Delimiter () const;
   
   template<class T>
   void WriteNextValue (T value);
@@ -63,7 +63,7 @@ CsvWriter::WriteNextValue (T value)
   m_currentColumn = (m_currentColumn + 1) % m_totalColumn;
   if (m_currentColumn > 0)
     { 
-      (*m_stream) << ',';
+      (*m_stream) << m_delimiter;
     }
   else
     { // finish one row

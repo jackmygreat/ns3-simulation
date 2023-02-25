@@ -23,6 +23,7 @@
 
 #include <fstream>
 #include "ns3/dcb-net-device.h"
+#include "ns3/dcb-traffic-control.h"
 #include "ns3/rocev2-header.h"
 #include "ns3/rocev2-socket.h"
 #include "ns3/dcb-trace-application.h"
@@ -64,11 +65,17 @@ public:
 
   static void EnablePortQueueLength (Ptr<NetDevice> device, std::string context, Time interval);
 
+  static void EnableBufferoverflowTrace (Ptr<Node> sw, std::string context);
+
+  static void CleanTracers ();
+
 private:
   static std::string outputDirectory;
   static Time stopTime;
 
   static std::string GetRealFileName (std::string fileName);
+  template <class T>
+  static void ClearTracersList (std::list<T> &tracers);
 
   struct TraceFCTUnit
   {
@@ -84,7 +91,9 @@ private:
   {
   public:
     RateTracer (Time interval, std::string context);
+    ~RateTracer ();
     void Trace (Ptr<const Packet> packet);
+    static std::list<RateTracer *> tracers;
 
   private:
     void LogRate ();
@@ -98,7 +107,9 @@ private:
   {
   public:
     QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc, Time interval);
+    ~QueueLengthTracer ();
     void Trace ();
+    static std::list<QueueLengthTracer*> tracers;
 
   private:
     Ptr<PausableQueueDisc> m_queueDisc;
@@ -106,7 +117,30 @@ private:
     std::ofstream m_ofstream;
   }; // class QueueLengthTracer
 
+  class BufferOverflowTracer {
+  public:
+    BufferOverflowTracer (std::string context, Ptr<DcbTrafficControl> tc);
+    ~BufferOverflowTracer ();
+    void Trace (Ptr<const Packet> packet);
+    static std::list<BufferOverflowTracer *> tracers;
+    
+  private:
+    std::ofstream m_ofstream;
+  }; // class BufferoverflowTracer
+  
+
 }; // class TracerExtension
+
+template <class T>
+void TracerExtension::ClearTracersList (std::list<T> &tracers)
+{
+  for (auto tracer: tracers)
+    {
+      delete tracer;
+    }
+  tracers.clear ();
+}
+
 
 } // namespace ns3
 

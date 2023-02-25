@@ -19,45 +19,51 @@
  */
 
 #include "ns3/core-module.h"
+#include "ns3/nstime.h"
 #include "ns3/protobuf-topology-loader.h"
 #include "ns3/log.h"
 #include "ns3/dcb-module.h"
-#include "ns3/internet-module.h" 
+#include "ns3/internet-module.h"
 
 using namespace ns3;
 
-int 
+int
 main ()
 {
   ProtobufTopologyLoader topoLoader;
   // topoLoader.RunConfigScript("config/dumbell_topo.py");
-  Ptr<DcTopology> topology = topoLoader.LoadTopology();
+  Ptr<DcTopology> topology = topoLoader.LoadTopology ();
   // topology->Print(std::cout);
-  
+
+  LogComponentEnableAll (LOG_LEVEL_WARN);
   LogComponentEnable ("TraceApplication", LOG_LEVEL_INFO);
   LogComponentEnable ("ProtobufTopologyLoader", LOG_LEVEL_DEBUG);
   LogComponentEnable ("DcbTrafficControl", LOG_LEVEL_INFO);
-  LogComponentEnable ("DcbSwitchStackHelper", LOG_LEVEL_INFO);
-  LogComponentEnable ("DcbHostStackHelper", LOG_LEVEL_INFO);
   LogComponentEnable ("DcbPfcPort", LOG_LEVEL_DEBUG);
-  LogComponentEnable ("RoCEv2L4Protocol", LOG_LEVEL_INFO);
-  LogComponentEnable ("RoCEv2Socket", LOG_LEVEL_INFO);
-  LogComponentEnable ("FifoQueueDiscEcn", LOG_LEVEL_INFO);
+  // LogComponentEnable ("RoCEv2Socket", LOG_LEVEL_INFO);
+  // LogComponentEnable ("DcqcnCongestionOps", LOG_DEBUG);
+  // LogComponentEnable ("FifoQueueDiscEcn", LOG_LEVEL_INFO);
   LogComponentEnableAll (LOG_PREFIX_LEVEL);
-  LogComponentEnableAll(LOG_PREFIX_NODE);
+  LogComponentEnableAll (LOG_PREFIX_NODE);
 
-  TracerExtension::ConfigOutputDirectory("data");
+  TracerExtension::ConfigOutputDirectory ("data");
   TracerExtension::ConfigTraceFCT (TracerExtension::Protocol::RoCEv2, "fct.csv");
+  TracerExtension::ConfigStopTime (MilliSeconds(6));
 
   // capture packet at host-0
-  Ptr<NetDevice> dev = topology->GetNetDeviceOfNode(0, 0);
-  TracerExtension::EnableDevicePcap(dev, "host");
-  TracerExtension::EnableDeviceRateTrace(dev, "host0", MicroSeconds (10));
+  Ptr<NetDevice> dev = topology->GetNetDeviceOfNode (0, 0);
+  TracerExtension::EnableDevicePcap (dev, "host");
+  TracerExtension::EnableDeviceRateTrace (dev, "host0", MicroSeconds (10));
 
   // capture packet at host-2
-  dev = topology->GetNetDeviceOfNode(2, 0);
-  TracerExtension::EnableDevicePcap(dev, "host");
+  dev = topology->GetNetDeviceOfNode (2, 0);
+  TracerExtension::EnableDevicePcap (dev, "host");
 
+  TracerExtension::EnableBufferoverflowTrace (topology->GetNode (4).nodePtr, "sw4");
+  TracerExtension::EnableBufferoverflowTrace (topology->GetNode (5).nodePtr, "sw5");
+
+  Ptr<NetDevice> swDev = topology->GetNetDeviceOfNode(4, 2);
+  TracerExtension::EnableDeviceRateTrace(swDev, "sw4", MicroSeconds (100));
   // TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(16).nodePtr, "switch");
   // TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(17).nodePtr, "switch");
   // capture packet at all switches
@@ -65,7 +71,8 @@ main ()
   //   {
   //     TracerExtension::EnableSwitchIpv4Pcap(sw->nodePtr, "switch");
   //   }
-
   Simulator::Run ();
   Simulator::Destroy ();
+
+  TracerExtension::CleanTracers ();
 }

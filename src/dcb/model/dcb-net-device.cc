@@ -139,7 +139,18 @@ DcbNetDevice::GetTypeId (void)
 }
 
 DcbNetDevice::DcbNetDevice ()
-    : m_linkUp (false), m_channel (0), m_txMachineState (READY), m_currentPkt (0)
+    : m_node (nullptr),
+      m_ifIndex (0x7fffffff),
+      m_linkUp (false),
+      m_mtu (DEFAULT_MTU),
+      m_tInterframeGap (),
+      m_channel (0),
+      m_queue (nullptr),
+      m_fcEnabled (false),
+      m_queueDisc (nullptr),
+      m_receiveErrorModel (nullptr),
+      m_txMachineState (READY),
+      m_currentPkt (nullptr)
 {
   NS_LOG_FUNCTION (this);
 }
@@ -181,9 +192,8 @@ void
 DcbNetDevice::Receive (Ptr<Packet> packet)
 {
   NS_LOG_FUNCTION (this << packet);
-  uint16_t protocol = 0;
-
-  if (m_receiveErrorModel && m_receiveErrorModel->IsCorrupt (packet))
+  
+if (m_receiveErrorModel && m_receiveErrorModel->IsCorrupt (packet))
     {
       //
       // If we have an error model and it indicates that it is time to lose a
@@ -204,7 +214,7 @@ DcbNetDevice::Receive (Ptr<Packet> packet)
 
       EthernetHeader ethHeader;
       packet->RemoveHeader (ethHeader);
-      protocol = ethHeader.GetLengthType ();
+      uint16_t protocol = ethHeader.GetLengthType ();
 
       //
       // Trace sinks will expect complete packets, not packets without some of the
@@ -501,6 +511,7 @@ DcbNetDevice::SetIfIndex (const uint32_t index)
 uint32_t
 DcbNetDevice::GetIfIndex (void) const
 {
+  NS_ASSERT_MSG (m_ifIndex < 0x7fffffff, "DcbNetDevice index not set");
   return m_ifIndex;
 }
 

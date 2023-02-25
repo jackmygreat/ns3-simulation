@@ -349,8 +349,8 @@ DcbSwitchStackHelper::Install (Ptr<Node> node) const
 
           Ptr<PausableQueueDisc> qDisc = CreateObject<PausableQueueDisc> (i);
           qDisc->RegisterTrafficControlCallback (tcCallback);
-          qDisc->SetPortIndex (i);
           qDisc->SetQueueSize (m_bufferSize);
+          qDisc->SetFCEnabled (true);
           dcbTc->SetRootQueueDiscOnDevice (dcbDev, qDisc);
           dcbDev->SetFcEnabled (true); // all NetDevices should support FC
         }

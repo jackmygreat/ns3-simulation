@@ -45,7 +45,7 @@ public:
    * \param cls is the number of CoS which should be a value of 0-7.
    *        No checking, be careful.
    */
-  void DisableClass (uint16_t cls);
+  [[maybe_unused]] void DisableClass (uint16_t cls);
 
   void SetEnableClassField (uint8_t vec);
   uint8_t GetEnableClassField () const;

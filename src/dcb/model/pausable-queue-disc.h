@@ -52,7 +52,7 @@ public:
   static TypeId GetTypeId (void);
 
   PausableQueueDisc ();
-  PausableQueueDisc (uint32_t port);
+  explicit PausableQueueDisc (uint32_t port);
 
   virtual ~PausableQueueDisc ();
 

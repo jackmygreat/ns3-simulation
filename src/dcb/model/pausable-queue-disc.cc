@@ -61,12 +61,14 @@ PausableQueueDisc::GetTypeId ()
   return tid;
 }
 
-PausableQueueDisc::PausableQueueDisc () : m_queueSize ("1000p")
+PausableQueueDisc::PausableQueueDisc ()
+    : m_fcEnabled (false), m_portIndex (0x7fffffff), m_queueSize ("1000p")
 {
   NS_LOG_FUNCTION (this);
 }
 
-PausableQueueDisc::PausableQueueDisc (uint32_t port) : m_portIndex (port), m_queueSize ("1000p")
+PausableQueueDisc::PausableQueueDisc (uint32_t port)
+    : m_fcEnabled (false), m_portIndex (port), m_queueSize ("1000p")
 {
   NS_LOG_FUNCTION (this);
 }

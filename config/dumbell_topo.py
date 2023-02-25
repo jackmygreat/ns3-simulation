@@ -33,9 +33,9 @@ switchPortQueueConfig1 = {
     "pfcXon": "1 KiB",
 
     # ECN configurations
-    "ecnKMin": "200 KiB",
-    "ecnKMax": "800 KiB",
-    "ecnPMax": 0.2,
+    "ecnKMin": "500 KiB",
+    "ecnKMax": "2 MiB",
+    "ecnPMax": 1,
 }
 
 
@@ -47,9 +47,9 @@ switchPortQueueConfig2 = {
     "pfcXon": "1 KiB",
 
     # ECN configurations
-    "ecnKMin": "220 KiB",
-    "ecnKMax": "840 KiB",
-    "ecnPMax": 0.2,
+    "ecnKMin": "500 KiB",
+    "ecnKMax": "2 MiB",
+    "ecnPMax": 1,
 }
 
 # Configuration of the switch port that connects to host
