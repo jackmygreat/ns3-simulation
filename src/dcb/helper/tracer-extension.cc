@@ -150,6 +150,10 @@ TE::EnableBufferoverflowTrace (Ptr<Node> sw, std::string context)
 void
 TE::CleanTracers ()
 {
+  if (TE::TraceFCTUnit::fctFileStream.is_open ())
+    {
+      TE::TraceFCTUnit::fctFileStream.close ();
+    }
   ClearTracersList (RateTracer::tracers);
   ClearTracersList (QueueLengthTracer::tracers);
   ClearTracersList (BufferOverflowTracer::tracers);

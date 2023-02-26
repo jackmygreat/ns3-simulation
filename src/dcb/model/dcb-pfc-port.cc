@@ -194,10 +194,9 @@ DcbPfcPort::CancelPauseEvent (uint8_t priority)
  * class DcbPfcControl::PortInfo implementation starts.
  */
 
-DcbPfcPort::PortInfo::PortInfo (uint32_t index) : m_index (index)
+DcbPfcPort::PortInfo::PortInfo (uint32_t index) : m_index (index), m_enableVec (0xff)
 {
-  m_ingressQueues.resize (DcbTrafficControl::PRIORITY_NUMBER, IngressQueueInfo ());
-  m_enableVec = 0xff;
+  m_ingressQueues.resize (DcbTrafficControl::PRIORITY_NUMBER);
 }
 
 DcbPfcPort::PortInfo::PortInfo (uint32_t index, uint8_t enableVec)
