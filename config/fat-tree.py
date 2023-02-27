@@ -1,7 +1,7 @@
 '''An example to create a fat tree topology:
 '''
 
-from topology_helper import FattreeGenerator
+from config_helper import FattreeGenerator
 
 globalConfig = {
     "randomSeed": 0, 

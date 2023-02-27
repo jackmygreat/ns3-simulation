@@ -100,7 +100,7 @@ public:
 private:
   // Notice: this variable should be consistent with `TopologyGenerator.outputFile`
   // in config/topology_helper.py
-  std::string m_protoBinaryName = "config/topology.bin";
+  inline static std::string const m_protoBinaryName = "config/configurations.bin";
 
   uint32_t m_ecmpSeed = 0;
   

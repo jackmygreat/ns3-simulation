@@ -8,7 +8,7 @@ host1                host3
 
 '''
 
-from topology_helper import TopologyGenerator
+from config_helper import TopologyGenerator
 
 globalConfig = {
     "randomSeed": 0, 
@@ -29,13 +29,13 @@ switchPortQueueConfig1 = {
     # PFC configurations
     # "pfcReserved": "288 KiB",
     # "pfcHeadroom": "30 KiB",
-    "pfcReserve": "2 KiB",
-    "pfcXon": "1 KiB",
+    "pfcReserve": "20 KiB",
+    "pfcXon": "15 KiB",
 
     # ECN configurations
-    "ecnKMin": "500 KiB",
-    "ecnKMax": "2 MiB",
-    "ecnPMax": 1,
+    "ecnKMin": "200 KiB",
+    "ecnKMax": "400 KiB",
+    "ecnPMax": 0.4,
 }
 
 
@@ -43,13 +43,13 @@ switchPortQueueConfig2 = {
     # PFC configurations
     # "pfcReserve": "300 KiB",
     # "pfcHeadroom": "50 KiB",
-    "pfcReserve": "2 KiB",
-    "pfcXon": "1 KiB",
+    "pfcReserve": "20 KiB",
+    "pfcXon": "15 KiB",
 
     # ECN configurations
-    "ecnKMin": "500 KiB",
-    "ecnKMax": "2 MiB",
-    "ecnPMax": 1,
+    "ecnKMin": "200 KiB",
+    "ecnKMax": "400 KiB",
+    "ecnPMax": 0.4,
 }
 
 # Configuration of the switch port that connects to host
@@ -88,14 +88,14 @@ linkConfig2 = {
 }
 
 senderConfig = {
-    "nodeIndices": [0, 1],
+    "nodeIndices": [0, 1, 2, 3],
     "appName": "TraceApplication",
     "protocolGroup": "RoCEv2",
     "arg": "WebSearch",
     "load": 0.9,
     "startTime": "2 ms",
     "stopTime": "4 ms",
-    "dest": 2
+    # "dest": 2
 }
 
 receiverConfig = {
@@ -134,5 +134,5 @@ with TopologyGenerator() as topo:
                               node2=switch1, port2=2, **linkConfig2)
 
     topo.applications.installApplication(senderConfig)
-    topo.applications.installApplication(receiverConfig)
+    # topo.applications.installApplication(receiverConfig)
     

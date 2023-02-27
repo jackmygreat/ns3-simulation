@@ -261,7 +261,7 @@ class ApplicationsGenerator:
 
 class TopologyGenerator:
 
-    def __init__(self, output="config/topology.bin"):
+    def __init__(self, output="config/configurations.bin"):
         '''Initiate the generator.
         Notice: you should never manually assign another string to output as it should be
         consistent with the `ProtobufTopologyLoader::m_protoBinaryName` in
