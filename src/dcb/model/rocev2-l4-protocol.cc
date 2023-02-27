@@ -196,7 +196,8 @@ RoCEv2L4Protocol::GenerateCNP (uint32_t srcQP, uint32_t dstQP)
   Ptr<Packet> packet = Create<Packet> (16); // 16 bytes reserved
   packet->AddHeader (header);
   SocketIpTosTag ipTosTag;
-  ipTosTag.SetTos (Socket::SocketPriority::NS3_PRIO_INTERACTIVE << 1); // high priority
+  uint8_t tos = (Socket::SocketPriority::NS3_PRIO_INTERACTIVE * 2 - 1) << 1;
+  ipTosTag.SetTos (tos); // high priority
   packet->AddPacketTag (ipTosTag);
   return packet;
 }

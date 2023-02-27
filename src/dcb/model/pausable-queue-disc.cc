@@ -176,7 +176,7 @@ PausableQueueDisc::DoDequeue ()
   NS_LOG_FUNCTION (this);
   Ptr<QueueDiscItem> item = 0;
 
-  for (uint32_t i = 0; i < GetNQueueDiscClasses (); i++)
+  for (uint32_t i = GetNQueueDiscClasses (); i -- > 0; )
     {
       Ptr<PausableQueueDiscClass> qdclass = GetQueueDiscClass (i);
       if ((!m_fcEnabled || !qdclass->IsPaused ()) &&

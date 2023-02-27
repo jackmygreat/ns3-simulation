@@ -64,7 +64,7 @@ UdpBasedSocket::UdpBasedSocket ()
       m_shutdownRecv (false),
       m_connected (false),
       m_rxUsed (0),
-      m_rcvBufSize(8192)
+      m_rcvBufSize (8192) // TODO: do not use magic number
 {
   NS_LOG_FUNCTION (this);
 }

@@ -86,7 +86,8 @@ RoCEv2Socket::SendPendingPacket ()
     }
   // rateRatio is controled by congestion control
   // rateRatio = sending rate calculated by CC / line rate, which is between [0.0., 1.0]
-  const double rateRatio = m_sockState->GetRateRatioPercent (); // in percentage, i.e., maximum is 100.0
+  const double rateRatio =
+      m_sockState->GetRateRatioPercent (); // in percentage, i.e., maximum is 100.0
   if (rateRatio > 1e-6)
     {
       m_isSending = true;
@@ -128,9 +129,9 @@ RoCEv2Socket::ForwardUp (Ptr<Packet> packet, Ipv4Header header, uint32_t port,
       m_ccOps->UpdateStateWithCNP ();
       NS_LOG_DEBUG ("DCQCN: Received CNP and rate decreased to "
                     << m_sockState->GetRateRatioPercent () << "% at time "
-                    << Simulator::Now ().GetMicroSeconds () << "us. "
-                    << header.GetSource() << ":" << rocev2Header.GetSrcQP()
-                    << "->" << header.GetDestination() << ":" << rocev2Header.GetDestQP());
+                    << Simulator::Now ().GetMicroSeconds () << "us. " << header.GetSource () << ":"
+                    << rocev2Header.GetSrcQP () << "->" << header.GetDestination () << ":"
+                    << rocev2Header.GetDestQP ());
       break;
     default:
       HandleDataPacket (packet, header, port, incomingInterface, rocev2Header);
@@ -156,8 +157,12 @@ RoCEv2Socket::HandleACK (Ptr<Packet> packet, const RoCEv2Header &roce)
         if (psn + 1 == m_psnEnd)
           { // last ACk received, flow finshed
             NotifyFlowCompletes ();
-            Simulator::Schedule (MicroSeconds (50), &RoCEv2Socket::Close,
-                                 this); // a delay to handle remaing packets (e.g., CNP)
+            // a delay to handle remaining packets (e.g., CNP)
+            // FIXME: do not use magic number
+            NS_LOG_DEBUG ("RoCEv2Socket will close at "
+                          << (Simulator::Now () + MicroSeconds (50)).GetMicroSeconds ()
+                          << "us node " << Simulator::GetContext () << " qp " << roce.GetDestQP ());
+            Simulator::Schedule (MicroSeconds (50), &RoCEv2Socket::Close, this);
           }
         break;
       }
@@ -181,10 +186,12 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   Ipv4Address srcIp = header.GetSource ();
   FlowIdentifier flowId = FlowIdentifier{std::move (srcIp), srcQP};
   std::map<FlowIdentifier, FlowInfo>::iterator flowInfoIter = m_receiverFlowInfo.find (flowId);
+  // TODO: fork the socket instead of using one as the receiver, i.e., m_receiverFlowInfo should be removed.
   if (flowInfoIter == m_receiverFlowInfo.end ())
     {
       auto pp = m_receiverFlowInfo.emplace (std::move (flowId), FlowInfo{dstQP});
       flowInfoIter = std::move (pp.first);
+      // TODO: erase flowInfo after flow finishes
     }
 
   // Check ECN
@@ -197,14 +204,7 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
   // Check PSN
   const uint32_t psn = roce.GetPSN ();
   uint32_t expectedPSN = flowInfoIter->second.nextPSN;
-  if (psn > expectedPSN)
-    { // packet out-of-order, send NACK
-      NS_LOG_LOGIC ("RoCEv2 receiver " << Simulator::GetContext () << "send NACK of flow " << srcQP
-                                       << "->" << dstQP);
-      Ptr<Packet> nack = RoCEv2L4Protocol::GenerateNACK (dstQP, srcQP, expectedPSN);
-      m_innerProto->Send (nack, header.GetDestination (), header.GetSource (), dstQP, srcQP, 0);
-    }
-  else if (psn == expectedPSN)
+  if (psn == expectedPSN)
     {
       flowInfoIter->second.nextPSN = (expectedPSN + 1) & 0xffffff;
       if (roce.GetAckQ ())
@@ -212,6 +212,14 @@ RoCEv2Socket::HandleDataPacket (Ptr<Packet> packet, Ipv4Header header, uint32_t 
           Ptr<Packet> ack = RoCEv2L4Protocol::GenerateACK (dstQP, srcQP, psn);
           m_innerProto->Send (ack, header.GetDestination (), header.GetSource (), dstQP, srcQP, 0);
         }
+    }
+  else if (psn > expectedPSN)
+    { // packet out-of-order, send NACK
+      NS_LOG_LOGIC ("RoCEv2 receiver " << Simulator::GetContext () << "send NACK of flow " << srcQP
+                                       << "->" << dstQP);
+      Ptr<Packet> nack = RoCEv2L4Protocol::GenerateNACK (dstQP, srcQP, expectedPSN);
+      m_innerProto->Send (nack, header.GetDestination (), header.GetSource (), dstQP, srcQP,
+                          nullptr);
     }
   else
     {
@@ -244,7 +252,8 @@ RoCEv2Socket::ScheduleNextCNP (std::map<FlowIdentifier, FlowInfo>::iterator flow
 
   // send Congestion Notification Packet (CNP) to sender
   Ptr<Packet> cnp = RoCEv2L4Protocol::GenerateCNP (flowInfo.dstQP, srcQP);
-  m_innerProto->Send (cnp, header.GetDestination (), header.GetSource (), flowInfo.dstQP, srcQP, 0);
+  m_innerProto->Send (cnp, header.GetDestination (), header.GetSource (), flowInfo.dstQP, srcQP,
+                      nullptr);
   flowInfo.receivedECN = false;
   flowInfo.lastCNPEvent = Simulator::Schedule (
       m_ccOps->GetCNPInterval (), &RoCEv2Socket::ScheduleNextCNP, this, flowInfoIter, header);

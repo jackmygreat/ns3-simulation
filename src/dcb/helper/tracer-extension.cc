@@ -122,7 +122,7 @@ TE::EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time inte
 
 // static
 void
-TE::EnablePortQueueLength (Ptr<NetDevice> device, std::string context, Time interval)
+TE::EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time interval)
 {
   Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (device);
   if (dcbDev)

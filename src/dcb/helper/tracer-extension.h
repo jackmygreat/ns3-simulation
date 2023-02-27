@@ -63,7 +63,7 @@ public:
 
   static void EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval);
 
-  static void EnablePortQueueLength (Ptr<NetDevice> device, std::string context, Time interval);
+  static void EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time interval);
 
   static void EnableBufferoverflowTrace (Ptr<Node> sw, std::string context);
 
