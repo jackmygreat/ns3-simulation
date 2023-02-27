@@ -7,7 +7,7 @@ syntax = "proto3";
 package ns3_proto;
 
 message GlobalConfig {
-	optional uint32 randomSeed = 1; // If not set, use randomly chosen seed
+	optional string outputFct = 1;
 }
 
 message HostPortConfig {
@@ -78,8 +78,12 @@ message Application { // application configurations
 }
 
 message Topology {  // used to aggregate all nodes and links as a topology
+	AllNodes nodes = 1;
+	repeated Link links = 2;
+}
+
+message Configurations {  // aggregate all configurtions
 	GlobalConfig globalConfig = 1;
-	AllNodes nodes = 2;
-	repeated Link links = 3;
-	repeated Application applications = 4;
+	Topology topology = 2;
+	repeated Application applications = 3;
 }

@@ -19,6 +19,7 @@
  */
 
 #include "dc-topology.h"
+#include "ns3/double.h"
 #include "ns3/fatal-error.h"
 #include "ns3/integer.h"
 #include "ns3/log-macros-enabled.h"
@@ -26,8 +27,9 @@
 #include "ns3/object.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/point-to-point-net-device.h"
-#include "ns3/topology.pb.h"
 #include "ns3/type-id.h"
+#include "ns3/ipv4.h"
+
 
 /**
  * \file

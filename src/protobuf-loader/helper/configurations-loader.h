@@ -18,38 +18,34 @@
  * Author: Pavinberg (pavin0702@gmail.com)
  */
 
-#ifndef PROTOBUF_TOPOLOGY_LOADER_H
-#define PROTOBUF_TOPOLOGY_LOADER_H
+#ifndef CONFIGURATIONS_LOADER_H
+#define CONFIGURATIONS_LOADER_H
 
-#include "google/protobuf/repeated_field.h"
-#include "ns3/dc-topology.h"
-#include "ns3/dcb-net-device.h"
-#include "ns3/dcb-channel.h"
-#include "ns3/dcb-trace-application-helper.h"
-#include "ns3/dcb-host-stack-helper.h"
-#include "ns3/dcb-switch-stack-helper.h"
+#include <string>
 #include "ns3/configurations.pb.h"
-#include <functional>
+#include "ns3/dc-topology.h"
+#include "ns3/dcb-trace-application.h"
 
-/**
- * \file
- * \ingroup protobuf-loader
- * ns3::ProtobufTopologyLoader declaration.
- */
 namespace ns3 {
 
-/**
- * \ingroup topology
- *
- * \brief Topology file loader for Protobuf.
- *
- */
-namespace topology {
+namespace configurations {
+  /**
+   * \brief Run the configuration Python script to generate Protobuf binary.
+   */
+  void RunConfigScript (const std::string configFile);
+
+  // Notice: this variable should be consistent with `TopologyGenerator.outputFile`
+  // in config/config_helper.py
+  static std::string const protoBinaryName = "config/configurations.bin";
+
+  ns3_proto::Configurations LoadConfigurations (const std::string &binName = protoBinaryName);
 
   Ptr<DcTopology> LoadTopology (const ns3_proto::Configurations &configurations);
-  
-} // namespace topology_loader
+
+  void InstallApplications (const ns3_proto::Configurations &conf, Ptr<DcTopology> topology);
+
+} // namespace configurations
 
 } // namespace ns3
 
-#endif // PROTOBUF_TOPOLOGY_LOADER_H
+#endif // CONFIGURATIONS_LOADER_H

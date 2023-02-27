@@ -1,10 +1,11 @@
-from topology_pb2 import GlobalConfig, HostPortConfig, HostGroup, PortQueueConfig, \
-    SwitchPortConfig, SwitchGroup, AllNodes, Link, Topology, Application
+from configurations_pb2 import GlobalConfig, HostPortConfig, HostGroup, PortQueueConfig, \
+    SwitchPortConfig, SwitchGroup, AllNodes, Link, Topology, Application, Configurations
 from collections.abc import Iterable
 from typing import List, Tuple
 import re
 from itertools import zip_longest, chain
 from copy import deepcopy
+from pathlib import Path
 
 
 class Utils:
@@ -33,17 +34,17 @@ def _setValuesToMessage(messgaeType, valuesDict):
             try:
                 getattr(instance, name).extend(value)
             except TypeError:
-                raise TypeError(f'the value of {name} should not be a list')                
+                raise TypeError(f'the value of {name} should not be a list') from None       
         elif isinstance(value, str):
             try:
                 setattr(instance, name, value.replace(" ", ""))
             except TypeError:
-                raise TypeError(f'the value of {name} should not be a str')
+                raise TypeError(f'the value of {name} should not be a str') from None
         else:
             try:
                 setattr(instance, name, value)
             except TypeError:
-                raise TypeError(f"the value of {name} should be a str or list")
+                raise TypeError(f"the value of {name} should be a str or list") from None
     return instance
 
     
@@ -72,10 +73,14 @@ def switchPortGenerate(queueNum: int,
 class GlobalConfigGenerator:
 
     def __init__(self):
-        self.globalConfig = GlobalConfig()
+        self.globalConfig = None
 
-    def setConfig(self, randomSeed=0):
-        self.globalConfig.randomSeed = randomSeed
+    def setConfig(self, outputDir="data/", **kwargs):
+        oDir = Path(outputDir)
+        oDir.mkdir(mode=0o660, parents=True, exist_ok=True)
+        for k, name in kwargs.items():
+            kwargs[k] = str(oDir / name)
+        self.globalConfig = _setValuesToMessage(GlobalConfig, kwargs)
 
     def getGlobalConfig(self):
         return self.globalConfig
@@ -267,38 +272,15 @@ class TopologyGenerator:
         consistent with the `ProtobufTopologyLoader::m_protoBinaryName` in
         src/protobuf-topology/helper/protobuf-topology-loader.h
         '''
-        self.globalConfig = GlobalConfigGenerator()
         self.nodes = NodesGenerator()
         self.links = LinksGenerator()
-        self.applications = ApplicationsGenerator()
         self.outputFile = output
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, ex_type, ex_value, ex_traceback):
-        self.serializeToDefault()
         
     def getTopology(self):
         topo = Topology()
-        topo.globalConfig.CopyFrom(self.globalConfig.getGlobalConfig())
         topo.nodes.CopyFrom(self.nodes.getAllNodes())
         topo.links.extend(self.links.getAllLinks())
-        topo.applications.extend(self.applications.getApplications())
         return topo
-
-    def serializeTo(self, fname: str):
-        """Serialize the topology configuration to file which is later parsed by
-        ns-3
-
-        :param fname: output file name
-        :returns: None
-
-        """
-        Utils.serialize(self.getTopology(), fname)
-
-    def serializeToDefault(self):
-        self.serializeTo(self.outputFile)
 
     def __str__(self):
         return f"{self.nodes.getAllNodes()}\n{self.links.getAllLinks()}"
@@ -382,10 +364,6 @@ class FattreeGenerator(TopologyGenerator):
         for tier in [0, 1, 2]:
             self.setLinkConfigOfTier(tier, config, False)
 
-    def __exit__(self, ex_type, ex_value, ex_traceback):
-        self.createFattree()
-        self.serializeToDefault()
-
     def createFattree(self):
         # create nodes
         hostGroups = [self.nodes.addHostGroup(**config) for config in self.hostPod]
@@ -416,6 +394,10 @@ class FattreeGenerator(TopologyGenerator):
                 self.links.connectN2One(nNodes=coreGroup[i:i+halfRadix], port=podIndex,
                                         one=agg, nPorts=range(halfRadix, halfRadix * 2),
                                         **self.linkPodTier[podIndex][2])
+
+    def getTopology(self):
+        self.createFattree()
+        return super().getTopology()
             
     def getNCoreSwitches(self) -> int:
         '''Get the number of the core switches.'''
@@ -465,7 +447,46 @@ class FattreeGenerator(TopologyGenerator):
             raise KeyError("Switch config must have 'ports' field")
         if len(config["ports"]) != self.k:
             raise ValueError(f"Switch radix must be k. Your switch has "
-                             f"{len(config['ports'])} ports but the k is {self.k}")
+                             f"{len(config['ports'])} ports but the k is {self.k}") 
+
+class Configure:
+
+    def __init__(self, output="config/configurations.bin", topoGen=TopologyGenerator):
+        '''Configure.
+        Notice: you should never manually assign another string to output as it should be
+        consistent with the `ProtobufTopologyLoader::m_protoBinaryName` in
+        src/protobuf-topology/helper/protobuf-topology-loader.h
+        '''
+        self.outputFile = output
+        self.globalConfig = GlobalConfigGenerator()
+        self.topo = topoGen()
+        self.applications = ApplicationsGenerator()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, ex_type, ex_value, ex_traceback):
+        self.serializeToDefault()
+
+    def getConfigurations(self):
+        conf = Configurations()
+        conf.globalConfig.CopyFrom(self.globalConfig.getGlobalConfig())
+        conf.topology.CopyFrom(self.topo.getTopology())
+        conf.applications.extend(self.applications.getApplications())
+        return conf
+
+    def serializeTo(self, fname: str):
+        """Serialize the configurations to file which is later parsed by ns-3
+
+        :param fname: output file name
+        :returns: None
+
+        """
+        Utils.serialize(self.getConfigurations(), fname)
+
+    def serializeToDefault(self):
+        self.serializeTo(self.outputFile)
+
 
 class Units:
 

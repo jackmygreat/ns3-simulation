@@ -21,11 +21,10 @@
 #ifndef DC_TOPOLOGY_H
 #define DC_TOPOLOGY_H
 
+#include "ns3/ipv4-interface-address.h"
 #include "ns3/object.h"
 #include "ns3/net-device.h"
-#include "ns3/network-module.h"
-#include "ns3/internet-module.h"
-#include "ns3/topology.pb.h"
+#include "ns3/random-variable-stream.h"
 #include <vector>
 #include <iterator>
 #include <cstddef>

@@ -8,10 +8,11 @@ host1                host3
 
 '''
 
-from config_helper import TopologyGenerator
+from config_helper import Configure
 
 globalConfig = {
-    "randomSeed": 0, 
+    "outputDir": "data/", # all files below will be stored in `outputDir`
+    "outputFct": "fct.csv"
 }
 
 hostPortConfig = {
@@ -108,31 +109,34 @@ receiverConfig = {
     "stopTime": "6 ms",
 }
 
-with TopologyGenerator() as topo:
-    topo.globalConfig.setConfig(**globalConfig)
-
+with Configure() as conf:
+    conf.globalConfig.setConfig(**globalConfig)
+    
     ########################################
     # Create nodes in groups
     ########################################
     # First group of hosts on the left
-    hostGroup0 = topo.nodes.addHostGroup(**hostGroupConfig)
+    hostGroup0 = conf.topo.nodes.addHostGroup(**hostGroupConfig)
     # Second group of hosts on the right
-    hostGroup1 = topo.nodes.addHostGroup(**hostGroupConfig)
+    hostGroup1 = conf.topo.nodes.addHostGroup(**hostGroupConfig)
 
     # Group of switches, in this example, one group is enough.
     # We unpack the return value to be used later
-    switch0, switch1 = topo.nodes.addSwitchGroup(**switchGroupConfig)
+    switch0, switch1 = conf.topo.nodes.addSwitchGroup(**switchGroupConfig)
 
     ########################################
     # Connect nodes with links
     ########################################
-    topo.links.connectN2One(nNodes=hostGroup0, port=0,
+    conf.topo.links.connectN2One(nNodes=hostGroup0, port=0,
                             one=switch0, nPorts=[0, 1], **linkConfig1)
-    topo.links.connectN2One(nNodes=hostGroup1, port=0,
+    conf.topo.links.connectN2One(nNodes=hostGroup1, port=0,
                             one=switch1, nPorts=[0, 1], **linkConfig1)
-    topo.links.connectOne2One(node1=switch0, port1=2,
+    conf.topo.links.connectOne2One(node1=switch0, port1=2,
                               node2=switch1, port2=2, **linkConfig2)
 
-    topo.applications.installApplication(senderConfig)
-    # topo.applications.installApplication(receiverConfig)
+    conf.applications.installApplication(senderConfig)
+    # conf.applications.installApplication(receiverConfig)
+    
+
+
     

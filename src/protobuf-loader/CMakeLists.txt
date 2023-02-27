@@ -7,11 +7,11 @@ if(${NS3_PROTOBUF})
 
   # compile protobuf definition files if they are changed
   add_custom_command(
-	OUTPUT ${CMAKE_SOURCE_DIR}/src/protobuf-loader/model/topology.pb.h
-	${CMAKE_SOURCE_DIR}/src/protobuf-loader/model/topology.pb.cc
+	OUTPUT ${CMAKE_SOURCE_DIR}/src/protobuf-loader/model/configurations.pb.h
+	       ${CMAKE_SOURCE_DIR}/src/protobuf-loader/model/configurations.pb.cc
 	COMMAND ${Protobuf_PROTOC_EXECUTABLE} -I=protobuf --cpp_out=model --python_out=${CMAKE_SOURCE_DIR}/config/ protobuf/*.proto
 	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/protobuf-loader/
-	DEPENDS protobuf/topology.proto
+	DEPENDS protobuf/configurations.proto
 	COMMENT "Run protoc to generate protobuf files"
 )
 
@@ -19,10 +19,12 @@ if(${NS3_PROTOBUF})
 	LIBNAME protobuf-loader
 	SOURCE_FILES
 	    helper/protobuf-topology-loader.cc
-	    model/topology.pb.cc
+		helper/configurations-loader.cc
+	    model/configurations.pb.cc
 	HEADER_FILES
         helper/protobuf-topology-loader.h
-	    model/topology.pb.h
+		helper/configurations-loader.h
+	    model/configurations.pb.h
 	LIBRARIES_TO_LINK
 	    ${libcore}
 	    ${libnetwork}
