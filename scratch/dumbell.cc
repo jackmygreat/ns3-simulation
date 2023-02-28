@@ -50,9 +50,9 @@ main ()
   LogComponentEnableAll (LOG_PREFIX_LEVEL);
   LogComponentEnableAll (LOG_PREFIX_NODE);
 
-  TracerExtension::ConfigOutputDirectory ("data");
-  TracerExtension::ConfigTraceFCT (TracerExtension::Protocol::RoCEv2, "fct.csv");
-  TracerExtension::ConfigStopTime (MilliSeconds(6));
+  tracer_extension::ConfigOutputDirectory ("data");
+  tracer_extension::ConfigTraceFCT (tracer_extension::Protocol::RoCEv2, "fct.csv");
+  tracer_extension::ConfigStopTime (MilliSeconds(6));
 
   // capture packet at host-0
   Ptr<NetDevice> dev = topology->GetNetDeviceOfNode (0, 0);
@@ -63,11 +63,11 @@ main ()
   // dev = topology->GetNetDeviceOfNode (2, 0);
   // TracerExtension::EnableDevicePcap (dev, "host");
 
-  TracerExtension::EnableBufferoverflowTrace (topology->GetNode (4).nodePtr, "sw4");
-  TracerExtension::EnableBufferoverflowTrace (topology->GetNode (5).nodePtr, "sw5");
+  tracer_extension::EnableBufferoverflowTrace (topology->GetNode (4).nodePtr, "sw4");
+  tracer_extension::EnableBufferoverflowTrace (topology->GetNode (5).nodePtr, "sw5");
 
   Ptr<NetDevice> swDev = topology->GetNetDeviceOfNode(4, 2);
-  TracerExtension::EnableDeviceRateTrace(swDev, "sw4", MicroSeconds (100));
+  tracer_extension::EnableDeviceRateTrace(swDev, "sw4", MicroSeconds (100));
   // TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(16).nodePtr, "switch");
   // TracerExtension::EnableSwitchIpv4Pcap(topology->GetNode(17).nodePtr, "switch");
   // capture packet at all switches
@@ -75,10 +75,10 @@ main ()
   //   {
   //     TracerExtension::EnableSwitchIpv4Pcap(sw->nodePtr, "switch");
   //   }
-  TracerExtension::EnablePortQueueLengthTrace(topology->GetNetDeviceOfNode(4, 0), "sw4-0", MicroSeconds (10));
-  TracerExtension::EnablePortQueueLengthTrace(topology->GetNetDeviceOfNode(5, 2), "sw5-2", MicroSeconds (10));
+  tracer_extension::EnablePortQueueLengthTrace(topology->GetNetDeviceOfNode(4, 0), "sw4-0", MicroSeconds (10));
+  tracer_extension::EnablePortQueueLengthTrace(topology->GetNetDeviceOfNode(5, 2), "sw5-2", MicroSeconds (10));
   Simulator::Run ();
   Simulator::Destroy ();
 
-  TracerExtension::CleanTracers ();
+  tracer_extension::CleanTracers ();
 }

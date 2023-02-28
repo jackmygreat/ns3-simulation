@@ -28,75 +28,128 @@
 
 namespace ns3 {
 
-using TE = TracerExtension;
+namespace tracer_extension {
+  
+/******************************************
+ ** Declarations
+ ******************************************
+ */
+static std::string outputDirectory;
+static Time stopTime;
+  
+// ----------------------------------------
+template <class T>
+static void ClearTracersList (std::list<T> &tracers);
+static std::string GetRealFileName (std::string fileName);
 
-std::string TE::outputDirectory = "";
-Time TE::stopTime;
-TE::Protocol TE::TraceFCTUnit::protocol = TE::Protocol::None;
-std::ofstream TE::TraceFCTUnit::fctFileStream;
+// ----------------------------------------
+namespace fct_unit {
+  Protocol protocol = Protocol::None; // TODO: not supporting multiple protocols
+  std::ofstream fctFileStream;
+  void FlowCompletionTracer (uint32_t srcNode, uint32_t dstNode, uint32_t srcPort,
+                             uint32_t dstPort, uint32_t flowSize, Time startTime,
+                             Time finishTime);
+}  
 
-std::list<TE::RateTracer *> TE::RateTracer::tracers;
-std::list<TE::QueueLengthTracer *> TE::QueueLengthTracer::tracers;
-std::list<TE::BufferOverflowTracer *> TE::BufferOverflowTracer::tracers;
-
-TE::TracerExtension ()
+// ----------------------------------------  
+class RateTracer
 {
+public:
+  RateTracer (Time interval, std::string context);
+  ~RateTracer ();
+  void Trace (Ptr<const Packet> packet);
+  static std::list<RateTracer *> tracers;
+
+private:
+  void LogRate ();
+  uint64_t m_bytes;
+  Timer m_timer;
+  std::string m_context;
+  std::ofstream m_ofstream;
+}; // class RateTracer  
+std::list<RateTracer *> RateTracer::tracers;
+
+// ----------------------------------------  
+class QueueLengthTracer
+{
+public:
+  QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc, Time interval);
+  ~QueueLengthTracer ();
+  void Trace ();
+  static std::list<QueueLengthTracer*> tracers;
+
+private:
+  Ptr<PausableQueueDisc> m_queueDisc;
+  Timer m_timer;
+  std::ofstream m_ofstream;
+}; // class QueueLengthTracer
+std::list<QueueLengthTracer*> QueueLengthTracer::tracers;  
+
+// ----------------------------------------  
+class BufferOverflowTracer {
+public:
+  BufferOverflowTracer (std::string context, Ptr<DcbTrafficControl> tc);
+  ~BufferOverflowTracer ();
+  void Trace (Ptr<const Packet> packet);
+  static std::list<BufferOverflowTracer *> tracers;
+    
+private:
+  std::ofstream m_ofstream;
+}; // class BufferoverflowTracer
+std::list<BufferOverflowTracer *> BufferOverflowTracer::tracers;
+
+/******************************************
+ ** tracer_extension functions definition
+ ******************************************
+ */
+void
+ConfigOutputDirectory (std::string dirName)
+{
+  // NOTICIE: no checking
+  outputDirectory = dirName;
 }
 
-// static
 void
-TE::ConfigOutputDirectory (std::string dirName)
+ConfigStopTime (Time t)
 {
-  // TODO: create the directory if not exists
-  TE::outputDirectory = dirName;
+  stopTime = t;
 }
 
-// static
 void
-TE::ConfigStopTime (Time stopTime)
+ConfigTraceFCT (Protocol protocol, std::string fileName)
 {
-  TE::stopTime = stopTime;
-}
-
-// static
-void
-TE::ConfigTraceFCT (Protocol protocol, std::string fileName)
-{
-  TraceFCTUnit::protocol = protocol;
+  fct_unit::protocol = protocol;
   std::string fctFile = GetRealFileName (fileName);
-  TraceFCTUnit::fctFileStream.open (fctFile);
-  if (!TraceFCTUnit::fctFileStream.good ())
+  fct_unit::fctFileStream.open (fctFile);
+  if (!fct_unit::fctFileStream.good ())
     {
       std::cerr << "Error: Cannot open file \"" << fctFile << "\"" << std::endl;
     }
 }
 
-// static
 void
-TE::RegisterTraceFCT (Ptr<TraceApplication> app)
+RegisterTraceFCT (Ptr<TraceApplication> app)
 {
-  switch (TraceFCTUnit::protocol)
+  switch (fct_unit::protocol)
     {
     case Protocol::RoCEv2:
       app->TraceConnectWithoutContext ("FlowComplete",
-                                       MakeCallback (&TraceFCTUnit::FlowCompletionTracer));
+                                       MakeCallback (&fct_unit::FlowCompletionTracer));
       break;
     default: // do nothing
         ;
     }
 }
 
-// static
 void
-TE::EnableDevicePcap (Ptr<NetDevice> device, std::string fileNamePrefix)
+EnableDevicePcap (Ptr<NetDevice> device, std::string fileNamePrefix)
 {
   DcbNetDeviceHelper devHelper;
   devHelper.EnablePcap (GetRealFileName (fileNamePrefix), device);
 }
 
-// static
 void
-TE::EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix)
+EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix)
 {
   Ptr<Ipv4> ipv4 = sw->GetObject<Ipv4> ();
   if (!ipv4)
@@ -111,18 +164,16 @@ TE::EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix)
     }
 }
 
-// static
 void
-TE::EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval)
+EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval)
 {
   RateTracer *tracer = new RateTracer (interval, context);
-  device->TraceConnectWithoutContext ("MacTx", MakeCallback (&TE::RateTracer::Trace, tracer));
+  device->TraceConnectWithoutContext ("MacTx", MakeCallback (&RateTracer::Trace, tracer));
   RateTracer::tracers.push_back (tracer);
 }
 
-// static
 void
-TE::EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time interval)
+EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time interval)
 {
   Ptr<DcbNetDevice> dcbDev = DynamicCast<DcbNetDevice> (device);
   if (dcbDev)
@@ -137,44 +188,60 @@ TE::EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time
     }
 }
 
-// static
 void
-TE::EnableBufferoverflowTrace (Ptr<Node> sw, std::string context)
+EnableBufferoverflowTrace (Ptr<Node> sw, std::string context)
 {
   Ptr<DcbTrafficControl> tc = sw->GetObject<DcbTrafficControl> ();
   BufferOverflowTracer *tracer = new BufferOverflowTracer (context, tc);
   BufferOverflowTracer::tracers.push_back (tracer);
 }
 
-// static
 void
-TE::CleanTracers ()
+CleanTracers ()
 {
-  if (TE::TraceFCTUnit::fctFileStream.is_open ())
+  if (fct_unit::fctFileStream.is_open ())
     {
-      TE::TraceFCTUnit::fctFileStream.close ();
+      fct_unit::fctFileStream.close ();
     }
   ClearTracersList (RateTracer::tracers);
   ClearTracersList (QueueLengthTracer::tracers);
   ClearTracersList (BufferOverflowTracer::tracers);
 }
 
-// static
-std::string
-TE::GetRealFileName (std::string fileName)
+/************************************************
+ ** Internal classes and functions definition
+ ************************************************
+ */  
+
+template <class T>
+static void ClearTracersList (std::list<T> &tracers)
 {
-  return TE::outputDirectory + "/" + fileName;
+  for (auto tracer: tracers)
+    {
+      delete tracer;
+    }
+  tracers.clear ();
 }
 
-// static
+static std::string
+GetRealFileName (std::string fileName)
+{
+  return outputDirectory + "/" + fileName;
+}
+
+///////////////////////  
+/// FCT
+///////////////////////  
+namespace fct_unit {
+  
 void
-TE::TraceFCTUnit::FlowCompletionTracer (uint32_t srcNode, uint32_t dstNode, uint32_t srcPort,
+FlowCompletionTracer (uint32_t srcNode, uint32_t dstNode, uint32_t srcPort,
                                         uint32_t dstPort, uint32_t flowSize, Time startTime,
                                         Time finishTime)
 {
   // TODO: add mutex lock for concurrency
   Time fct = finishTime - startTime;
-  CsvWriter writer (&TE::TraceFCTUnit::fctFileStream, 8);
+  CsvWriter writer (&fct_unit::fctFileStream, 8);
   writer.WriteNextValue (srcNode); // src node
   writer.WriteNextValue (dstNode); // dest node
   writer.WriteNextValue (srcPort); // src port/qp
@@ -189,9 +256,15 @@ TE::TraceFCTUnit::FlowCompletionTracer (uint32_t srcNode, uint32_t dstNode, uint
   //                        << finishTime << " with FCT=" << fct);
 }
 
-TE::RateTracer::RateTracer (Time interval, std::string context) : m_bytes (0), m_context (context)
+} // namespace fct_unit
+
+///////////////////////  
+/// RateTracer
+///////////////////////
+
+RateTracer::RateTracer (Time interval, std::string context) : m_bytes (0), m_context (context)
 {
-  m_timer.SetFunction (&TE::RateTracer::LogRate, this);
+  m_timer.SetFunction (&RateTracer::LogRate, this);
   m_timer.SetDelay (interval);
   m_timer.Schedule ();
 
@@ -202,35 +275,39 @@ TE::RateTracer::RateTracer (Time interval, std::string context) : m_bytes (0), m
       std::cerr << "Error: Cannot open file \"" << filename << "\"" << std::endl;
     }
 }
-TE::RateTracer::~RateTracer ()
+RateTracer::~RateTracer ()
 {
   m_ofstream.close ();
 }
 
 void
-TE::RateTracer::Trace (Ptr<const Packet> packet)
+RateTracer::Trace (Ptr<const Packet> packet)
 {
   m_bytes += packet->GetSize ();
 }
 
 void
-TE::RateTracer::LogRate ()
+RateTracer::LogRate ()
 {
   double rate = static_cast<double> (m_bytes) * 8 / m_timer.GetDelay ().GetMicroSeconds ();
   m_ofstream << Simulator::Now ().GetMicroSeconds () << "," << rate << std::endl;
   // NS_LOG_UNCOND ("rate of device " <<  m_context << " is " << rate << "Mbps");
   m_bytes = 0;
-  if (Simulator::Now () < TE::stopTime)
+  if (Simulator::Now () < stopTime)
     {
       m_timer.Schedule ();
     }
 }
 
-TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc,
+///////////////////////  
+/// QueueLengthTracer
+///////////////////////
+  
+QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc,
                                           Time interval)
     : m_queueDisc (queueDisc)
 {
-  m_timer.SetFunction (&TE::QueueLengthTracer::Trace, this);
+  m_timer.SetFunction (&QueueLengthTracer::Trace, this);
   m_timer.SetDelay (interval);
   m_timer.Schedule ();
 
@@ -241,13 +318,13 @@ TE::QueueLengthTracer::QueueLengthTracer (std::string context, Ptr<PausableQueue
       std::cerr << "Error: Cannot open file \"" << filename << "\"" << std::endl;
     }
 }
-TE::QueueLengthTracer::~QueueLengthTracer ()
+QueueLengthTracer::~QueueLengthTracer ()
 {
   m_ofstream.close ();
 }    
 
 void
-TE::QueueLengthTracer::Trace ()
+QueueLengthTracer::Trace ()
 {
   size_t nQueue = m_queueDisc->GetNQueueDiscClasses ();
   m_ofstream << Simulator::Now ().GetMicroSeconds ();
@@ -257,26 +334,31 @@ TE::QueueLengthTracer::Trace ()
       m_ofstream << "," << bytes;
     }
   m_ofstream << std::endl;
-  if (Simulator::Now () < TE::stopTime)
+  if (Simulator::Now () < stopTime)
     {
       m_timer.Schedule ();
     }
 }
 
-TE::BufferOverflowTracer::BufferOverflowTracer (std::string context, Ptr<DcbTrafficControl> tc)
+
+///////////////////////////
+/// BufferOverflowTracer
+///////////////////////////
+  
+BufferOverflowTracer::BufferOverflowTracer (std::string context, Ptr<DcbTrafficControl> tc)
 {
   std::string filename = GetRealFileName ("bufferoverflow-" + context + ".csv");
   m_ofstream.open (filename);
   tc->TraceConnectWithoutContext ("BufferOverflow",
                                   MakeCallback (&BufferOverflowTracer::Trace, this));
 }
-TE::BufferOverflowTracer::~BufferOverflowTracer ()
+BufferOverflowTracer::~BufferOverflowTracer ()
 {
   m_ofstream.close ();
 }    
 
 void
-TE::BufferOverflowTracer::Trace (Ptr<const Packet> packet)
+BufferOverflowTracer::Trace (Ptr<const Packet> packet)
 {
   Ptr<Packet> p = packet->Copy ();
   Ipv4Header ipHeader;
@@ -289,5 +371,7 @@ TE::BufferOverflowTracer::Trace (Ptr<const Packet> packet)
              << header.GetRoCE ().GetDestQP () << ","
              << header.GetRoCE ().GetPSN ();
 }
+  
+} // namespace tracer_extension
 
 } // namespace ns3

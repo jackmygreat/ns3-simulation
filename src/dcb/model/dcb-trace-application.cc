@@ -186,7 +186,7 @@ TraceApplication::StartApplication (void)
         }
       if (m_protoGroup == ProtocolGroup::RoCEv2)
         {
-          TracerExtension::RegisterTraceFCT (this);
+          tracer_extension::RegisterTraceFCT (this);
         }
     }
 }

@@ -30,12 +30,7 @@
 
 namespace ns3 {
 
-class Ipv4;
-
-class TracerExtension
-{
-public:
-  TracerExtension ();
+namespace tracer_extension {
 
   typedef void (*FlowTracedCallback) (uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, Time, Time);
 
@@ -44,103 +39,32 @@ public:
     RoCEv2,
   };
 
-  static void ConfigOutputDirectory (std::string dirName);
-  static void ConfigStopTime (Time stopTime);
+  void ConfigOutputDirectory (std::string dirName);
+  void ConfigStopTime (Time stopTime);
 
-  static void ConfigTraceFCT (Protocol protocol, std::string fileName);
+  void ConfigTraceFCT (Protocol protocol, std::string fileName);
 
-  static void RegisterTraceFCT (Ptr<TraceApplication> app);
+  void RegisterTraceFCT (Ptr<TraceApplication> app);
 
   /**
    * Capture packet at device and output the pcap file with prefix fileNamePrefix.
    */
-  static void EnableDevicePcap (Ptr<NetDevice> device, std::string fileNamePrefix);
+  void EnableDevicePcap (Ptr<NetDevice> device, std::string fileNamePrefix);
   /**
    * Capture packets at all IPv4 interfaces of a switch and output the pcap file
    * with prefix fileNamePrefix.
    */
-  static void EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix);
+  void EnableSwitchIpv4Pcap (Ptr<Node> sw, std::string fileNamePrefix);
 
-  static void EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval);
+  void EnableDeviceRateTrace (Ptr<NetDevice> device, std::string context, Time interval);
 
-  static void EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time interval);
+  void EnablePortQueueLengthTrace (Ptr<NetDevice> device, std::string context, Time interval);
 
-  static void EnableBufferoverflowTrace (Ptr<Node> sw, std::string context);
+  void EnableBufferoverflowTrace (Ptr<Node> sw, std::string context);
 
-  static void CleanTracers ();
-
-private:
-  static std::string outputDirectory;
-  static Time stopTime;
-
-  static std::string GetRealFileName (std::string fileName);
-  template <class T>
-  static void ClearTracersList (std::list<T> &tracers);
-
-  struct TraceFCTUnit
-  {
-    static Protocol protocol; // TODO: not supporting multiple protocols
-    static std::ofstream fctFileStream;
-
-    static void FlowCompletionTracer (uint32_t srcNode, uint32_t dstNode, uint32_t srcPort,
-                                      uint32_t dstPort, uint32_t flowSize, Time startTime,
-                                      Time finishTime);
-  };
-
-  class RateTracer
-  {
-  public:
-    RateTracer (Time interval, std::string context);
-    ~RateTracer ();
-    void Trace (Ptr<const Packet> packet);
-    static std::list<RateTracer *> tracers;
-
-  private:
-    void LogRate ();
-    uint64_t m_bytes;
-    Timer m_timer;
-    std::string m_context;
-    std::ofstream m_ofstream;
-  }; // class RateTracer
-
-  class QueueLengthTracer
-  {
-  public:
-    QueueLengthTracer (std::string context, Ptr<PausableQueueDisc> queueDisc, Time interval);
-    ~QueueLengthTracer ();
-    void Trace ();
-    static std::list<QueueLengthTracer*> tracers;
-
-  private:
-    Ptr<PausableQueueDisc> m_queueDisc;
-    Timer m_timer;
-    std::ofstream m_ofstream;
-  }; // class QueueLengthTracer
-
-  class BufferOverflowTracer {
-  public:
-    BufferOverflowTracer (std::string context, Ptr<DcbTrafficControl> tc);
-    ~BufferOverflowTracer ();
-    void Trace (Ptr<const Packet> packet);
-    static std::list<BufferOverflowTracer *> tracers;
-    
-  private:
-    std::ofstream m_ofstream;
-  }; // class BufferoverflowTracer
+  void CleanTracers ();
   
-
-}; // class TracerExtension
-
-template <class T>
-void TracerExtension::ClearTracersList (std::list<T> &tracers)
-{
-  for (auto tracer: tracers)
-    {
-      delete tracer;
-    }
-  tracers.clear ();
-}
-
+} // namespace tracer_extension
 
 } // namespace ns3
 
